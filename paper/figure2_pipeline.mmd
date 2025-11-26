@@ -1,19 +1,16 @@
-flowchart TD
+flowchart LR
 
-    A["Load YAML config"] --> B["Validate with Pydantic"]
-    B --> C["Load raster (rasterio)"]
-    B --> D["Load climate CSV (pandas)"]
+    A["Load config"] --> B["Validate (Pydantic)"]
+    B --> C["Raster ingest"]
+    B --> D["Climate ingest"]
 
-    C --> E["Clip raster to ROI
-(or fallback)"]
-    D --> F["Compute climate summaries"]
+    C --> E["ROI clip"]
+    D --> F["Climate summary"]
 
-    E --> G["Sample valid raster cells"]
+    E --> G["Sample cells"]
     F --> G
 
-    G --> H["Compute suitability score"]
-    H --> I["Assign label
-(low / medium / high)"]
-
-    I --> J["Write results.csv"]
-    J --> K["Generate Plotly map (optional)"]
+    G --> H["Score"]
+    H --> I["Label"]
+    I --> J["Write CSV"]
+    J --> K["Plotly map (optional)"]
