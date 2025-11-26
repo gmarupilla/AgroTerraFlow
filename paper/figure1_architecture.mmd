@@ -1,0 +1,18 @@
+flowchart LR
+
+    CFG["Config
+(YAML & Pydantic)"] --> PIPE["Pipeline
+(orchestration)"]
+
+    PIPE --> ING["Ingest
+(raster, climate)"]
+    PIPE --> GEO["Geospatial
+(ROI clipping)"]
+    PIPE --> MOD["Model
+(suitability scoring)"]
+    PIPE --> OUT["Outputs
+(CSV, maps)"]
+
+    ING --> GEO
+    ING --> MOD
+    GEO --> MOD

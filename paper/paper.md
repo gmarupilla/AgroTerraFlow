@@ -13,7 +13,7 @@ authors:
 affiliations:
   - name: Independent Researcher & Software Engineer (Scientific Computing)
     index: 1
-date: 2025-01-01
+date: 2025-11-27
 bibliography: paper.bib
 ---
 
@@ -30,7 +30,7 @@ re-implement them ad hoc, leading to inconsistent, hard-to-reproduce results.
 TerraFlow provides a minimal, tested, configuration-driven pipeline that enables
 users to execute geospatial workflows consistently across environments.
 
-![Figure 1: TerraFlow architecture showing configuration, ingestion, geospatial operations, modeling, and output modules.](figure1.png)
+![Figure 1: TerraFlow architecture showing configuration, pipeline orchestration, ingestion, geospatial operations, modeling, and outputs.](figure1.svg)
 
 # Statement of Need
 
@@ -55,7 +55,7 @@ clean, reproducible, end-to-end workflow. TerraFlow fills this gap by providing:
 5. Automated tests and CI for scientific software reliability.
 6. Optional Docker execution for consistent environments.
 
-![Figure 2: TerraFlow pipeline activity workflow from configuration to outputs.](figure2.png)
+![Figure 2: TerraFlow pipeline workflow from configuration to final outputs.](figure2.svg)
 
 # Software Description
 
