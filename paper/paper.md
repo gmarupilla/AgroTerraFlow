@@ -6,19 +6,19 @@ tags:
   - agriculture
   - reproducibility
   - workflow
-authors:
+author:
   - name: Gnaneswara Marupilla
     orcid: 0000-0002-6030-8707
-    affiliation: 1
+    affiliation:
+      - name: Independent Researcher & Software Engineer (Scientific Computing)
   - name: Chandhini Bayina
     orcid: 0009-0002-1359-1762
-    affiliation: 1
-affiliations:
-  - name: University of Central Missouri, Missouri
-    index: 1
+    affiliation:
+      - name: University of Central Missouri, Missouri
 date: 2025-11-27
 bibliography: biblio.bib
 ---
+
 
 # Summary
 
@@ -26,7 +26,7 @@ TerraFlow is an open-source Python library designed to simplify reproducible geo
 
 Many agricultural modeling projects require similar preparatory workflows but re-implement them ad hoc, leading to inconsistent, hard-to-reproduce results. TerraFlow provides a minimal, tested, configuration-driven pipeline that enables users to execute geospatial workflows consistently across environments.
 
-![TerraFlow architecture showing configuration, pipeline orchestration, ingestion, geospatial operations, modeling, and outputs.](figure1.png)
+![TerraFlow architecture showing configuration, pipeline orchestration, ingestion, geospatial operations, modeling, and outputs.](figure1.jpeg)
 
 # Statement of Need
 
@@ -49,7 +49,7 @@ TerraFlow fills this gap by providing:
 5. Automated tests and continuous integration for scientific software reliability.
 6. Optional Docker execution for consistent environments across machines.
 
-![TerraFlow pipeline workflow from configuration to final outputs.](figure2.png)
+![TerraFlow pipeline workflow from configuration to final outputs.](figure2.jpeg)
 
 # Software Description
 
