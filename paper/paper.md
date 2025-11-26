@@ -16,7 +16,7 @@ authors:
 affiliations:
   - name: University of Central Missouri, Missouri
     index: 1
-date: date: 2025-11-27
+date: 2025-11-27
 bibliography: biblio.bib
 ---
 
