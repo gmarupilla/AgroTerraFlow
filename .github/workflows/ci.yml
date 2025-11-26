@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install make
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y make
+
+      - name: Install project dependencies (dev)
+        run: |
+          make dev
+
+      - name: Lint code (ruff + black)
+        run: |
+          make lint
+          make format
+
+      - name: Run tests
+        run: |
+          make test
+
+      - name: Combined checks (lint + tests)
+        run: |
+          make check

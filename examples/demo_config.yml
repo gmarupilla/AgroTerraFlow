@@ -1,0 +1,21 @@
+raster_path: "data/usda_cdl.tif"
+climate_csv: "data/demo_climate.csv"
+output_dir: "outputs/demo_run"
+
+roi:
+  type: "bbox"
+  xmin: -101
+  ymin: 38
+  xmax: -94
+  ymax: 40
+
+model_params:
+  v_min: 0
+  v_max: 255
+  t_min: 0
+  t_max: 40
+  r_min: 0
+  r_max: 300
+  w_v: 0.4
+  w_t: 0.3
+  w_r: 0.3
