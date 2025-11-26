@@ -26,16 +26,20 @@ jobs:
 
       - name: Install project dependencies (dev)
         run: |
+          make venv
           make dev
 
       - name: Lint code (ruff + black)
         run: |
+          make venv
           make lint
 
       - name: Run tests
         run: |
+          make venv
           make test
 
       - name: Combined checks (lint + tests)
         run: |
+          make venv
           make check

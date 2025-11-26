@@ -20,9 +20,9 @@ def synthetic_raster(tmp_path: Path) -> Path:
 
     transform = from_origin(
         west=-100.0,  # origin lon
-        north=40.0,   # origin lat
-        xsize=0.01,   # pixel width
-        ysize=0.01,   # pixel height
+        north=40.0,  # origin lat
+        xsize=0.01,  # pixel width
+        ysize=0.01,  # pixel height
     )
 
     with rasterio.open(

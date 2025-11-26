@@ -1,60 +1,32 @@
-# ==========================
-#  Virtual Environment Setup
-# ==========================
-
-VENV := .venv
+VENV := $(PWD)/.venv
 PYTHON := $(VENV)/bin/python
 PIP := $(VENV)/bin/pip
 
-$(VENV)/bin/activate:
+venv:
 	python3 -m venv $(VENV)
+	# source $(VENV)/bin/activate
 	$(PIP) install --upgrade pip
+	$(PIP) install -r requirements.txt -r requirements-dev.txt
 
-venv: $(VENV)/bin/activate
-	@echo "Virtualenv created at $(VENV)"
-
-# ==========================
-#  Installation Commands
-# ==========================
-
-install: venv
-	$(PIP) install -r requirements.txt
-
-dev: venv
-	$(PIP) install -r requirements-dev.txt
-
-# ==========================
-#  Quality / Test Commands
-# ==========================
-
-lint: dev
+lint:
 	$(VENV)/bin/ruff check terraflow tests
 
-format: dev
+format:
 	$(VENV)/bin/black terraflow tests
 
-test: dev
-	$(VENV)/bin/pytest
+test:
+	source $(VENV)/bin/activate; \
+	$(VENV)/bin/pytest -v
 
 check: lint test
 
 
-# ==========================
-#  Run the Demo Pipeline
-# ==========================
-
-run-demo: venv
+run-demo: install
 	$(PYTHON) -m terraflow.cli --config examples/demo_config.yml
-
-# ==========================
-#  Utility
-# ==========================
 
 shell: venv
 	@echo "To activate your environment, run:"
 	@echo "source $(VENV)/bin/activate"
-
-.PHONY: build run
 
 build:
 	docker build -t terraflow:latest .
@@ -64,3 +36,5 @@ run:
 		-v $(PWD):/app \
 		terraflow:latest \
 		--config examples/demo_config.yml
+
+.PHONY: venv install lint format test check run-demo shell build run
