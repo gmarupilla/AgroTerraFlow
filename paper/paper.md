@@ -6,15 +6,18 @@ tags:
   - agriculture
   - reproducibility
   - workflow
-author:
+authors:
   - name: Gnaneswara Marupilla
     orcid: 0000-0002-6030-8707
-    affiliation:
-      - name: Independent Researcher & Software Engineer (Scientific Computing)
+    affiliation: '1'
   - name: Chandhini Bayina
     orcid: 0009-0002-1359-1762
-    affiliation:
-      - name: University of Central Missouri, Missouri
+    affiliation: '2'
+affiliations:
+  - index: 1
+    name: Independent Researcher & Software Engineer (Scientific Computing)
+  - index: 2
+    name: University of Central Missouri, Missouri, United States
 date: 2025-11-27
 bibliography: biblio.bib
 ---
