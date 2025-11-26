@@ -25,16 +25,16 @@ jobs:
           sudo apt-get install -y make
 
       - name: Install project dependencies (dev)
-      run: |
-        make dev
+        run: |
+          make dev
 
       - name: Lint code (ruff + black)
-      run: |
-        make lint
+        run: |
+          make lint
 
       - name: Run tests
-      run: |
-        make test
+        run: |
+          make test
 
       - name: Combined checks (lint + tests)
         run: |
