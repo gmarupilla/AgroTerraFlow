@@ -27,16 +27,17 @@ dev: venv
 #  Quality / Test Commands
 # ==========================
 
-lint: venv
+lint: dev
 	$(VENV)/bin/ruff check terraflow tests
 
-format: venv
+format: dev
 	$(VENV)/bin/black terraflow tests
 
-test: venv
-	$(VENV)/bin/pytest -v tests
+test: dev
+	$(VENV)/bin/pytest
 
 check: lint test
+
 
 # ==========================
 #  Run the Demo Pipeline

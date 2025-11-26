@@ -99,26 +99,19 @@ A small command-line interface is provided via:
 
 ```bash
 terraflow --config examples/demo_config.yml
+```
 
 which runs the configured pipeline and writes results to the specified output
 directory.
 
 ## Example usage
 
-The repository includes an example configuration file that demonstrates how to
-run TerraFlow on real public-domain data. The example uses a subset of the USDA
-Cropland Data Layer as the raster input and a small synthetic climate table as
-the tabular input. Running the pipeline produces:
+The repository includes an example configuration file that demonstrates how to run TerraFlow on real public-domain data. The example uses a subset of the USDA Cropland Data Layer as the raster input and a small synthetic climate table as the tabular input.
 
-A CSV file with per-cell suitability scores and qualitative labels.
+Running the pipeline produces:
 
-An interactive HTML map that visualizes the scores over the region of
-interest.
-
-The example is intentionally simple and is designed to be replaced with other
-raster and tabular datasets. In this way, TerraFlow functions as a template or
-scaffold that projects can adapt to their own modeling logic while retaining
-the same reproducible structure.
+A CSV file with per-cell suitability scores and qualitative labels. An interactive HTML map that visualizes the scores over the region of interest.
+The example is intentionally simple and is designed to be replaced with other raster and tabular datasets. In this way, TerraFlow functions as a template or scaffold that projects can adapt to their own modeling logic while retaining the same reproducible structure.
 
 ## Acknowledgements
 
