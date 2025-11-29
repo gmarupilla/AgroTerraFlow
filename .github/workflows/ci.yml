@@ -19,22 +19,20 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Install make
+      - name: Ensure make is available
         run: |
           sudo apt-get update
           sudo apt-get install -y make
 
-      - name: Lint code (ruff + black)
+      - name: Set up virtualenv and install dev deps
         run: |
           make venv
-          make lint
+          make dev
 
       - name: Run tests
         run: |
-          make venv
           make test
 
-      - name: Combined checks (lint + tests)
+      - name: Run demo CLI (smoke test)
         run: |
-          make venv
-          make check
+          make run-demo

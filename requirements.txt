@@ -1,7 +1,0 @@
-matplotlib
-numpy
-pandas
-pyyaml
-rasterio
-pydantic>=2.0
-plotly

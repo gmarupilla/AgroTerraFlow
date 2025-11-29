@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "terraflow-agro"
+version = "0.1.0"
+description = "TerraFlow: a reproducible workflow for geospatial agricultural modeling."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+
+authors = [
+  { name = "Gnaneswara (Akhil) Marupilla" }
+]
+
+keywords = ["geospatial", "agriculture", "raster", "climate", "workflow"]
+
+dependencies = [
+  "numpy",
+  "pandas",
+  "xarray",
+  "rasterio",
+  "geopandas",
+  "pyyaml",
+  "pydantic>=2.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "pytest-cov",
+  "ruff",
+]
+
+[project.urls]
+Homepage = "https://github.com/gmarupilla/AgroTerraFlow"
+"Bug Tracker" = "https://github.com/gmarupilla/AgroTerraFlow/issues"
+
+[tool.setuptools]
+packages = ["terraflow"]

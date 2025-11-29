@@ -1,40 +1,63 @@
-VENV := $(PWD)/.venv
-PYTHON := $(VENV)/bin/python
-PIP := $(VENV)/bin/pip
+# Variables
+PYTHON = .venv/bin/python
+PIP = .venv/bin/pip
+
+.PHONY: help venv install dev test run build clean docker-build docker-run release
+
+help:
+	@echo "Available commands:"
+	@echo "  make venv          - Create a fresh .venv"
+	@echo "  make install       - Install terraflow-agro in editable mode into .venv"
+	@echo "  make dev           - Install terraflow-agro + dev dependencies"
+	@echo "  make test          - Run unit tests"
+	@echo "  make run           - Run example workflow"
+	@echo "  make build         - Build wheel + sdist"
+	@echo "  make clean         - Remove build artifacts"
+	@echo "  make docker-build  - Build Docker image"
+	@echo "  make docker-run    - Run Docker image"
+	@echo "  make release       - Bump version, tag, and push"
+
+# ---------------------------
+# Environment setup
+# ---------------------------
 
 venv:
-	python3 -m venv $(VENV)
-	# source $(VENV)/bin/activate
+	python3 -m venv .venv
 	$(PIP) install --upgrade pip
-	$(PIP) install -r requirements.txt -r requirements-dev.txt
 
-lint:
-	$(VENV)/bin/ruff check terraflow tests
+install: venv
+	$(PIP) install -e .
 
-format:
-	$(VENV)/bin/black terraflow tests
+dev: venv
+	$(PIP) install -e ".[dev]"
+
+# ---------------------------
+# Testing & Running
+# ---------------------------
 
 test:
-	source $(VENV)/bin/activate; \
-	$(VENV)/bin/pytest -v
+	$(PYTHON) -m pytest -v
 
-check: lint test
-
-
-run-demo: install
+run-demo:
 	$(PYTHON) -m terraflow.cli --config examples/demo_config.yml
 
-shell: venv
-	@echo "To activate your environment, run:"
-	@echo "source $(VENV)/bin/activate"
+# ---------------------------
+# Build & Release
+# ---------------------------
 
 build:
+	$(PIP) install --upgrade build
+	$(PYTHON) -m build
+
+clean:
+	rm -rf build dist *.egg-info
+
+# Docker
+docker-build:
 	docker build -t terraflow:latest .
 
-run:
+docker-run:
 	docker run --rm \
 		-v $(PWD):/app \
 		terraflow:latest \
 		--config examples/demo_config.yml
-
-.PHONY: venv install lint format test check run-demo shell build run
