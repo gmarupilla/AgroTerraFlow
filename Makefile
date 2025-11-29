@@ -51,6 +51,8 @@ build:
 
 clean:
 	rm -rf build dist *.egg-info
+	rm -rf .venv
+	find . -name "__pycache__" -exec rm -rf {} +
 
 # Docker
 docker-build:
