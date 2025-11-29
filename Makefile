@@ -2,7 +2,7 @@
 PYTHON = .venv/bin/python
 PIP = .venv/bin/pip
 
-.PHONY: help venv install dev test run build clean docker-build docker-run release
+.PHONY: help venv install dev test run build clean docker-build docker-run lint lint-fix
 
 help:
 	@echo "Available commands:"
@@ -63,3 +63,11 @@ docker-run:
 		-v $(PWD):/app \
 		terraflow:latest \
 		--config examples/demo_config.yml
+
+lint:
+	ruff check terraflow tests
+	black --check terraflow tests
+
+lint-fix:
+	ruff check terraflow tests --fix
+	black terraflow tests

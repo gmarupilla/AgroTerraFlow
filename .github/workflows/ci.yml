@@ -24,15 +24,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y make
 
-      - name: Set up virtualenv and install dev deps
+      - name: Set up virtualenv, dependencies, and run tests, lint, and demo
         run: |
           make venv
           make dev
-
-      - name: Run tests
-        run: |
           make test
+          make lint
+           make run-demo
 
-      - name: Run demo CLI (smoke test)
-        run: |
-          make run-demo
