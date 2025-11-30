@@ -1,6 +1,8 @@
 # Variables
 PYTHON = .venv/bin/python
 PIP = .venv/bin/pip
+RUFF = .venv/bin/ruff
+BLACK = .venv/bin/black
 
 .PHONY: help venv install dev test run build clean docker-build docker-run lint lint-fix
 
@@ -65,9 +67,9 @@ docker-run:
 		--config examples/demo_config.yml
 
 lint:
-	ruff check terraflow tests
-	black --check terraflow tests
+	$(RUFF) check src tests
+	$(BLACK) --check src tests
 
 lint-fix:
-	ruff check terraflow tests --fix
-	black terraflow tests
+	$(RUFF) check src tests --fix
+	$(BLACK) src tests
