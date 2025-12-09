@@ -33,7 +33,6 @@ def _create_dummy_raster(tmp_path: Path, values: np.ndarray, name: str) -> Path:
     return path
 
 
-
 def test_raster_summary_from_array_basic():
     arr = np.ma.array([1, 2, 3, 4], mask=[0, 0, 0, 0])
     summary = RasterSummary.from_array(arr)
@@ -74,4 +73,3 @@ def test_compare_rasters_difference(tmp_path: Path):
     assert np.allclose(diff.compressed(), -1.0)
     assert summary.min == -1.0
     assert summary.max == -1.0
-
