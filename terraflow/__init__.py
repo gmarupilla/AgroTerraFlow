@@ -8,6 +8,30 @@ This package provides utilities to:
 - Run an end-to-end, configurable pipeline
 """
 
-__all__ = []
+from .config import PipelineConfig, load_config
+from .pipeline import run_pipeline
+from .stats import (
+    RasterSummary,
+    ClimateSummary,
+    RunReport,
+    summarize_raster,
+    summarize_raster_file,
+    compare_rasters,
+    batch_summarize,
+)
+
+__all__ = [
+    "PipelineConfig",
+    "load_config",
+    "run_pipeline",
+    "RasterSummary",
+    "ClimateSummary",
+    "RunReport",
+    "summarize_raster",
+    "summarize_raster_file",
+    "compare_rasters",
+    "batch_summarize",
+]
+
 
 __version__ = "0.1.0"
