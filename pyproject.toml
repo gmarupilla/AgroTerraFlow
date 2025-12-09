@@ -23,6 +23,7 @@ dependencies = [
   "rasterio",
   "geopandas",
   "pyyaml",
+  "plotly",
   "pydantic>=2.0"
 ]
 
