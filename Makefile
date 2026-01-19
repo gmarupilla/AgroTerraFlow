@@ -4,7 +4,7 @@ PIP = .venv/bin/pip
 RUFF = .venv/bin/ruff
 BLACK = .venv/bin/black
 
-.PHONY: help venv install dev test run build clean docker-build docker-run lint lint-fix
+.PHONY: help venv install dev test run build clean docker-build docker-run lint lint-fix docs-serve docs-build
 
 help:
 	@echo "Available commands:"
@@ -18,6 +18,8 @@ help:
 	@echo "  make docker-build  - Build Docker image"
 	@echo "  make docker-run    - Run Docker image"
 	@echo "  make release       - Bump version, tag, and push"
+	@echo "  make docs-serve    - Serve MkDocs site locally"
+	@echo "  make docs-build    - Build MkDocs site (strict)"
 
 # ---------------------------
 # Environment setup
@@ -73,3 +75,9 @@ lint:
 lint-fix:
 	$(RUFF) check terraflow tests --fix
 	$(BLACK) terraflow tests
+
+docs-serve:
+	$(PYTHON) -m mkdocs serve
+
+docs-build:
+	$(PYTHON) -m mkdocs build --strict
