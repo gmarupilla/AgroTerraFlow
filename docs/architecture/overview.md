@@ -38,9 +38,9 @@ flowchart TD
   E --> C
   C --> G[Compute run_fingerprint]
   G --> H[Raster/vector processing\nCRS align • mask/clip • zonal stats]
-  H --> I[outputs/<run_name>/results.csv]
-  H --> J[outputs/<run_name>/manifest.json]
-  H --> K[outputs/<run_name>/report.json]
+  H --> I[outputs/run_name/results.csv]
+  H --> J[outputs/run_name/manifest.json]
+  H --> K[outputs/run_name/report.json]
 ```
 
 ## How a run works
