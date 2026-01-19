@@ -5,8 +5,7 @@ from terraflow.config import load_config
 
 
 def test_load_config_tmp(tmp_path: Path):
-    cfg_content = textwrap.dedent(
-        """
+    cfg_content = textwrap.dedent("""
         raster_path: "data/usda_cdl.tif"
         climate_csv: "data/demo_climate.csv"
         output_dir: "outputs/demo_run"
@@ -26,8 +25,7 @@ def test_load_config_tmp(tmp_path: Path):
           w_v: 0.4
           w_t: 0.3
           w_r: 0.3
-        """
-    )
+        """)
     cfg_file = tmp_path / "cfg.yml"
     cfg_file.write_text(cfg_content, encoding="utf-8")
 
