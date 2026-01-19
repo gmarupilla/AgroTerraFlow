@@ -1,0 +1,50 @@
+site_name: TerraFlow
+site_description: Reproducible geospatial modeling framework for agricultural & environmental research
+repo_url: https://github.com/gmarupilla/AgroTerraFlow
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - toc.follow
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.tabbed
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - toc:
+      permalink: true
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths:
+            - .
+          options:
+            show_source: true
+
+nav:
+  - Home: index.md
+  - Architecture:
+      - Overview: architecture/overview.md
+      - Boundaries: architecture/boundaries.md
+      - Run Identity: architecture/run-identity.md
+      - Artifact Contract: architecture/artifacts.md
+  - Config:
+      - Schema: config/schema.md
+      - Examples: config/examples.md
+  - CLI:
+      - Usage: cli/usage.md
+  - API Reference:
+      - terraflow.core: api/core.md
+      - terraflow.ingest: api/ingest.md
+  - Contributing: contributing.md

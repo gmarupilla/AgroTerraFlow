@@ -138,6 +138,23 @@ outputs/
 
 ---
 
+# 📚 Documentation
+
+### Local preview
+
+Install the docs dependencies and serve the site:
+
+```bash
+pip install -r docs/requirements.txt
+mkdocs serve
+```
+
+### Publishing
+
+Documentation is built and published automatically via GitHub Pages on every push to `main`.
+
+---
+
 # ⚙️ Development
 
 ### Create virtual environment + install dev deps
