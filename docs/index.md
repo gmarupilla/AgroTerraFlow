@@ -1,25 +1,21 @@
 # TerraFlow Documentation
 
-TerraFlow is a reproducible geospatial modeling framework designed for agricultural and environmental analysis.
-This site covers the architecture, configuration schema, CLI workflow, and API reference for the v0.1 pipeline.
+TerraFlow is a reproducible geospatial modeling framework for agricultural and environmental analysis.
+Start with the [TerraFlow Overview](architecture/overview.md) to understand the core pipeline and contracts.
 
-## What TerraFlow does
+## v0.1 scope
 
-- Loads raster and climate inputs from local files.
-- Clips data to a region of interest (ROI).
-- Computes a simple suitability score and emits tabular outputs.
-- Records deterministic run metadata and artifacts for reproducibility.
+TerraFlow v0.1 is local-first and assumes:
+
+- ROI boundaries defined in YAML (bbox in v0.1 examples).
+- Local GeoTIFF raster inputs (for example, `data/usda_cdl.tif`).
+- Local climate CSV inputs (for example, `data/demo_climate.csv`).
 
 ## Quickstart
-
-1. Create a virtual environment and install the package plus docs dependencies.
-2. Preview the documentation locally:
 
 ```bash
 mkdocs serve
 ```
-
-3. Build the site with strict validation:
 
 ```bash
 mkdocs build --strict
@@ -27,9 +23,7 @@ mkdocs build --strict
 
 ## Documentation map
 
-- **Architecture** explains boundaries, run identity, and artifact contracts.
+- **Architecture** covers TerraFlow overview, boundaries, run identity, and artifact contracts.
 - **Config** describes the YAML schema and provides examples.
-- **CLI** covers running the pipeline from the command line.
-- **API Reference** is generated from the Python sources via `mkdocstrings`.
-
-If you're new to TerraFlow, start with the architecture overview and the configuration schema.
+- **CLI** explains how to run TerraFlow.
+- **API Reference** documents the core modules.
