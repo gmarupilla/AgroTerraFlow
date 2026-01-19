@@ -3,14 +3,16 @@
 Each run writes a consistent set of artifacts under:
 
 ```
-runs/<run_fingerprint>/
+outputs/<run_name>/
 ```
+
+For example, `output_dir: "outputs/demo_run"` yields `outputs/demo_run/results.csv`.
 
 ## Required outputs
 
 | File | Purpose |
 | --- | --- |
-| `features.parquet` | Tabular features generated for each sampled cell. |
+| `results.csv` | Tabular features and scores generated per sampled cell. |
 | `manifest.json` | Run metadata including configuration and input fingerprints. |
 | `report.json` | Summary statistics and model outputs for quick inspection. |
 
