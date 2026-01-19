@@ -24,7 +24,11 @@ theme:
 
 markdown_extensions:
   - admonition
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.details
   - pymdownx.tabbed
   - pymdownx.highlight
@@ -35,6 +39,7 @@ markdown_extensions:
 
 plugins:
   - search
+  - mermaid2
   - mkdocstrings:
       handlers:
         python:
