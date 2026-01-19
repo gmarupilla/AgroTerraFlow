@@ -47,7 +47,9 @@ def test_run_pipeline_with_synthetic_data(
     # Basic structural checks
     assert not df.empty
     assert len(df) <= 10
-    assert {"cell_id", "lat", "lon", "v_index", "score", "label"}.issubset(df.columns)
+    assert {"cell_id", "lat", "lon", "v_index", "score", "label"}.issubset(
+        df.columns,
+    )
 
     # Scores must be in [0, 1]
     assert df["score"].between(0.0, 1.0).all()
