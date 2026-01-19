@@ -33,7 +33,7 @@ For example, a demo configuration that sets `output_dir: "outputs/demo_run"` wil
 flowchart TD
   A[YAML config] --> C[terraflow.core]
   B[ROI bbox] --> C
-  D[Local GeoTIFF raster] --> E[Dataset resolution layer (future)]
+  D[Local GeoTIFF raster] --> E[Dataset resolution layer &#40future&#41]
   F[Local climate CSV] --> E
   E --> C
   C --> G[Compute run_fingerprint]

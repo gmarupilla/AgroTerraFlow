@@ -80,4 +80,5 @@ docs-serve:
 	$(PYTHON) -m mkdocs serve
 
 docs-build:
+	$(PIP) install -r docs/requirements.txt
 	$(PYTHON) -m mkdocs build --strict
