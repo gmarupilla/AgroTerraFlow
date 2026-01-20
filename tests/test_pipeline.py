@@ -11,7 +11,8 @@ def test_run_pipeline_with_synthetic_data(
 ):
     out_dir = tmp_path / "outputs"
 
-    cfg_content = textwrap.dedent(f"""
+    cfg_content = textwrap.dedent(
+        f"""
         raster_path: "{synthetic_raster}"
         climate_csv: "{synthetic_climate_csv}"
         output_dir: "{out_dir}"
@@ -35,7 +36,8 @@ def test_run_pipeline_with_synthetic_data(
           w_r: 0.3
 
         max_cells: 10
-        """)
+        """
+    )
 
     cfg_file = tmp_path / "cfg.yml"
     cfg_file.write_text(cfg_content, encoding="utf-8")
