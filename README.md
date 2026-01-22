@@ -21,7 +21,7 @@ Use TerraFlow to build, test, and publish reproducible agricultural analytics pi
 ## 🚀 Features
 
 * Modern Python package (`pyproject.toml`, PEP 621)
-* Fully pip-installable (`pip install terraflow-agro`)
+* Fully uv-installable (`uv pip install terraflow-agro`)
 * Reproducible CLI interface (`terraflow run --config <file>`)
 * Pydantic v2 configuration models
 * Extensible workflow architecture
@@ -36,7 +36,7 @@ Use TerraFlow to build, test, and publish reproducible agricultural analytics pi
 ## **Option 1: Install from PyPI (Recommended)**
 
 ```bash
-pip install terraflow-agro
+uv pip install terraflow-agro
 ```
 
 Verify installation:
@@ -65,8 +65,8 @@ make dev
 
 This runs:
 
-* `python -m venv .venv`
-* `pip install -e ".[dev]"`
+* `uv venv .venv`
+* `uv pip install --python .venv/bin/python -e ".[dev]"`
   (Using only `pyproject.toml` — no requirements.txt)
 
 ---
@@ -145,7 +145,7 @@ outputs/
 Install the docs dependencies and serve the site:
 
 ```bash
-pip install -r docs/requirements.txt
+uv pip install -r docs/requirements.txt
 mkdocs serve
 ```
 
