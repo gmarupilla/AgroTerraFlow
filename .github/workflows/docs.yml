@@ -27,13 +27,11 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v3
+
       - name: Create virtual environment
         run: make venv
-
-      - name: Install docs dependencies
-        run: |
-          ./.venv/bin/pip install --upgrade pip
-          ./.venv/bin/pip install -r docs/requirements.txt
 
       - name: Build site
         run: make docs-build

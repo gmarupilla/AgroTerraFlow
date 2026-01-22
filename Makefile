@@ -1,6 +1,6 @@
 # Variables
 PYTHON = .venv/bin/python
-PIP = .venv/bin/pip
+UV = uv
 RUFF = .venv/bin/ruff
 BLACK = .venv/bin/black
 
@@ -26,14 +26,13 @@ help:
 # ---------------------------
 
 venv:
-	python3 -m venv .venv
-	$(PIP) install --upgrade pip
+	$(UV) venv .venv
 
 install: venv
-	$(PIP) install -e .
+	$(UV) pip install --python $(PYTHON) -e .
 
 dev: venv
-	$(PIP) install -e ".[dev]"
+	$(UV) pip install --python $(PYTHON) -e ".[dev]"
 
 # ---------------------------
 # Testing & Running
@@ -50,7 +49,7 @@ run-demo:
 # ---------------------------
 
 build:
-	$(PIP) install --upgrade build
+	$(UV) pip install --python $(PYTHON) --upgrade build
 	$(PYTHON) -m build
 
 clean:
@@ -80,5 +79,5 @@ docs-serve:
 	$(PYTHON) -m mkdocs serve
 
 docs-build:
-	$(PIP) install -r docs/requirements.txt
+	$(UV) pip install --python $(PYTHON) -r docs/requirements.txt
 	$(PYTHON) -m mkdocs build --strict

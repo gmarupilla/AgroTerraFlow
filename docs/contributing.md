@@ -27,7 +27,7 @@ make lint
 Install docs dependencies and run a local preview:
 
 ```bash
-pip install -r docs/requirements.txt
+uv pip install -r docs/requirements.txt
 mkdocs serve
 ```
 

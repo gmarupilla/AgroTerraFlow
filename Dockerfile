@@ -3,7 +3,8 @@ FROM python:3.11-slim
 WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PATH="/root/.cargo/bin:${PATH}"
 
 # System dependencies for rasterio / GDAL
 RUN apt-get update && \
@@ -13,12 +14,13 @@ RUN apt-get update && \
         build-essential && \
     rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt ./
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+
+COPY pyproject.toml README.md ./
+COPY terraflow ./terraflow
+RUN uv pip install --system .
 
 # Copy library code and example config
-COPY terraflow ./terraflow
 COPY examples ./examples
 
 # Default entrypoint: run CLI; user passes --config or uses default CMD
