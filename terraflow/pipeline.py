@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import List, Dict
+import random
 
 import numpy as np
 import pandas as pd
@@ -35,12 +36,35 @@ def _aggregate_climate(climate_df: pd.DataFrame) -> Dict[str, float]:
 
 
 def run_pipeline(config_path: str | Path) -> pd.DataFrame:
-    """Run the end-to-end pipeline and return a DataFrame of results."""
+    """Run the end-to-end pipeline and return a DataFrame of results.
+    
+    Parameters
+    ----------
+    config_path:
+        Path to YAML configuration file.
+    
+    Returns
+    -------
+    pd.DataFrame:
+        Results table with columns: cell_id, lat, lon, v_index, mean_temp, 
+        total_rain, score, label.
+    
+    Raises
+    ------
+    FileNotFoundError:
+        If config file, raster file, or climate CSV does not exist.
+    ValueError:
+        If configuration is invalid or no valid raster cells found in ROI.
+    """
     cfg: PipelineConfig = load_config(config_path)
     logger.info("Loaded config from %s", config_path)
 
     raster = load_raster(cfg.raster_path)
-    climate_df = load_climate_csv(cfg.climate_csv)
+    try:
+        climate_df = load_climate_csv(cfg.climate_csv)
+    except Exception as e:
+        raster.close()
+        raise
 
     logger.info(
         "Loaded raster and climate data: %s, %s",
@@ -74,8 +98,14 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         raise ValueError("No valid raster cells found in the specified ROI")
 
     # Respect max_cells from config to avoid generating huge tables.
+    # Use random sampling for unbiased spatial representation (not just top-left corner).
     max_cells = min(cfg.max_cells, len(valid_indices))
-    sampled_indices = valid_indices[:max_cells]
+    sampled_indices = random.sample(valid_indices, max_cells)
+    logger.info(
+        "Sampled %d cells from %d valid cells in ROI",
+        max_cells,
+        len(valid_indices)
+    )
 
     records: List[Dict[str, float | int | str]] = []
 
@@ -108,6 +138,10 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
 
     df = pd.DataFrame.from_records(records)
 
+    # Ensure raster is closed to avoid resource leak
+    raster.close()
+    logger.info("Closed raster dataset")
+    
     out_dir = ensure_dir(cfg.output_dir)
     out_csv = out_dir / "results.csv"
     df.to_csv(out_csv, index=False)
