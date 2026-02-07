@@ -68,6 +68,8 @@ docker-run:
 		--config examples/demo_config.yml
 
 lint:
+	$(RUFF) check terraflow tests --fix
+	$(BLACK) terraflow tests
 	$(RUFF) check terraflow tests
 	$(BLACK) --check terraflow tests
 
