@@ -146,21 +146,22 @@ class ClimateInterpolator:
         if self.cell_id_column:
             exclude_cols.add(self.cell_id_column)
 
-        climate_cols = set(self.climate_df.columns) - exclude_cols
-
         if not required_cols.issubset(self.climate_df.columns):
             raise ValueError(
                 f"climate_df must have 'lat' and 'lon' columns. "
                 f"Found: {list(self.climate_df.columns)}"
             )
+        # Select numeric climate variable columns only (exclude ids/strings)
+        potential_cols = [c for c in self.climate_df.columns if c not in exclude_cols]
+        climate_numeric = [c for c in potential_cols if pd.api.types.is_numeric_dtype(self.climate_df[c])]
 
-        if len(climate_cols) == 0:
+        if len(climate_numeric) == 0:
             raise ValueError(
-                "climate_df must have at least one climate variable column "
+                "climate_df must have at least one numeric climate variable column "
                 "(beyond 'lat', 'lon', and optional cell_id_column)"
             )
 
-        self.climate_columns = list(climate_cols)
+        self.climate_columns = list(climate_numeric)
 
     def _validate_spatial_data(self) -> None:
         """Validate lat/lon coordinates for spatial strategy using pydantic patterns.

@@ -1,0 +1,73 @@
+{
+  "metadata": {
+    "location": "Manhattan, Riley County, Kansas",
+    "coordinates": {
+      "lat": 39.18,
+      "lon": -97.48
+    },
+    "timestamp": "2026-02-07T16:18:09.354598",
+    "terraflow_version": "0.2.0"
+  },
+  "raster": {
+    "path": "/Users/chandhini/akhil/TerraFlow/test_outputs/test_data/kansas_multiband.tif",
+    "shape": [
+      100,
+      100
+    ],
+    "bands": [
+      "NDVI",
+      "Elevation (m)",
+      "Soil Type",
+      "Land Cover"
+    ],
+    "ndvi_range": [
+      -0.2844800503236685,
+      1.0
+    ],
+    "elevation_range": [
+      250.0,
+      474.3725275307727
+    ],
+    "roi": {
+      "type": "bbox",
+      "xmin": -97.5,
+      "xmax": -97.46000000000001,
+      "ymin": 39.16,
+      "ymax": 39.2
+    }
+  },
+  "climate": {
+    "stations": 5,
+    "variables": [
+      "mean_temp",
+      "total_rain",
+      "humidity",
+      "wind_speed",
+      "pressure"
+    ],
+    "path": "/Users/chandhini/akhil/TerraFlow/test_outputs/test_data/kansas_climate_stations.csv",
+    "temperature_range": [
+      13.591576842195144,
+      16.627680130757895
+    ],
+    "rainfall_range": [
+      10.86719755342202,
+      33.142473325952736
+    ]
+  },
+  "tests": {
+    "config_validation": " PASSED",
+    "climate_loading": " PASSED",
+    "spatial_interpolation": " PASSED",
+    "index_matching": " PASSED",
+    "visualization": " PASSED"
+  },
+  "outputs": {
+    "raster_overview": "raster_bands_overview.png",
+    "climate_variables": "climate_variables.png",
+    "comparison": "climate_comparison_v0.1_vs_v0.2.0.png",
+    "spatial_results_csv": "climate_spatial_interpolation_results.csv",
+    "index_results_csv": "climate_index_matching_results.csv",
+    "weather_stations_csv": "weather_stations.csv"
+  }
+}

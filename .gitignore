@@ -104,6 +104,7 @@ ipython_config.py
 
 # Icon must end with two \r
 Icon
+tmp/*
 
 
 # Thumbnails
