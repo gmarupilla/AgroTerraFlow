@@ -26,7 +26,7 @@ help:
 # ---------------------------
 
 venv:
-	$(UV) venv .venv
+	$(UV) venv --clear .venv
 
 install: venv
 	$(UV) pip install --python $(PYTHON) -e .
