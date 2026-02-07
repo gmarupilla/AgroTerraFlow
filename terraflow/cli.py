@@ -25,18 +25,18 @@ Config file should be a YAML with keys: raster_path, climate_csv, roi, model_par
         type=Path,
         help="Path to YAML config file",
     )
-    
+
     try:
         args = parser.parse_args()
-        
+
         if not args.config.exists():
             parser.error(f"Config file not found: {args.config}")
             sys.exit(1)
-        
+
         logger.info(f"TerraFlow starting with config: {args.config}")
         run_pipeline(args.config)
         logger.info("TerraFlow completed successfully")
-        
+
     except FileNotFoundError as e:
         logger.error(f"File not found: {e}")
         print(f"ERROR: {e}", file=sys.stderr)

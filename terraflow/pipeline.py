@@ -37,18 +37,18 @@ def _aggregate_climate(climate_df: pd.DataFrame) -> Dict[str, float]:
 
 def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     """Run the end-to-end pipeline and return a DataFrame of results.
-    
+
     Parameters
     ----------
     config_path:
         Path to YAML configuration file.
-    
+
     Returns
     -------
     pd.DataFrame:
-        Results table with columns: cell_id, lat, lon, v_index, mean_temp, 
+        Results table with columns: cell_id, lat, lon, v_index, mean_temp,
         total_rain, score, label.
-    
+
     Raises
     ------
     FileNotFoundError:
@@ -62,7 +62,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     raster = load_raster(cfg.raster_path)
     try:
         climate_df = load_climate_csv(cfg.climate_csv)
-    except Exception as e:
+    except Exception:
         raster.close()
         raise
 
@@ -102,9 +102,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     max_cells = min(cfg.max_cells, len(valid_indices))
     sampled_indices = random.sample(valid_indices, max_cells)
     logger.info(
-        "Sampled %d cells from %d valid cells in ROI",
-        max_cells,
-        len(valid_indices)
+        "Sampled %d cells from %d valid cells in ROI", max_cells, len(valid_indices)
     )
 
     records: List[Dict[str, float | int | str]] = []
@@ -141,7 +139,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     # Ensure raster is closed to avoid resource leak
     raster.close()
     logger.info("Closed raster dataset")
-    
+
     out_dir = ensure_dir(cfg.output_dir)
     out_csv = out_dir / "results.csv"
     df.to_csv(out_csv, index=False)

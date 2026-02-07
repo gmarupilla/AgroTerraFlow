@@ -32,7 +32,7 @@ def load_raster(path: str | Path) -> DatasetReader:
     path = Path(path)
     if not path.exists():
         raise FileNotFoundError(f"Raster file not found: {path}")
-    
+
     try:
         dataset = rasterio.open(path)
         logger.info(f"Loaded raster from {path}")
@@ -67,12 +67,10 @@ def load_climate_csv(path: str | Path) -> pd.DataFrame:
     path = Path(path)
     if not path.exists():
         raise FileNotFoundError(f"Climate CSV file not found: {path}")
-    
+
     try:
         df = pd.read_csv(path)
         logger.info(f"Loaded climate CSV from {path} with {len(df)} rows")
         return df
     except pd.errors.ParserError as e:
-        raise pd.errors.ParserError(
-            f"Failed to parse CSV file {path}: {e}"
-        ) from e
+        raise pd.errors.ParserError(f"Failed to parse CSV file {path}: {e}") from e

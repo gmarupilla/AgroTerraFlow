@@ -15,11 +15,11 @@ def plot_suitability_scatter(
 ):
     """
     Create an interactive scatter map of suitability scores using Plotly.
-    
+
     Generates a Mapbox-based interactive scatter plot where each point represents
     a sampled location, colored by suitability score and sized proportionally.
     Uses OpenStreetMap tiles for context.
-    
+
     Parameters
     ----------
     df:
@@ -32,17 +32,17 @@ def plot_suitability_scatter(
         Name of the suitability score column (default 'score').
     output_html:
         Optional path to save the plot as an interactive HTML file.
-    
+
     Returns
     -------
     plotly.graph_objects.Figure:
         Interactive Plotly figure object.
-    
+
     Raises
     ------
     ValueError:
         If required columns are missing from the DataFrame.
-    
+
     Examples
     --------
     >>> df = pd.DataFrame({

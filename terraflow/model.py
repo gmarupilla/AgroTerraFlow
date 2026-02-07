@@ -10,11 +10,11 @@ def suitability_score(
 ) -> float:
     """
     Compute a simple suitability score in [0, 1].
-    
+
     Combines normalized vegetation index, temperature, and rainfall using
     weighted linear combination. All inputs are normalized to [0, 1] range
     based on the parameter min/max bounds, then combined using the weights.
-    
+
     Parameters
     ----------
     v_index:
@@ -25,12 +25,12 @@ def suitability_score(
         Total rainfall in millimeters.
     params:
         Model parameters containing min/max bounds and weights.
-    
+
     Returns
     -------
     float:
         Suitability score in [0, 1] range.
-    
+
     Notes
     -----
     - Out-of-range inputs are clipped to [0, 1] during normalization
@@ -48,17 +48,17 @@ def suitability_score(
 def suitability_label(score: float) -> str:
     """
     Bucket suitability score into qualitative labels.
-    
+
     Parameters
     ----------
     score:
         Suitability score in [0, 1] range.
-    
+
     Returns
     -------
     str:
         One of 'low', 'medium', or 'high' based on score thresholds.
-    
+
     Notes
     -----
     - 'low': score < 0.33

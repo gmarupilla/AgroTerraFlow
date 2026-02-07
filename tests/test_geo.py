@@ -79,7 +79,7 @@ def test_clip_invalid_roi_bounds_xmin_xmax(tmp_path: Path):
             "xmin": -99.98,  # greater than xmax
             "ymin": 39.97,
             "xmax": -100.0,
-            "ymax": 40.0
+            "ymax": 40.0,
         }
         with pytest.raises(ValueError) as exc_info:
             clip_raster_to_roi(src, roi)
@@ -94,7 +94,7 @@ def test_clip_invalid_roi_bounds_ymin_ymax(tmp_path: Path):
             "xmin": -100.0,
             "ymin": 40.0,  # greater than ymax
             "xmax": -99.98,
-            "ymax": 39.97
+            "ymax": 39.97,
         }
         with pytest.raises(ValueError) as exc_info:
             clip_raster_to_roi(src, roi)
@@ -109,7 +109,7 @@ def test_clip_equal_bounds_error(tmp_path: Path):
             "xmin": -100.0,
             "ymin": 40.0,
             "xmax": -100.0,  # equal to xmin
-            "ymax": 40.0
+            "ymax": 40.0,
         }
         with pytest.raises(ValueError):
             clip_raster_to_roi(src, roi)
@@ -118,12 +118,12 @@ def test_clip_equal_bounds_error(tmp_path: Path):
 def test_clip_preserves_masked_values(tmp_path: Path):
     """Test that masked values are preserved in clipped raster."""
     raster_path = tmp_path / "masked_raster.tif"
-    
+
     # Create raster with some masked values
     arr = np.arange(9, dtype="float32").reshape(3, 3)
     arr[1, 1] = -9999  # NoData value
     transform = from_origin(west=-100.0, north=40.0, xsize=0.01, ysize=0.01)
-    
+
     with rasterio.open(
         raster_path,
         "w",
@@ -137,14 +137,9 @@ def test_clip_preserves_masked_values(tmp_path: Path):
         nodata=-9999,
     ) as dst:
         dst.write(arr, 1)
-    
+
     with rasterio.open(raster_path) as src:
-        roi = {
-            "xmin": -100.0,
-            "ymin": 39.97,
-            "xmax": -99.98,
-            "ymax": 40.0
-        }
+        roi = {"xmin": -100.0, "ymin": 39.97, "xmax": -99.98, "ymax": 40.0}
         data, _ = clip_raster_to_roi(src, roi)
         # The masked array should properly handle NoData
         assert data is not None

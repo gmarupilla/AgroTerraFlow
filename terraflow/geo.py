@@ -41,8 +41,8 @@ def clip_raster_to_roi(
     """
     # Validate that band 1 exists
     if raster.count < 1:
-        raise ValueError(f"Raster has no bands. Cannot read band 1.")
-    
+        raise ValueError("Raster has no bands. Cannot read band 1.")
+
     # Validate ROI bounds
     if roi["xmin"] >= roi["xmax"] or roi["ymin"] >= roi["ymax"]:
         raise ValueError(
@@ -50,7 +50,7 @@ def clip_raster_to_roi(
             f"ymin={roi['ymin']}, ymax={roi['ymax']}. "
             f"Require xmin < xmax and ymin < ymax."
         )
-    
+
     # Default: read full raster
     full_data = raster.read(1, masked=True)
     full_transform = raster.transform
@@ -67,6 +67,7 @@ def clip_raster_to_roi(
     except (IndexError, ValueError) as e:
         # If ROI doesn't intersect raster, return full raster
         from .utils import logger
+
         logger.warning(
             f"ROI does not intersect raster or invalid bounds: {e}. "
             f"Returning full raster."
