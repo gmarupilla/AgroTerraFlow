@@ -1,6 +1,6 @@
 # Configuration Examples
 
-Below is a complete example configuration aligned with v0.1 expectations.
+Below is a complete example configuration aligned with v0.2.0 with spatial climate interpolation.
 
 ```yaml
 raster_path: "examples/sample_data/soil.tif"
@@ -22,11 +22,16 @@ model_params:
   w_v: 0.4
   w_t: 0.3
   w_r: 0.3
+climate:
+  strategy: spatial        # Spatial interpolation (default)
+  fallback_to_mean: true
 max_cells: 250
 ```
 
 ### Tips
 
-- Keep file paths local for v0.1 (no remote URIs).
+- Keep file paths local (relative or absolute paths supported).
+- Climate CSV must have `lat` and `lon` columns for spatial interpolation.
 - Adjust `max_cells` if you need to limit output size.
 - Use consistent units across raster and climate inputs.
+- See [Climate Configuration](schema.md#climate-configuration-v020--new-feature) for strategy options.

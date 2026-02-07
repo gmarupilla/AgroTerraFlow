@@ -448,15 +448,15 @@ print(f"Memory: {process.memory_info().rss / 1024 / 1024:.1f} MB")
 
 ## Release Checklist
 
-Before v0.2.0 release:
+Before v1.0 release:
 
 - [ ] All tests pass: `pytest tests/ -v`
 - [ ] Code formatted: `black terraflow/ tests/`
 - [ ] No lint errors: `ruff check terraflow/ tests/`
-- [ ] Coverage > 80%: `pytest --cov=terraflow tests/`
+- [ ] Coverage > 85%: `pytest --cov=terraflow tests/`
 - [ ] Update version in `__init__.py` and `pyproject.toml`
 - [ ] Update CHANGELOG.md in root
-- [ ] Create git tag: `git tag v0.2.0`
+- [ ] Create git tag: `git tag v1.0.0`
 - [ ] Push and create release on GitHub
 
 ---

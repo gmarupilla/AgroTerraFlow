@@ -8,7 +8,7 @@ audited with confidence.
 ## Inputs (v0.2.0)
 
 - YAML configuration file.
-- ROI boundary defined in the YAML (bbox in v0.1 examples).
+- ROI boundary defined in the YAML (bbox).
 - Local GeoTIFF raster input (for example, `data/usda_cdl.tif`).
 - Local climate CSV input with lat/lon coordinates (for example, `data/demo_climate.csv`) — **enhanced in v0.2.0 with spatial interpolation**.
 
@@ -72,7 +72,7 @@ TerraFlow treats geospatial correctness as a first-class concern:
 - **Coverage checks:** `report.json` summarizes nodata ratios and coverage statistics so runs can
   be audited for spatial completeness.
 
-## Non-goals (v0.1)
+## Non-goals (v0.2.0)
 
 - Remote dataset downloads or cloud-hosted sources.
 - A hosted platform, workflow engine, or orchestration service.

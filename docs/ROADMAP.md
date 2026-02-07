@@ -6,9 +6,9 @@ Last Updated: 2026-02-06
 
 This document outlines the strategic direction for TerraFlow development, organized by priority and implementation complexity. Features are grouped into three main tracks:
 
-1. **Stability & Quality** (In Progress)
-2. **Capability Expansion** (Planned for v1.0)
-3. **Production Features** (Future)
+1. **Stability & Quality** ✅ (COMPLETED)
+2. **Capability Expansion** ✅ (COMPLETED - v0.2.0 released)
+3. **Production Features** (Planned for v1.0)
 
 ---
 
@@ -46,7 +46,7 @@ Features completed in this phase improve reliability, testability, and maintaina
 ### ✅ Dependencies
 - [x] Remove unused imports (xarray, geopandas)
 - [x] Add version constraints for reproducibility
-- [x] Sync package version (0.1.5) across pyproject.toml and __init__.py
+- [x] Sync package version (0.2.0) across pyproject.toml and __init__.py
 
 ### ✅ Code Quality
 - [x] Fix spatial sampling bias (random.sample vs list slicing)
@@ -55,9 +55,20 @@ Features completed in this phase improve reliability, testability, and maintaina
 
 ---
 
-## Track 2: Capability Expansion (PLANNED FOR v1.0)
+## Track 2: Capability Expansion ✅ (COMPLETED IN v0.2.0)
 
 Features that add significant value while maintaining focus on agricultural modeling.
+
+### ✅ Enhanced Climate Data Support (v0.2.0)
+- [x] Per-cell climate interpolation using scipy.interpolate.griddata
+- [x] Spatial interpolation strategy for scattered weather stations
+- [x] Index-based matching strategy for pre-aligned data
+- [x] Graceful fallback to global mean for sparse/extrapolated data
+- [x] Coordinate validation with pydantic models (lat [-90,90], lon [-180,180])
+- [x] Comprehensive climate CSV validation and error messages
+- [x] 32 comprehensive tests for interpolation and edge cases
+- [x] Architecture Decision Record (ADR-003) for climate strategy
+- [x] Updated documentation with climate configuration examples
 
 ### 📌 Progress Tracking & Observability (Priority: HIGH)
 
@@ -87,31 +98,31 @@ Features that add significant value while maintaining focus on agricultural mode
 
 **Goal**: Support per-cell climate variation instead of single global average.
 
-#### Current Behavior
-- Loads climate CSV, takes mean of each column
-- Applies same values to all sampled cells
-- Ineffective for geographically diverse regions
+### 📌 Progress Tracking & Observability (Priority: HIGH - Planned for v1.0)
 
-#### Proposed Behavior
-- Accept climate CSV with same row count as cells
-- Match cells to climate records by index or ID
-- Or: Create spatial index (lat/lon) and interpolate climate for each cell
-- Fall back to global average if indices unavailable
+**Goal**: Users can monitor long-running jobs and understand what's happening.
 
 #### Features
-- **Index-based matching**: Cell ID → climate row
-- **Spatial interpolation**: Use cell lat/lon to interpolate climate
-- **Validation**: Check climate data covers all sampled cells
-- **Documentation**: Config examples for different climate formats
-
-**Implementation Files**: `ingest.py`, `pipeline.py`
-**Estimated Effort**: 8-10 hours
-**Tests Required**: Interpolation accuracy, edge cases (sparse data)
-**Dependencies**: `scipy` (optional, for interpolation)
+- **Progress bar**: Show sampling progress for large ROIs
+  - Display: `Sampling cells: [████████░░] 80/100`
+  - Use: `tqdm` library (optional dependency)
+  
+- **Runtime estimation**: Predict total time based on raster size
+  - Calculate in load phase before starting sampling
+  - Log: "Estimated time: 2.5 minutes for 10,000 cells"
+  
+- **Sampling statistics logging**:
+  - Valid cell count in ROI
+  - Sampling ratio (sampled / valid)
+  - Geographic extent statistics
+  
+**Implementation Files**: `pipeline.py`
+**Estimated Effort**: 4-6 hours
+**Tests Required**: Progress accuracy, timeout handling
 
 ---
 
-### 📌 Run Fingerprinting & Reproducibility (Priority: HIGH)
+### 📌 Run Fingerprinting & Reproducibility (Priority: HIGH - Planned for v1.0)
 
 **Goal**: Track inputs/outputs for reproducibility and auditing.
 
@@ -119,7 +130,7 @@ Features that add significant value while maintaining focus on agricultural mode
 - **Manifest file** (`manifest.json`):
   ```json
   {
-    "version": "0.1.5",
+    "version": "0.2.0",
     "timestamp": "2026-02-06T14:30:00Z",
     "config_hash": "sha256:abc123...",
     "raster_hash": "sha256:def456...",
@@ -140,23 +151,6 @@ Features that add significant value while maintaining focus on agricultural mode
 **Tests Required**: Hash consistency, manifest validation
 
 ---
-
-### 📌 Large Raster Optimization (Priority: MEDIUM)
-
-**Goal**: Handle multi-gigabyte rasters without OOM (out of memory).
-
-#### Current Limitations
-- Loads entire clipped raster into memory: `raster.read(1, masked=True)`
-- Valid cell collection is O(n) memory
-- DataFrame creation loads all results
-
-#### Proposed Features
-- **Streaming reads**: Process raster in chunks/windows
-- **Iterative sampling**: Don't pre-compute all valid cells
-- **Parquet output**: Write results incrementally to disk (vs CSV)
-- **Lazy evaluation**: Yield results rather than accumulate
-
-#### Implementation Strategy
 1. Keep rasterio window-based reads
 2. Process in overlapping windows with stride
 3. Write batches to parquet file

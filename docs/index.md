@@ -3,13 +3,14 @@
 TerraFlow is a reproducible geospatial modeling framework for agricultural and environmental analysis.
 Start with the [TerraFlow Overview](architecture/overview.md) to understand the core pipeline and contracts.
 
-## v0.1 scope
+## v0.2.0 Features
 
-TerraFlow v0.1 is local-first and assumes:
+**TerraFlow v0.2.0** is local-first with spatial climate interpolation:
 
-- ROI boundaries defined in YAML (bbox in v0.1 examples).
+- ROI boundaries defined in YAML (bbox).
 - Local GeoTIFF raster inputs (for example, `data/usda_cdl.tif`).
-- Local climate CSV inputs (for example, `data/demo_climate.csv`).
+- Local climate CSV inputs with lat/lon coordinates for spatial interpolation (for example, `data/demo_climate.csv`).
+- **Per-cell climate values** using configurable strategies (spatial interpolation or index-based matching).
 
 ## Quickstart
 

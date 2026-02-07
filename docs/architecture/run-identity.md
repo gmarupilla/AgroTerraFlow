@@ -1,6 +1,6 @@
 # Run Identity
 
-Every pipeline execution is identified by a deterministic `run_fingerprint`. In v0.1 it is computed as:
+Every pipeline execution is identified by a deterministic `run_fingerprint`. In v0.2.0 it is computed as:
 
 ```
 run_fingerprint = hash(canonical_config + roi_hash + input_fingerprints)
@@ -9,7 +9,7 @@ run_fingerprint = hash(canonical_config + roi_hash + input_fingerprints)
 Where:
 
 - **canonical_config** is the normalized configuration with sorted keys and resolved paths.
-- **roi_hash** represents the ROI geometry (bbox in v0.1).
+- **roi_hash** represents the ROI geometry (bbox).
 - **input_fingerprints** capture file hashes for raster and climate inputs.
 
 ## Why deterministic fingerprints matter

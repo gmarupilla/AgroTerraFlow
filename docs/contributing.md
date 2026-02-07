@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping improve TerraFlow! Here are the basics for v0.1.
+Thanks for helping improve TerraFlow! Here are the basics for v0.2.0+.
 
 ## Local setup
 

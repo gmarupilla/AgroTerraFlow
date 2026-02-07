@@ -10,7 +10,7 @@ It is validated with Pydantic v2 and rejects unknown fields. Geographic coordina
 | `raster_path` | string | Path to the input raster (GeoTIFF). |
 | `climate_csv` | string | Path to the climate CSV (must have `lat`, `lon`, and climate variable columns). |
 | `output_dir` | string | Directory to write run outputs. |
-| `roi` | object | Region of interest definition (bbox only in v0.1). |
+| `roi` | object | Region of interest definition (bbox supported). |
 | `model_params` | object | Parameters for suitability scoring. |
 | `climate` | object | Climate data handling configuration (optional, defaults to spatial interpolation). |
 | `max_cells` | integer | Maximum cells sampled from the ROI (default: 500). |
