@@ -54,6 +54,7 @@ nav:
       - TerraFlow Overview: architecture/overview.md
       - ADR-001 Band Selection: architecture/adr-001-band-selection.md
       - ADR-002 BBox ROI: architecture/adr-002-bbox-roi.md
+      - ADR-003 Climate Interpolation: architecture/adr-003-climate-interpolation.md
       - Boundaries: architecture/boundaries.md
       - Run Identity: architecture/run-identity.md
       - Artifact Contract: architecture/artifacts.md

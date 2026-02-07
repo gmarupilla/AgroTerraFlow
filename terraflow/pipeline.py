@@ -10,12 +10,16 @@ from .config import PipelineConfig, load_config
 from .ingest import load_raster, load_climate_csv
 from .geo import clip_raster_to_roi
 from .model import suitability_score, suitability_label
+from .climate import ClimateInterpolator
 from .utils import ensure_dir, logger
 
 
 def _aggregate_climate(climate_df: pd.DataFrame) -> Dict[str, float]:
     """
-    Aggregate climate data into simple summary statistics.
+    Aggregate climate data into simple summary statistics (deprecated).
+
+    .. deprecated::
+        Use ClimateInterpolator instead for per-cell climate values.
 
     For now, we use the overall mean temperature and total rainfall.
     This keeps the logic transparent while avoiding hardcoded constants.
@@ -37,6 +41,9 @@ def _aggregate_climate(climate_df: pd.DataFrame) -> Dict[str, float]:
 
 def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     """Run the end-to-end pipeline and return a DataFrame of results.
+
+    Uses spatially-aware climate data matching to apply per-cell climate values
+    based on the configured strategy (spatial interpolation or index-based matching).
 
     Parameters
     ----------
@@ -79,8 +86,16 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     )
     logger.info("Clipped raster to ROI")
 
-    # Aggregate climate information once; apply the same summary to all sampled cells.
-    climate_summary = _aggregate_climate(climate_df)
+    # Initialize climate interpolator with configured strategy
+    interpolator = ClimateInterpolator(
+        climate_df=climate_df,
+        strategy=cfg.climate.strategy,
+        cell_id_column=cfg.climate.cell_id_column,
+        fallback_to_mean=cfg.climate.fallback_to_mean,
+    )
+    logger.info(
+        "Initialized climate interpolator with strategy='%s'", cfg.climate.strategy
+    )
 
     rows: int
     cols: int
@@ -105,18 +120,39 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         "Sampled %d cells from %d valid cells in ROI", max_cells, len(valid_indices)
     )
 
+    # Pre-compute geographic coordinates for all sampled cells
+    cell_lats = []
+    cell_lons = []
+    for row, col in sampled_indices:
+        x, y = xy(clipped_transform, row, col, offset="center")
+        cell_lats.append(y)
+        cell_lons.append(x)
+
+    # Interpolate climate values for all cells at once
+    cell_climate_df = interpolator.interpolate(np.array(cell_lats), np.array(cell_lons))
+    logger.info(
+        "Interpolated climate for %d cells using strategy='%s'",
+        len(sampled_indices),
+        cfg.climate.strategy,
+    )
+
     records: List[Dict[str, float | int | str]] = []
 
     for cell_id, (row, col) in enumerate(sampled_indices):
         v_index = float(clipped_data[row, col])
 
-        # Convert row/col to geographic coordinates using the clipped transform.
-        x, y = xy(clipped_transform, row, col, offset="center")
+        # Get pre-computed geographic coordinates
+        lat = cell_lats[cell_id]
+        lon = cell_lons[cell_id]
+
+        # Get per-cell climate values from interpolator
+        mean_temp = float(cell_climate_df.iloc[cell_id]["mean_temp"])
+        total_rain = float(cell_climate_df.iloc[cell_id]["total_rain"])
 
         score = suitability_score(
             v_index=v_index,
-            mean_temp=climate_summary["mean_temp"],
-            total_rain=climate_summary["total_rain"],
+            mean_temp=mean_temp,
+            total_rain=total_rain,
             params=cfg.model_params,
         )
         label = suitability_label(score)
@@ -124,11 +160,11 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         records.append(
             {
                 "cell_id": cell_id,
-                "lat": y,
-                "lon": x,
+                "lat": lat,
+                "lon": lon,
                 "v_index": v_index,
-                "mean_temp": climate_summary["mean_temp"],
-                "total_rain": climate_summary["total_rain"],
+                "mean_temp": mean_temp,
+                "total_rain": total_rain,
                 "score": score,
                 "label": label,
             }

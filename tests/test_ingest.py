@@ -85,15 +85,22 @@ class TestLoadClimateCSV:
     """Tests for load_climate_csv function."""
 
     def test_load_valid_csv(self, tmp_path: Path):
-        """Test loading a valid climate CSV."""
+        """Test loading a valid climate CSV with lat/lon."""
         csv_path = tmp_path / "climate.csv"
         df = pd.DataFrame(
-            {"mean_temp": [15.0, 16.0, 14.5], "total_rain": [100.0, 110.0, 95.0]}
+            {
+                "lat": [40.0, 40.1, 40.2],
+                "lon": [-74.0, -74.1, -74.2],
+                "mean_temp": [15.0, 16.0, 14.5],
+                "total_rain": [100.0, 110.0, 95.0],
+            }
         )
         df.to_csv(csv_path, index=False)
 
         loaded_df = load_climate_csv(csv_path)
         assert len(loaded_df) == 3
+        assert "lat" in loaded_df.columns
+        assert "lon" in loaded_df.columns
         assert "mean_temp" in loaded_df.columns
         assert "total_rain" in loaded_df.columns
 
@@ -118,20 +125,26 @@ class TestLoadClimateCSV:
     def test_load_empty_csv(self, tmp_path: Path):
         """Test loading empty CSV file."""
         csv_path = tmp_path / "empty.csv"
-        df = pd.DataFrame({"mean_temp": [], "total_rain": []})
+        df = pd.DataFrame({"lat": [], "lon": [], "mean_temp": [], "total_rain": []})
         df.to_csv(csv_path, index=False)
 
-        loaded_df = load_climate_csv(csv_path)
-        assert len(loaded_df) == 0
+        with pytest.raises(ValueError, match="is empty"):
+            load_climate_csv(csv_path)
 
     def test_load_csv_with_extra_columns(self, tmp_path: Path):
         """Test loading CSV with extra columns beyond required ones."""
         csv_path = tmp_path / "climate_extra.csv"
         df = pd.DataFrame(
-            {"mean_temp": [15.0], "total_rain": [100.0], "extra_col": ["value"]}
+            {
+                "lat": [40.0],
+                "lon": [-74.0],
+                "mean_temp": [15.0],
+                "total_rain": [100.0],
+                "extra_col": ["value"],
+            }
         )
         df.to_csv(csv_path, index=False)
 
         loaded_df = load_climate_csv(csv_path)
         assert len(loaded_df) == 1
-        assert len(loaded_df.columns) == 3
+        assert len(loaded_df.columns) == 5

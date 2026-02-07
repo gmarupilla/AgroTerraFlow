@@ -8,7 +8,7 @@
 It provides:
 
 * 🌾 **Geospatial preprocessing** (rasters, vectors, ROI clipping)
-* 🌦 **Climate data integration**
+* 🌦 **Spatially-aware climate data** (per-cell interpolation with fallback strategies)
 * 📦 **Config-driven model execution**
 * 🐍 **Python package + CLI (`terraflow run`)**
 * 🐳 **Docker workflow support**
@@ -135,6 +135,46 @@ Your results will appear in:
 ```
 outputs/
 ```
+
+---
+
+# 🌦️ Climate Data Integration (v0.2+)
+
+TerraFlow now supports **per-cell climate data** with two interpolation strategies:
+
+### Spatial Interpolation (Recommended)
+For climate data with geographic coordinates (weather stations, satellite grids):
+
+```yaml
+climate:
+  strategy: spatial          # Interpolate using scipy.griddata
+  fallback_to_mean: true     # Use global mean for extrapolated cells
+```
+
+**Benefits:**
+- ✅ Works with arbitrary observation locations
+- ✅ Smooth spatial gradients across your ROI
+- ✅ Graceful handling of sparse data
+
+### Index-Based Matching
+For pre-aligned climate data (one row per cell):
+
+```yaml
+climate:
+  strategy: index            # Direct row-to-cell matching
+  fallback_to_mean: true     # Use mean for mismatched counts
+```
+
+**Climate CSV Format:**
+Your climate CSV must have `lat`, `lon`, and climate variables:
+
+```csv
+lat,lon,mean_temp,total_rain
+34.05,-118.24,22.5,250.0
+34.10,-118.19,23.1,260.0
+```
+
+See [Climate Configuration](docs/config/schema.md#climate-configuration-v02) and [ADR-003](docs/architecture/adr-003-climate-interpolation.md) for details.
 
 ---
 
