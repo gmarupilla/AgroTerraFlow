@@ -46,6 +46,6 @@ TerraFlow currently processes only **Band 1** from any input raster. This is enf
 
 ## References
 
-- [Band validation in geo.py](../../terraflow/geo.py#L19-L21)
-- [Usage in pipeline.py](../../terraflow/pipeline.py#L56)
-- [Config schema](../../docs/config/schema.md)
+- Band validation in geo.py (see terraflow/geo.py)
+- Usage in pipeline.py (see terraflow/pipeline.py)
+- [Config schema](../config/schema.md)

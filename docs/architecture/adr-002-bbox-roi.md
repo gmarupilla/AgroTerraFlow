@@ -55,7 +55,7 @@ When users need polygon-based ROI:
 
 ## References
 
-- [ROI specification in config.py](../../terraflow/config.py#L60-L75)
-- [Clipping implementation in geo.py](../../terraflow/geo.py#L8-L55)
-- [Config schema documentation](../../docs/config/schema.md)
-- [Architecture overview](./overview.md)
+- ROI specification in config.py (see terraflow/config.py)
+- Clipping implementation in geo.py (see terraflow/geo.py)
+- [Config schema documentation](../config/schema.md)
+- [Architecture overview](overview.md)

@@ -185,7 +185,7 @@ Features that add significant value while maintaining focus on agricultural mode
 **Implementation Files**: `config.py`, `geo.py`, `model.py`
 **Estimated Effort**: 10-12 hours
 **Tests Required**: Band validation, multi-band aggregation
-**Related ADR**: See [adr-001-band-selection.md](./docs/architecture/adr-001-band-selection.md)
+**Related ADR**: See [adr-001-band-selection.md](architecture/adr-001-band-selection.md)
 
 ---
 
@@ -213,7 +213,7 @@ Features that add significant value while maintaining focus on agricultural mode
 **Estimated Effort**: 10-14 hours
 **Tests Required**: Polygon accuracy, rasterization edge cases
 **Dependencies**: `fiona` or `geopandas` (optional)
-**Related ADR**: See [adr-002-bbox-roi.md](./docs/architecture/adr-002-bbox-roi.md)
+**Related ADR**: See [adr-002-bbox-roi.md](architecture/adr-002-bbox-roi.md)
 
 ---
 
@@ -336,7 +336,7 @@ For new features, consider:
 
 ## References
 
-- [Architecture Overview](./docs/architecture/overview.md)
-- [ADR-001: Band Selection](./docs/architecture/adr-001-band-selection.md)
-- [ADR-002: ROI Type](./docs/architecture/adr-002-bbox-roi.md)
-- [Configuration Schema](./docs/config/schema.md)
+- [Architecture Overview](architecture/overview.md)
+- [ADR-001: Band Selection](architecture/adr-001-band-selection.md)
+- [ADR-002: ROI Type](architecture/adr-002-bbox-roi.md)
+- [Configuration Schema](config/schema.md)

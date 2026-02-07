@@ -52,6 +52,8 @@ nav:
   - Home: index.md
   - Architecture:
       - TerraFlow Overview: architecture/overview.md
+      - ADR-001 Band Selection: architecture/adr-001-band-selection.md
+      - ADR-002 BBox ROI: architecture/adr-002-bbox-roi.md
       - Boundaries: architecture/boundaries.md
       - Run Identity: architecture/run-identity.md
       - Artifact Contract: architecture/artifacts.md
@@ -63,4 +65,6 @@ nav:
   - API Reference:
       - terraflow.core: api/core.md
       - terraflow.ingest: api/ingest.md
+  - Development: DEVELOPMENT.md
+  - Roadmap: ROADMAP.md
   - Contributing: contributing.md

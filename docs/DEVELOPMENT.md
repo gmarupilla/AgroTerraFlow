@@ -238,9 +238,9 @@ pytest tests/test_new_feature.py -v
 ### Step 4: Add Documentation
 
 - Add docstring examples
-- Update [ROADMAP.md](./docs/ROADMAP.md) if feature is user-facing
+- Update [ROADMAP.md](ROADMAP.md) if feature is user-facing
 - Create Architecture Decision Record if architectural change
-- Update [README.md](../../README.md) if public API change
+- Update README.md in root if public API change
 
 ### Step 5: Commit and Submit PR
 
@@ -455,7 +455,7 @@ Before v0.2.0 release:
 - [ ] No lint errors: `ruff check terraflow/ tests/`
 - [ ] Coverage > 80%: `pytest --cov=terraflow tests/`
 - [ ] Update version in `__init__.py` and `pyproject.toml`
-- [ ] Update [CHANGELOG.md](../../CHANGELOG.md)
+- [ ] Update CHANGELOG.md in root
 - [ ] Create git tag: `git tag v0.2.0`
 - [ ] Push and create release on GitHub
 
@@ -465,8 +465,8 @@ Before v0.2.0 release:
 
 - **GitHub Issues**: Report bugs and ask questions
 - **Discussions**: Feature ideas and design discussions
-- **Documentation**: See [docs/](./docs/) for detailed guides
-- **Architecture**: See [ADRs](./docs/architecture/) for design decisions
+- **Documentation**: See guides for [Architecture](architecture/overview.md), [Configuration](config/schema.md), and [API](api/core.md)
+- **Architecture**: See [ADR-001](architecture/adr-001-band-selection.md) and [ADR-002](architecture/adr-002-bbox-roi.md) for design decisions
 
 ---
 
