@@ -1,5 +1,5 @@
 site_name: TerraFlow
-site_description: Reproducible geospatial modeling framework for agricultural & environmental research
+site_description: Reproducible geospatial modeling with spatial climate interpolation (v0.2.0)
 repo_url: https://github.com/gmarupilla/AgroTerraFlow
 
 theme:
@@ -66,6 +66,7 @@ nav:
   - API Reference:
       - terraflow.core: api/core.md
       - terraflow.ingest: api/ingest.md
+      - terraflow.climate: api/climate.md
   - Development: DEVELOPMENT.md
   - Roadmap: ROADMAP.md
   - Contributing: contributing.md

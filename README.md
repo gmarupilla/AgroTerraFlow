@@ -4,11 +4,11 @@
 [![CI](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/gmarupilla/AgroTerraFlow/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-**TerraFlow** is a reproducible, open-source geospatial workflow framework for agricultural modeling.
+**TerraFlow v0.2.0** is a reproducible, open-source geospatial workflow framework for agricultural modeling.
 It provides:
 
 * 🌾 **Geospatial preprocessing** (rasters, vectors, ROI clipping)
-* 🌦 **Spatially-aware climate data** (per-cell interpolation with fallback strategies)
+* 🌦️ **Spatially-aware climate data** (per-cell spatial interpolation with fallback strategies) — **NEW in v0.2.0**
 * 📦 **Config-driven model execution**
 * 🐍 **Python package + CLI (`terraflow run`)**
 * 🐳 **Docker workflow support**
@@ -23,7 +23,8 @@ Use TerraFlow to build, test, and publish reproducible agricultural analytics pi
 * Modern Python package (`pyproject.toml`, PEP 621)
 * Fully uv-installable (`uv pip install terraflow-agro`)
 * Reproducible CLI interface (`terraflow run --config <file>`)
-* Pydantic v2 configuration models
+* Pydantic v2 configuration models with geographic coordinate validation — **enhanced in v0.2.0**
+* Spatial interpolation using scipy.interpolate.griddata — **new in v0.2.0**
 * Extensible workflow architecture
 * Example data + demo config
 * Makefile automation for dev/test/build/release

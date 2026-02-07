@@ -1,7 +1,7 @@
 # Configuration Schema
 
-TerraFlow v0.2+ uses a single YAML configuration file that maps to the `PipelineConfig` model.
-It is validated with Pydantic and rejects unknown fields.
+TerraFlow v0.2.0 uses a single YAML configuration file that maps to the `PipelineConfig` model.
+It is validated with Pydantic v2 and rejects unknown fields. Geographic coordinates are validated with custom pydantic field validators.
 
 ## Top-level fields
 
@@ -41,21 +41,40 @@ model_params:
   w_r: 0.3
 ```
 
-## Climate configuration (v0.2+)
+## Climate configuration (v0.2.0 — New feature)
 
-Climate data is now applied per-cell using configurable interpolation strategies.
+Climate data is now applied **per-cell** using configurable interpolation strategies. This replaces the global mean approach from v0.1.
+
+### Strategy 1: Spatial Interpolation (Recommended)
+
+Use scipy.interpolate.griddata for linear interpolation with nearest-neighbor fallback. Best for scattered weather station data.
 
 ```yaml
-# Option 1: Spatial interpolation (default, recommended for point data)
 climate:
-  strategy: spatial
-  fallback_to_mean: true
+  strategy: spatial        # Linear interpolation with nearest-neighbor fallback
+  fallback_to_mean: true  # Use global mean for cells outside interpolation range
+```
 
-# Option 2: Index-based matching (for pre-aligned data)
+### Strategy 2: Index-Based Matching
+
+Match climate records to cells by row order or explicit cell ID. Best for pre-aligned data.
+
+```yaml
 climate:
   strategy: index
-  cell_id_column: null  # optional: column name for explicit cell ID matching
-  fallback_to_mean: true
+  cell_id_column: null    # Optional: column name for explicit cell ID matching
+  fallback_to_mean: true  # Use global mean when climate data is shorter than cell count
+```
+
+### Climate CSV Format (Required)
+
+Must include `lat` and `lon` columns with valid coordinates [-90°, 90°] and [-180°, 180°]:
+
+```csv
+lat,lon,mean_temp,total_rain
+40.005,-100.005,22.5,650
+40.015,-99.995,23.1,680
+40.025,-99.985,21.8,620
 ```
 
 ### Climate CSV Format

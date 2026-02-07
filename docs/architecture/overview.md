@@ -5,14 +5,14 @@ traceable, analysis-ready artifacts. The core pipeline focuses on deterministic 
 region-of-interest (ROI) geographies and raster stacks so that every run can be recreated and
 audited with confidence.
 
-## Inputs (v0.1)
+## Inputs (v0.2.0)
 
 - YAML configuration file.
 - ROI boundary defined in the YAML (bbox in v0.1 examples).
 - Local GeoTIFF raster input (for example, `data/usda_cdl.tif`).
-- Local climate CSV input (for example, `data/demo_climate.csv`).
+- Local climate CSV input with lat/lon coordinates (for example, `data/demo_climate.csv`) — **enhanced in v0.2.0 with spatial interpolation**.
 
-## Outputs (v0.1 stable contract)
+## Outputs (v0.2.0 stable contract)
 
 All outputs are written under a deterministic run directory:
 
@@ -20,7 +20,7 @@ All outputs are written under a deterministic run directory:
 outputs/<run_name>/
 ```
 
-- `results.csv`: extracted features and scores per sampled cell.
+- `results.csv`: extracted features and scores per sampled cell (now with **per-cell climate values in v0.2.0**).
 - `manifest.json`: canonicalized inputs, file fingerprints, and provenance metadata.
 - `report.json`: QA summaries, timing, and coverage statistics.
 
