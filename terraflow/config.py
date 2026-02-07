@@ -106,6 +106,50 @@ class ROI(BaseModel):
             raise ValueError(f"ymin ({self.ymin}) must be less than ymax ({self.ymax})")
 
 
+class ClimateConfig(BaseModel):
+    """Climate data configuration for spatial matching and interpolation.
+
+    Supports two strategies for aligning climate observations to raster cells:
+    - 'spatial': Interpolate climate values using geographic coordinates (lat/lon).
+    - 'index': Match cells to climate records by row index or explicit cell ID.
+
+    Attributes
+    ----------
+    strategy:
+        Matching strategy: 'spatial' (interpolation) or 'index' (direct matching).
+    cell_id_column:
+        Column name in climate CSV for cell ID (used with 'index' strategy).
+        If None with 'index' strategy, uses row order matching.
+    fallback_to_mean:
+        If True, use global mean climate for cells outside interpolation range
+        or when climate data is sparse (default True).
+    """
+
+    strategy: Literal["spatial", "index"] = "spatial"
+    cell_id_column: str | None = None
+    fallback_to_mean: bool = True
+
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("strategy")
+    @classmethod
+    def validate_strategy(cls, v: str) -> str:
+        """Ensure strategy is valid."""
+        if v not in ("spatial", "index"):
+            raise ValueError(f"strategy must be 'spatial' or 'index', got '{v}'")
+        return v
+
+    def validate_config(self) -> None:
+        """Validate consistency of climate configuration."""
+        if self.strategy == "index" and self.cell_id_column is not None:
+            # cell_id_column is optional; OK to have it
+            pass
+        elif self.strategy == "spatial" and self.cell_id_column is not None:
+            # cell_id_column not used in spatial strategy
+            pass
+        # No conflicting configurations
+
+
 class PipelineConfig(BaseModel):
     """Top-level pipeline configuration.
 
@@ -121,6 +165,8 @@ class PipelineConfig(BaseModel):
         Region of interest specification.
     model_params:
         Suitability model parameters.
+    climate:
+        Climate data configuration (strategy, fallback behavior, etc.).
     max_cells:
         Maximum number of cells to sample from the ROI (default 500).
     """
@@ -130,6 +176,7 @@ class PipelineConfig(BaseModel):
     output_dir: Path
     roi: ROI
     model_params: ModelParams
+    climate: ClimateConfig = ClimateConfig()  # Default: spatial strategy with fallback
     max_cells: int = 500  # maximum number of cells to sample from the ROI
 
     model_config = ConfigDict(extra="forbid")
@@ -146,6 +193,7 @@ class PipelineConfig(BaseModel):
         """Validate all constraints. Call after model initialization."""
         self.roi.validate_bounds()
         self.model_params.validate_ranges()
+        self.climate.validate_config()
 
 
 def load_config(path: str | Path) -> PipelineConfig:

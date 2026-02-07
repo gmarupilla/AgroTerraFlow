@@ -1,3 +1,7 @@
 {
-    "makefile.configureOnOpen": true
+    "makefile.configureOnOpen": true,
+    "chat.tools.terminal.autoApprove": {
+        "make": true,
+        ".venv/bin/ruff": true
+    }
 }

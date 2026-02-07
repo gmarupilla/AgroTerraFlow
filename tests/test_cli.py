@@ -84,8 +84,15 @@ max_cells: 10
     ) as dst:
         dst.write(arr, 1)
 
-    # Create climate CSV
-    climate_df = pd.DataFrame({"mean_temp": [15.0], "total_rain": [100.0]})
+    # Create climate CSV (with lat/lon for spatial interpolation)
+    climate_df = pd.DataFrame(
+        {
+            "lat": [39.995, 40.005, 40.015],
+            "lon": [-100.005, -99.995, -99.985],
+            "mean_temp": [15.0, 16.0, 17.0],
+            "total_rain": [100.0, 110.0, 120.0],
+        }
+    )
     climate_df.to_csv(data_dir / "climate.csv", index=False)
 
     # Run CLI
