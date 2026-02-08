@@ -31,7 +31,8 @@ dev = [
   "pytest>=7.0",
   "pytest-cov>=3.0",
   "ruff",
-  "black"
+  "black",
+  "marimo>=0.19"
 ]
 
 [project.urls]
