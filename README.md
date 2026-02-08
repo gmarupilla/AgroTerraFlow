@@ -18,7 +18,7 @@ It provides:
 * Docker workflow support
 * JOSS-compatible research workflow and manuscript
 * Comprehensive test suite (33+ tests) with 100% pass rate
-* Interactive Marimo notebooks for testing and visualization
+* Interactive Jupyter notebooks for testing and visualization
 * Architecture Decision Records (ADRs) for design documentation
 
 Use TerraFlow to build, test, and publish reproducible agricultural analytics pipelines.
@@ -34,10 +34,10 @@ Use TerraFlow to build, test, and publish reproducible agricultural analytics pi
 * Extensible workflow architecture with clean separation of concerns
 
 **Development & Testing:**
-* Comprehensive test suite with pytest (33+ tests across 12 test files)
+* Comprehensive test suite with pytest (33+ tests across 10 test files)
 * Linting with ruff and black
 * Makefile automation for dev/test/build/release workflows
-* Interactive Marimo notebooks for comprehensive testing
+* Interactive Jupyter notebooks for comprehensive testing
 * Example data and demo configurations
 
 **CI/CD & Documentation:**
@@ -108,6 +108,7 @@ AgroTerraFlow/
 │
 ├── tests/                     # Comprehensive test suite (33+ tests)
 │   ├── conftest.py            # Pytest configuration and fixtures
+│   ├── smoke_test.py          # Smoke tests
 │   ├── test_cli.py            # CLI tests
 │   ├── test_climate.py        # Climate interpolation tests
 │   ├── test_config.py         # Configuration validation tests
@@ -124,11 +125,13 @@ AgroTerraFlow/
 │   ├── cli/                   # CLI usage guide
 │   ├── config/                # Configuration schema and examples
 │   ├── notebooks/             # Rendered notebook documentation
+│   ├── contributing.md        # Contribution guidelines
 │   ├── DEVELOPMENT.md         # Development guide
 │   ├── ROADMAP.md             # Feature roadmap
 │   └── index.md               # Documentation homepage
 │
-├── notebooks/                 # Interactive Marimo notebooks
+├── notebooks/                 # Interactive Jupyter notebooks
+│   ├── README.md              # Notebook documentation
 │   └── terraflow_v0.2.0_comprehensive_test.ipynb
 │
 ├── examples/
@@ -303,13 +306,13 @@ The test suite covers:
 
 ### Interactive Testing
 
-Use the Marimo notebook for interactive testing and exploration:
+Use the Jupyter notebook for interactive testing and exploration:
 
 ```bash
-marimo edit notebooks/terraflow_v0.2.0_comprehensive_test.ipynb
+jupyter notebook notebooks/terraflow_v0.2.0_comprehensive_test.ipynb
 ```
 
-Or run the standalone test script:
+The repository also includes a Marimo-compatible Python script:
 
 ```bash
 python terraflow_v0_2_0_comprehensive_test.py
