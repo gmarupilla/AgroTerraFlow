@@ -18,7 +18,7 @@ It provides:
 * Docker workflow support
 * JOSS-compatible research workflow and manuscript
 * Comprehensive test suite (33+ tests) with 100% pass rate
-* Interactive Jupyter notebooks for testing and visualization
+* Interactive Jupyter notebook for testing and visualization
 * Architecture Decision Records (ADRs) for design documentation
 
 Use TerraFlow to build, test, and publish reproducible agricultural analytics pipelines.
@@ -37,7 +37,7 @@ Use TerraFlow to build, test, and publish reproducible agricultural analytics pi
 * Comprehensive test suite with pytest (33+ tests across 10 test files)
 * Linting with ruff and black
 * Makefile automation for dev/test/build/release workflows
-* Interactive Jupyter notebooks for comprehensive testing
+* Interactive Jupyter notebook for comprehensive testing
 * Example data and demo configurations
 
 **CI/CD & Documentation:**
@@ -306,13 +306,13 @@ The test suite covers:
 
 ### Interactive Testing
 
-Use the Jupyter notebook for interactive testing and exploration:
+Use the comprehensive Jupyter notebook for interactive testing and exploration:
 
 ```bash
 jupyter notebook notebooks/terraflow_v0.2.0_comprehensive_test.ipynb
 ```
 
-The repository also includes a Marimo-compatible Python script:
+The repository also includes a Marimo-compatible Python script in the root directory:
 
 ```bash
 python terraflow_v0_2_0_comprehensive_test.py
