@@ -1,40 +1,61 @@
-# **TerraFlow: Reproducible Geospatial Agricultural Modeling**
+# TerraFlow: Reproducible Geospatial Agricultural Modeling
 
+[![CI](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/ci.yml)
+[![Deploy Docs](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/docs.yml/badge.svg)](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/docs.yml)
+[![Publish to PyPI](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/publish-pypi.yml/badge.svg)](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/publish-pypi.yml)
+[![Build JOSS Manuscript](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/manuscript.yml/badge.svg)](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/manuscript.yml)
 [![PyPI](https://img.shields.io/pypi/v/terraflow-agro.svg)](https://pypi.org/project/terraflow-agro/)
-[![CI](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/gmarupilla/AgroTerraFlow/actions)
+[![Python Version](https://img.shields.io/pypi/pyversions/terraflow-agro.svg)](https://pypi.org/project/terraflow-agro/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **TerraFlow v0.2.0** is a reproducible, open-source geospatial workflow framework for agricultural modeling.
 It provides:
 
-* 🌾 **Geospatial preprocessing** (rasters, vectors, ROI clipping)
-* 🌦️ **Spatially-aware climate data** (per-cell spatial interpolation with fallback strategies) — **NEW in v0.2.0**
-* 📦 **Config-driven model execution**
-* 🐍 **Python package + CLI (`terraflow run`)**
-* 🐳 **Docker workflow support**
-* 📄 **JOSS-compatible research workflow**
+* Geospatial preprocessing (rasters, vectors, ROI clipping)
+* Spatially-aware climate data (per-cell spatial interpolation with fallback strategies) - NEW in v0.2.0
+* Config-driven model execution with Pydantic v2 validation
+* Python package with CLI interface (`terraflow run`)
+* Docker workflow support
+* JOSS-compatible research workflow and manuscript
+* Comprehensive test suite (33+ tests) with 100% pass rate
+* Interactive Marimo notebooks for testing and visualization
+* Architecture Decision Records (ADRs) for design documentation
 
 Use TerraFlow to build, test, and publish reproducible agricultural analytics pipelines.
 
----
+## Features
 
-## 🚀 Features
-
-* Modern Python package (`pyproject.toml`, PEP 621)
+**Core Capabilities:**
+* Modern Python package (pyproject.toml, PEP 621 compliant)
 * Fully uv-installable (`uv pip install terraflow-agro`)
 * Reproducible CLI interface (`terraflow run --config <file>`)
-* Pydantic v2 configuration models with geographic coordinate validation — **enhanced in v0.2.0**
-* Spatial interpolation using scipy.interpolate.griddata — **new in v0.2.0**
-* Extensible workflow architecture
-* Example data + demo config
-* Makefile automation for dev/test/build/release
-* GitHub Actions for CI + PyPI publishing on tags
+* Pydantic v2 configuration models with geographic coordinate validation - enhanced in v0.2.0
+* Spatial interpolation using scipy.interpolate.griddata - new in v0.2.0
+* Extensible workflow architecture with clean separation of concerns
 
----
+**Development & Testing:**
+* Comprehensive test suite with pytest (33+ tests across 12 test files)
+* Linting with ruff and black
+* Makefile automation for dev/test/build/release workflows
+* Interactive Marimo notebooks for comprehensive testing
+* Example data and demo configurations
 
-# 📦 Installation
+**CI/CD & Documentation:**
+* GitHub Actions for CI testing and linting
+* Automated PyPI publishing on version tags
+* MkDocs-based documentation with GitHub Pages deployment
+* JOSS manuscript build automation
+* Docker support for containerized workflows
 
-## **Option 1: Install from PyPI (Recommended)**
+**Architecture & Design:**
+* Architecture Decision Records (ADRs) documenting key design choices
+* Clean module separation (cli, config, climate, geo, ingest, model, pipeline, stats, viz)
+* Comprehensive error handling and resource management
+* Production-ready code quality
+
+## Installation
+
+### Option 1: Install from PyPI (Recommended)
 
 ```bash
 uv pip install terraflow-agro
@@ -47,9 +68,7 @@ import terraflow
 print(terraflow.__version__)
 ```
 
----
-
-## **Option 2: Install from source**
+### Option 2: Install from source
 
 Clone the repo:
 
@@ -70,32 +89,75 @@ This runs:
 * `uv pip install --python .venv/bin/python -e ".[dev]"`
   (Using only `pyproject.toml` — no requirements.txt)
 
----
-
-# 🧰 Project Structure
+## Project Structure
 
 ```
 AgroTerraFlow/
+├── terraflow/                 # Core Python package
+│   ├── __init__.py            # Package initialization and version
+│   ├── cli.py                 # CLI entry point
+│   ├── config.py              # Pydantic v2 config models
+│   ├── climate.py             # Climate data processing and interpolation
+│   ├── geo.py                 # Geospatial operations (ROI clipping, masking)
+│   ├── ingest.py              # Data ingestion and preprocessing
+│   ├── model.py               # Core modeling logic
+│   ├── pipeline.py            # Workflow orchestration
+│   ├── stats.py               # Statistical analysis
+│   ├── utils.py               # Utility functions
+│   └── viz.py                 # Visualization (Plotly maps)
 │
-├── terraflow/              # Core Python package
-│   ├── cli.py              # CLI entry point
-│   ├── config.py           # Pydantic v2 config models
-│   └── workflow.py         # Core workflow logic
+├── tests/                     # Comprehensive test suite (33+ tests)
+│   ├── conftest.py            # Pytest configuration and fixtures
+│   ├── test_cli.py            # CLI tests
+│   ├── test_climate.py        # Climate interpolation tests
+│   ├── test_config.py         # Configuration validation tests
+│   ├── test_geo.py            # Geospatial operations tests
+│   ├── test_ingest.py         # Data ingestion tests
+│   ├── test_model.py          # Model tests
+│   ├── test_pipeline.py       # Pipeline integration tests
+│   ├── test_stats.py          # Statistical analysis tests
+│   └── test_viz.py            # Visualization tests
+│
+├── docs/                      # MkDocs documentation
+│   ├── api/                   # API reference
+│   ├── architecture/          # ADRs and design docs
+│   ├── cli/                   # CLI usage guide
+│   ├── config/                # Configuration schema and examples
+│   ├── notebooks/             # Rendered notebook documentation
+│   ├── DEVELOPMENT.md         # Development guide
+│   ├── ROADMAP.md             # Feature roadmap
+│   └── index.md               # Documentation homepage
+│
+├── notebooks/                 # Interactive Marimo notebooks
+│   └── terraflow_v0.2.0_comprehensive_test.ipynb
 │
 ├── examples/
-│   ├── demo_config.yml     # Example config file
-│   └── sample_data/        # Optional small data files
+│   ├── demo_config.yml        # Example configuration
+│   └── sample_data/           # Sample data files
 │
-├── outputs/                # Generated outputs
-├── Dockerfile
-├── Makefile
-├── README.md
-└── pyproject.toml
+├── paper/                     # JOSS manuscript
+│   ├── paper.md               # JOSS paper markdown
+│   ├── biblio.bib             # References
+│   └── figures/               # Manuscript figures
+│
+├── .github/workflows/         # CI/CD pipelines
+│   ├── ci.yml                 # Test and lint automation
+│   ├── docs.yml               # Documentation deployment
+│   ├── publish-pypi.yml       # PyPI publishing
+│   └── manuscript.yml         # JOSS manuscript build
+│
+├── data/                      # Sample datasets
+├── outputs/                   # Generated outputs
+├── Dockerfile                 # Docker containerization
+├── Makefile                   # Development automation
+├── pyproject.toml             # Package configuration
+├── mkdocs.yml                 # Documentation configuration
+├── FEATURE_ROADMAP.md         # Feature planning
+├── IMPLEMENTATION_SUMMARY.md  # Implementation details
+└── IMPROVEMENTS_SUMMARY.md    # Recent improvements
 ```
 
----
-
-# 🏃‍♂️ Quickstart
+## Quickstart
 
 ### Run the demo pipeline
 
@@ -109,9 +171,7 @@ which is equivalent to:
 python -m terraflow.cli --config examples/demo_config.yml
 ```
 
----
-
-# 🖥 CLI Usage
+## CLI Usage
 
 After installation, TerraFlow exposes a CLI:
 
@@ -137,9 +197,7 @@ Your results will appear in:
 outputs/
 ```
 
----
-
-# 🌦️ Climate Data Integration (v0.2+)
+## Climate Data Integration (v0.2.0)
 
 TerraFlow now supports **per-cell climate data** with two interpolation strategies:
 
@@ -153,9 +211,9 @@ climate:
 ```
 
 **Benefits:**
-- ✅ Works with arbitrary observation locations
-- ✅ Smooth spatial gradients across your ROI
-- ✅ Graceful handling of sparse data
+- Works with arbitrary observation locations
+- Smooth spatial gradients across your ROI
+- Graceful handling of sparse data
 
 ### Index-Based Matching
 For pre-aligned climate data (one row per cell):
@@ -177,9 +235,7 @@ lat,lon,mean_temp,total_rain
 
 See [Climate Configuration](docs/config/schema.md#climate-configuration-v02) and [ADR-003](docs/architecture/adr-003-climate-interpolation.md) for details.
 
----
-
-# 📚 Documentation
+## Documentation
 
 ### Local preview
 
@@ -194,9 +250,7 @@ mkdocs serve
 
 Documentation is built and published automatically via GitHub Pages on every push to `main`.
 
----
-
-# ⚙️ Development
+## Development
 
 ### Create virtual environment + install dev deps
 
@@ -216,9 +270,52 @@ make test
 make run-demo
 ```
 
----
+### Linting
 
-# 🐳 Docker Usage
+```bash
+make lint
+```
+
+This runs ruff and black for code formatting and style checks.
+
+## Testing
+
+TerraFlow includes a comprehensive test suite with 33+ tests covering all core functionality.
+
+### Run all tests
+
+```bash
+make test
+```
+
+### Test Coverage
+
+The test suite covers:
+- CLI argument parsing and error handling
+- Climate data loading and interpolation (spatial and index-based)
+- Configuration validation with Pydantic v2
+- Geospatial operations (ROI clipping, masking, band selection)
+- Data ingestion and preprocessing
+- Model execution
+- Pipeline integration
+- Statistical analysis
+- Visualization generation
+
+### Interactive Testing
+
+Use the Marimo notebook for interactive testing and exploration:
+
+```bash
+marimo edit notebooks/terraflow_v0.2.0_comprehensive_test.ipynb
+```
+
+Or run the standalone test script:
+
+```bash
+python terraflow_v0_2_0_comprehensive_test.py
+```
+
+## Docker Usage
 
 ### Build image
 
@@ -241,25 +338,40 @@ docker run --rm \
     --config examples/demo_config.yml
 ```
 
----
+## Continuous Integration (GitHub Actions)
 
-# 🧪 Continuous Integration (GitHub Actions)
+### CI Pipeline (ci.yml)
 
-The CI pipeline (`.github/workflows/ci.yml`) performs:
+The main CI pipeline runs on every push and pull request to main/master:
 
-* `make venv`
-* `make dev`
-* `make test`
-* `make run-demo` (smoke test)
+* Sets up Python 3.10 and uv package manager
+* Creates virtual environment and installs dependencies
+* Runs full test suite with pytest
+* Runs linting checks with ruff and black
 
-Triggered on:
+### Documentation Deployment (docs.yml)
 
-* pushes to `main`/`master`
-* pull requests targeting those branches
+Automatically builds and deploys documentation to GitHub Pages on every push to main:
 
----
+* Builds MkDocs site with strict mode
+* Deploys to GitHub Pages
 
-# 📤 Publishing a Release to PyPI
+### PyPI Publishing (publish-pypi.yml)
+
+Triggered on version tags (v*.*.*):
+
+* Builds Python wheel and source distribution
+* Publishes to PyPI automatically
+* No manual intervention required
+
+### JOSS Manuscript (manuscript.yml)
+
+Builds the JOSS paper PDF on version tags or manual trigger:
+
+* Generates publication-ready manuscript
+* Uploads as GitHub artifact
+
+## Publishing a Release to PyPI
 
 Publishing is fully automated via GitHub Actions and `publish-pypi.yml`.
 
@@ -284,9 +396,7 @@ This:
 
 No manual PyPI login required.
 
----
-
-# 🧩 Configuration (Pydantic v2)
+## Configuration (Pydantic v2)
 
 TerraFlow uses Pydantic v2 for typed config:
 
@@ -314,17 +424,53 @@ climate_source: "era5"
 output_dir: "outputs"
 ```
 
----
+## Architecture
 
-# 📈 Roadmap
+TerraFlow follows clean architecture principles with clear separation of concerns:
 
-* 🔜 Add multiple crop models
-* 🔜 Add calibration & uncertainty modules
-* 🔜 Add geospatial visualization (`GeoVizFlow` integration)
-* 🔜 Improve CLIs & pipeline templates
+### Core Modules
 
----
+- **cli.py**: Command-line interface with argument parsing and error handling
+- **config.py**: Pydantic v2 models for configuration validation
+- **climate.py**: Climate data interpolation with spatial and index-based strategies
+- **geo.py**: Geospatial operations (raster I/O, ROI clipping, coordinate validation)
+- **ingest.py**: Data ingestion and preprocessing
+- **model.py**: Core modeling logic
+- **pipeline.py**: Workflow orchestration and execution
+- **stats.py**: Statistical analysis and aggregation
+- **viz.py**: Visualization generation with Plotly
+- **utils.py**: Utility functions and helpers
 
-# 📄 License
+### Architecture Decision Records
+
+Key design decisions are documented in ADRs:
+
+- **ADR-001**: Band selection strategy for multi-band rasters
+- **ADR-002**: Bounding box vs polygon ROI support
+- **ADR-003**: Climate interpolation strategies (spatial vs index-based)
+
+See `docs/architecture/` for detailed ADRs.
+
+## Roadmap
+
+See [FEATURE_ROADMAP.md](FEATURE_ROADMAP.md) and [docs/ROADMAP.md](docs/ROADMAP.md) for detailed feature planning.
+
+**Planned enhancements:**
+* Multiple crop models support
+* Calibration and uncertainty quantification modules
+* Enhanced geospatial visualization
+* Improved CLI templates and pipeline configurability
+* Performance optimization for large-scale rasters
+* Additional interpolation methods
+
+## Contributing
+
+Contributions are welcome! See [docs/contributing.md](docs/contributing.md) for guidelines.
+
+## Citation
+
+If you use TerraFlow in your research, please cite our JOSS paper (manuscript in preparation).
+
+## License
 
 MIT License — free for academic, commercial, and open-source use.
