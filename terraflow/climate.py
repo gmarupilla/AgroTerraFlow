@@ -157,7 +157,7 @@ class ClimateInterpolator:
 
         if len(climate_numeric) == 0:
             raise ValueError(
-                "climate_df must have at least one numeric climate variable column "
+                "climate_df must have at least one climate variable column "
                 "(beyond 'lat', 'lon', and optional cell_id_column)"
             )
 
