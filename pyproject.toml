@@ -32,7 +32,9 @@ dev = [
   "pytest-cov>=3.0",
   "ruff",
   "black",
-  "marimo>=0.19"
+  "marimo>=0.19",
+  "matplotlib>=3.7",
+  "seaborn>=0.13"
 ]
 
 [project.urls]
