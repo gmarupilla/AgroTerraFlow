@@ -2,6 +2,17 @@
 
 This page renders the notebook as a sequence of cells (markdown, code, and text outputs).
 
+## Live Explorer (Hosted)
+
+This is the hosted live marimo app (HTTPS). If it does not load, the server may be down or blocking iframes.
+
+<iframe
+  src="https://explorer.terraflow.marupilla.dev/"
+  title="TerraFlow v0.2.0 Comprehensive Test (Marimo Hosted)"
+  style="width: 100%; height: 900px; border: 1px solid #e0e0e0; border-radius: 6px;"
+  loading="lazy"
+></iframe>
+
 ## Live Explorer (Local)
 
 Run the marimo server locally, then refresh this page to see the live app below.
@@ -12,7 +23,7 @@ marimo run docs/notebooks/terraflow_v0_2_0_comprehensive_test_marimo.py
 
 <iframe
   src="http://127.0.0.1:2718/"
-  title="TerraFlow v0.2.0 Comprehensive Test (Marimo Live)"
+  title="TerraFlow v0.2.0 Comprehensive Test (Marimo Local)"
   style="width: 100%; height: 900px; border: 1px solid #e0e0e0; border-radius: 6px;"
   loading="lazy"
 ></iframe>

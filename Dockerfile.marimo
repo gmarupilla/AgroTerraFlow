@@ -1,0 +1,10 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+COPY . /app
+
+RUN pip install --no-cache-dir marimo
+
+EXPOSE 2718
+
+CMD ["marimo", "run", "docs/notebooks/terraflow_v0_2_0_comprehensive_test_marimo.py", "--host", "0.0.0.0", "--port", "2718"]
