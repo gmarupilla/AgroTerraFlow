@@ -7,7 +7,7 @@ RUN apt-get update \
 	&& apt-get install -y --no-install-recommends libexpat1 \
 	&& rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir marimo . matplotlib seaborn
+RUN pip install --no-cache-dir ".[dev]"
 
 EXPOSE 2718
 
