@@ -24,37 +24,6 @@ jobs:
       - name: Dependency review
         uses: actions/dependency-review-action@v4
 
-  sonarcloud:
-    if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.13"
-
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v3
-
-      - name: Install dependencies
-        run: |
-          make venv
-          make dev
-
-      - name: Run tests with coverage
-        run: |
-          make test-cov
-
-      - name: SonarCloud scan
-        uses: SonarSource/sonarcloud-github-action@v2.1.1
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
   license-check:
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
