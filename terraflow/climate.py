@@ -153,7 +153,11 @@ class ClimateInterpolator:
             )
         # Select numeric climate variable columns only (exclude ids/strings)
         potential_cols = [c for c in self.climate_df.columns if c not in exclude_cols]
-        climate_numeric = [c for c in potential_cols if pd.api.types.is_numeric_dtype(self.climate_df[c])]
+        climate_numeric = [
+            c
+            for c in potential_cols
+            if pd.api.types.is_numeric_dtype(self.climate_df[c])
+        ]
 
         if len(climate_numeric) == 0:
             raise ValueError(

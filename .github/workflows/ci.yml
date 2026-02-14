@@ -32,10 +32,20 @@ jobs:
           make venv
           make dev
 
-      - name: Run tests
+      - name: Run tests with coverage
         run: |
-          make test
+          make test-cov
       
       - name: Run linting
         run: |
           make lint
+
+      - name: Run type checks
+        run: |
+          make typecheck
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false

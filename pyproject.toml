@@ -30,6 +30,9 @@ dependencies = [
 dev = [
   "pytest>=7.0",
   "pytest-cov>=3.0",
+  "mypy>=1.10",
+  "pip-licenses>=4.3",
+  "pre-commit>=3.7",
   "ruff",
   "black",
   "marimo>=0.19",
@@ -43,3 +46,22 @@ Homepage = "https://github.com/gmarupilla/AgroTerraFlow"
 
 [tool.setuptools]
 packages = ["terraflow"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+no_implicit_optional = true
+ignore_missing_imports = true
+files = ["terraflow", "tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["terraflow"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 85

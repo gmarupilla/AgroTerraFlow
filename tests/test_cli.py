@@ -109,8 +109,7 @@ max_cells: 10
 
 def test_cli_raster_file_not_found(tmp_path: Path, capsys):
     """Test CLI error handling when raster file doesn't exist."""
-    cfg_content = textwrap.dedent(
-        """
+    cfg_content = textwrap.dedent("""
         raster_path: "nonexistent_raster.tif"
         climate_csv: "data/climate.csv"
         output_dir: "outputs"
@@ -131,8 +130,7 @@ def test_cli_raster_file_not_found(tmp_path: Path, capsys):
           w_t: 0.3
           w_r: 0.3
         max_cells: 10
-        """
-    )
+        """)
 
     cfg_file = tmp_path / "test_config.yml"
     cfg_file.write_text(cfg_content, encoding="utf-8")
@@ -152,8 +150,7 @@ def test_cli_climate_file_not_found(tmp_path: Path, capsys):
     import rasterio
     from rasterio.transform import from_origin
 
-    cfg_content = textwrap.dedent(
-        """
+    cfg_content = textwrap.dedent("""
         raster_path: "data/synthetic_raster.tif"
         climate_csv: "nonexistent_climate.csv"
         output_dir: "outputs"
@@ -174,8 +171,7 @@ def test_cli_climate_file_not_found(tmp_path: Path, capsys):
           w_t: 0.3
           w_r: 0.3
         max_cells: 10
-        """
-    )
+        """)
 
     cfg_file = tmp_path / "test_config.yml"
     cfg_file.write_text(cfg_content, encoding="utf-8")
@@ -220,3 +216,31 @@ def test_cli_help_message(capsys):
     captured = capsys.readouterr()
     assert "terraflow" in captured.out.lower()
     assert "config" in captured.out.lower()
+
+
+def test_cli_value_error_from_pipeline(tmp_path: Path, capsys):
+    cfg_file = tmp_path / "cfg.yml"
+    cfg_file.write_text('raster_path: "data.tif"', encoding="utf-8")
+
+    with patch.object(sys, "argv", ["terraflow", "-c", str(cfg_file)]):
+        with patch("terraflow.cli.run_pipeline", side_effect=ValueError("bad config")):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+            assert exc_info.value.code == 1
+
+    captured = capsys.readouterr()
+    assert "bad config" in captured.err.lower()
+
+
+def test_cli_unexpected_exception_from_pipeline(tmp_path: Path, capsys):
+    cfg_file = tmp_path / "cfg.yml"
+    cfg_file.write_text('raster_path: "data.tif"', encoding="utf-8")
+
+    with patch.object(sys, "argv", ["terraflow", "-c", str(cfg_file)]):
+        with patch("terraflow.cli.run_pipeline", side_effect=RuntimeError("boom")):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+            assert exc_info.value.code == 1
+
+    captured = capsys.readouterr()
+    assert "pipeline failed" in captured.err.lower()

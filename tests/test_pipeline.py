@@ -1,7 +1,7 @@
 from pathlib import Path
 import textwrap
 
-from terraflow.pipeline import run_pipeline
+from terraflow.pipeline import run_pipeline, _aggregate_climate
 
 
 def test_run_pipeline_with_synthetic_data(
@@ -11,8 +11,7 @@ def test_run_pipeline_with_synthetic_data(
 ):
     out_dir = tmp_path / "outputs"
 
-    cfg_content = textwrap.dedent(
-        f"""
+    cfg_content = textwrap.dedent(f"""
         raster_path: "{synthetic_raster}"
         climate_csv: "{synthetic_climate_csv}"
         output_dir: "{out_dir}"
@@ -36,8 +35,7 @@ def test_run_pipeline_with_synthetic_data(
           w_r: 0.3
 
         max_cells: 10
-        """
-    )
+        """)
 
     cfg_file = tmp_path / "cfg.yml"
     cfg_file.write_text(cfg_content, encoding="utf-8")
@@ -60,3 +58,29 @@ def test_run_pipeline_with_synthetic_data(
     # Results file exists
     results_csv = out_dir / "results.csv"
     assert results_csv.exists()
+
+
+def test_aggregate_climate_means():
+    import pandas as pd
+
+    df = pd.DataFrame(
+        {
+            "mean_temp": [10.0, 12.0, 14.0],
+            "total_rain": [100.0, 110.0, 120.0],
+        }
+    )
+
+    result = _aggregate_climate(df)
+
+    assert result["mean_temp"] == 12.0
+    assert result["total_rain"] == 110.0
+
+
+def test_aggregate_climate_missing_columns():
+    import pandas as pd
+    import pytest
+
+    df = pd.DataFrame({"mean_temp": [10.0, 12.0]})
+
+    with pytest.raises(ValueError, match="total_rain"):
+        _aggregate_climate(df)

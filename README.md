@@ -6,6 +6,7 @@
 [![Build JOSS Manuscript](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/manuscript.yml/badge.svg)](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/manuscript.yml)
 [![PyPI](https://img.shields.io/pypi/v/terraflow-agro.svg)](https://pypi.org/project/terraflow-agro/)
 [![Python Version](https://img.shields.io/pypi/pyversions/terraflow-agro.svg)](https://pypi.org/project/terraflow-agro/)
+[![Codecov](https://codecov.io/gh/gmarupilla/AgroTerraFlow/branch/main/graph/badge.svg)](https://codecov.io/gh/gmarupilla/AgroTerraFlow)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **TerraFlow v0.2.0** is a reproducible, open-source geospatial workflow framework for agricultural modeling.

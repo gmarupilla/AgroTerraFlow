@@ -3,8 +3,11 @@ PYTHON = .venv/bin/python
 UV = uv
 RUFF = .venv/bin/ruff
 BLACK = .venv/bin/black
+PRE_COMMIT = .venv/bin/pre-commit
+MYPY = .venv/bin/mypy
+PIP_LICENSES = .venv/bin/pip-licenses
 
-.PHONY: help venv install dev test run build clean docker-build docker-run lint lint-fix docs-serve docs-build
+.PHONY: help venv install dev test test-cov typecheck license-check run build clean docker-build docker-run lint lint-fix pre-commit docs-serve docs-build
 
 help:
 	@echo "Available commands:"
@@ -12,12 +15,16 @@ help:
 	@echo "  make install       - Install terraflow-agro in editable mode into .venv"
 	@echo "  make dev           - Install terraflow-agro + dev dependencies"
 	@echo "  make test          - Run unit tests"
+	@echo "  make test-cov      - Run tests with coverage"
+	@echo "  make typecheck     - Run mypy type checks"
+	@echo "  make license-check - Report dependency licenses"
 	@echo "  make run           - Run example workflow"
 	@echo "  make build         - Build wheel + sdist"
 	@echo "  make clean         - Remove build artifacts"
 	@echo "  make docker-build  - Build Docker image"
 	@echo "  make docker-run    - Run Docker image"
 	@echo "  make release       - Bump version, tag, and push"
+	@echo "  make pre-commit    - Install git pre-commit hooks"
 	@echo "  make docs-serve    - Serve MkDocs site locally"
 	@echo "  make docs-build    - Build MkDocs site (strict)"
 
@@ -40,6 +47,15 @@ dev: venv
 
 test:
 	$(PYTHON) -m pytest -v
+
+test-cov:
+	$(PYTHON) -m pytest -v --cov --cov-report=term-missing --cov-report=xml
+
+typecheck:
+	$(MYPY) --config-file pyproject.toml
+
+license-check:
+	$(PIP_LICENSES) --format=markdown --output-file=license-report.md --with-urls
 
 run-demo:
 	$(PYTHON) -m terraflow.cli --config examples/demo_config.yml
@@ -76,6 +92,9 @@ lint:
 lint-fix:
 	$(RUFF) check terraflow tests --fix
 	$(BLACK) terraflow tests
+
+pre-commit:
+	$(PRE_COMMIT) install
 
 docs-serve:
 	$(PYTHON) -m mkdocs serve
