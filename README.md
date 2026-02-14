@@ -241,12 +241,6 @@ Use the comprehensive Jupyter notebook for interactive testing and exploration:
 jupyter notebook notebooks/terraflow_v0.2.0_comprehensive_test.ipynb
 ```
 
-The repository also includes a Marimo-compatible Python script in the root directory:
-
-```bash
-python terraflow_v0_2_0_comprehensive_test.py
-```
-
 ## Docker Usage
 
 ### Build image
@@ -385,7 +379,7 @@ See `docs/architecture/` for detailed ADRs.
 
 ## Roadmap
 
-See [FEATURE_ROADMAP.md](FEATURE_ROADMAP.md) and [docs/ROADMAP.md](docs/ROADMAP.md) for detailed feature planning.
+See [docs/ROADMAP.md](docs/ROADMAP.md) for detailed feature planning.
 
 **Planned enhancements:**
 * Multiple crop models support
