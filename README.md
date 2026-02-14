@@ -7,6 +7,7 @@
 [![PyPI](https://img.shields.io/pypi/v/terraflow-agro.svg)](https://pypi.org/project/terraflow-agro/)
 [![Python Version](https://img.shields.io/pypi/pyversions/terraflow-agro.svg)](https://pypi.org/project/terraflow-agro/)
 [![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=gmarupilla_AgroTerraFlow)
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=gmarupilla_AgroTerraFlow)](https://sonarcloud.io/summary/new_code?id=gmarupilla_AgroTerraFlow)
 [![Codecov](https://codecov.io/gh/gmarupilla/AgroTerraFlow/branch/main/graph/badge.svg)](https://codecov.io/gh/gmarupilla/AgroTerraFlow)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
