@@ -118,7 +118,7 @@ def test_compare_rasters_invalid_mode(tmp_path: Path):
 
     with rasterio.open(path) as ds_a, rasterio.open(path) as ds_b:
         with pytest.raises(ValueError, match="Unsupported mode"):
-            compare_rasters(ds_a, ds_b, mode="invalid")
+            compare_rasters(ds_a, ds_b, mode="invalid")  # type: ignore[arg-type]
 
 
 def test_batch_summarize(tmp_path: Path):
