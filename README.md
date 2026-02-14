@@ -131,6 +131,21 @@ Your results will appear in:
 outputs/
 ```
 
+## Run Fingerprint
+
+Each pipeline execution is identified by a deterministic `run_fingerprint` derived from:
+
+- Canonicalized YAML configuration
+- ROI geometry hash
+- Input file fingerprints (sha256, size, mtime)
+
+Identical inputs always produce the same fingerprint across machines. This enables
+immutable run directories like:
+
+```
+runs/<fingerprint>/...
+```
+
 ## Climate Data Integration (v0.2.0)
 
 TerraFlow now supports **per-cell climate data** with two interpolation strategies:

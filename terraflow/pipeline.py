@@ -1,12 +1,20 @@
 from pathlib import Path
 from typing import List, Dict
+import glob
+import hashlib
 import random
 
 import numpy as np
 import pandas as pd
 from rasterio.transform import xy
 
-from .config import PipelineConfig, load_config
+from .config import PipelineConfig, build_config, load_config_dict
+from .core.run_identity import (
+    canonicalize_config,
+    compute_run_fingerprint,
+    fingerprint_file,
+    hash_roi_geometry,
+)
 from .ingest import load_raster, load_climate_csv
 from .geo import clip_raster_to_roi
 from .model import suitability_score, suitability_label
@@ -39,6 +47,117 @@ def _aggregate_climate(climate_df: pd.DataFrame) -> Dict[str, float]:
     return result
 
 
+def _expand_input_paths(path_value: str, config_dir: Path) -> List[Path]:
+    has_glob = any(char in path_value for char in "*?[")
+    if has_glob:
+        matches = [
+            Path(p) for p in glob.glob(str(config_dir / path_value), recursive=True)
+        ]
+        if not matches:
+            raise FileNotFoundError(f"No files match input pattern: {path_value}")
+        return matches
+
+    path = Path(path_value)
+    if not path.is_absolute():
+        path = config_dir / path
+    if not path.exists():
+        raise FileNotFoundError(f"Input file not found: {path}")
+    return [path]
+
+
+def _collect_input_paths(config_dict: dict, config_dir: Path) -> List[Path]:
+    raw_values: List[str] = []
+
+    def add_value(value: object) -> None:
+        if value is None:
+            return
+        if isinstance(value, list):
+            for item in value:
+                add_value(item)
+        elif isinstance(value, (str, Path)):
+            raw_values.append(str(value))
+
+    for key in ("raster_path", "soil_raster_path"):
+        if key in config_dict:
+            add_value(config_dict[key])
+
+    if "climate_csv" in config_dict:
+        add_value(config_dict["climate_csv"])
+
+    climate_config = config_dict.get("climate")
+    for key in (
+        "climate_rasters",
+        "climate_raster_glob",
+        "climate_stack_glob",
+        "climate_raster_paths",
+        "weather_rasters",
+        "weather_raster_glob",
+    ):
+        if key in config_dict:
+            add_value(config_dict[key])
+        if isinstance(climate_config, dict) and key in climate_config:
+            add_value(climate_config[key])
+
+    roi_config = config_dict.get("roi")
+    if isinstance(roi_config, dict):
+        for key in ("geojson_path", "path", "file", "roi_path"):
+            if key in roi_config:
+                add_value(roi_config[key])
+    if "roi_path" in config_dict:
+        add_value(config_dict["roi_path"])
+
+    paths: List[Path] = []
+    for raw in raw_values:
+        paths.extend(_expand_input_paths(raw, config_dir))
+
+    def sort_key(path: Path) -> str:
+        try:
+            return path.resolve().relative_to(config_dir.resolve()).as_posix()
+        except ValueError:
+            return path.resolve().as_posix()
+
+    ordered = sorted(paths, key=sort_key)
+    seen: set[Path] = set()
+    deduped: List[Path] = []
+    for path in ordered:
+        resolved = path.resolve()
+        if resolved not in seen:
+            seen.add(resolved)
+            deduped.append(resolved)
+    return deduped
+
+
+def _resolve_roi_hash(config_dict: dict, config_dir: Path) -> str:
+    roi_config = config_dict.get("roi")
+    if isinstance(roi_config, dict):
+        if roi_config.get("type") == "bbox":
+            return hash_roi_geometry(roi_config)
+        for key in ("geojson_path", "path", "file", "roi_path"):
+            if key in roi_config:
+                roi_path = roi_config[key]
+                if isinstance(roi_path, Path):
+                    roi_path = str(roi_path)
+                if not isinstance(roi_path, str):
+                    raise ValueError("ROI path must be a string")
+                roi_file = Path(roi_path)
+                if not roi_file.is_absolute():
+                    roi_file = config_dir / roi_file
+                return hash_roi_geometry(str(roi_file))
+
+    if "roi_path" in config_dict:
+        roi_path = config_dict["roi_path"]
+        if isinstance(roi_path, Path):
+            roi_path = str(roi_path)
+        if not isinstance(roi_path, str):
+            raise ValueError("ROI path must be a string")
+        roi_file = Path(roi_path)
+        if not roi_file.is_absolute():
+            roi_file = config_dir / roi_file
+        return hash_roi_geometry(str(roi_file))
+
+    raise ValueError("ROI configuration missing or unsupported")
+
+
 def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     """Run the end-to-end pipeline and return a DataFrame of results.
 
@@ -63,8 +182,23 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     ValueError:
         If configuration is invalid or no valid raster cells found in ROI.
     """
-    cfg: PipelineConfig = load_config(config_path)
+    config_path = Path(config_path)
+    config_dict = load_config_dict(config_path)
+    cfg: PipelineConfig = build_config(config_dict)
     logger.info("Loaded config from %s", config_path)
+
+    config_dir = config_path.resolve().parent
+    config_bytes_hash = hashlib.sha256(canonicalize_config(config_dict)).hexdigest()
+    roi_hash = _resolve_roi_hash(config_dict, config_dir)
+    input_paths = _collect_input_paths(config_dict, config_dir)
+    input_fps = [fingerprint_file(str(path)) for path in input_paths]
+    run_fingerprint = compute_run_fingerprint(config_dict, roi_hash, input_fps)
+    logger.info(
+        "Computed run fingerprint %s (config=%s, inputs=%d)",
+        run_fingerprint,
+        config_bytes_hash,
+        len(input_fps),
+    )
 
     raster = load_raster(cfg.raster_path)
     try:
@@ -181,4 +315,5 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     df.to_csv(out_csv, index=False)
     logger.info("Saved results to %s", out_csv)
 
+    df.attrs["run_fingerprint"] = run_fingerprint
     return df

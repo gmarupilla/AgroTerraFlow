@@ -196,6 +196,52 @@ class PipelineConfig(BaseModel):
         self.climate.validate_config()
 
 
+def load_config_dict(path: str | Path) -> dict:
+    """Load YAML config from disk into a raw dict.
+
+    Parameters
+    ----------
+    path:
+        Path to the YAML configuration file.
+
+    Returns
+    -------
+    dict:
+        Parsed configuration as a Python dict.
+
+    Raises
+    ------
+    FileNotFoundError:
+        If the config file does not exist.
+    yaml.YAMLError:
+        If the YAML is malformed.
+    """
+    path = Path(path)
+    if not path.exists():
+        raise FileNotFoundError(f"Configuration file not found: {path}")
+
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+    except yaml.YAMLError as e:
+        raise ValueError(f"Failed to parse YAML config: {e}") from e
+
+    if data is None:
+        raise ValueError("Configuration file is empty")
+
+    return data
+
+
+def build_config(data: dict) -> PipelineConfig:
+    """Validate a raw config dict into a PipelineConfig."""
+    try:
+        cfg = PipelineConfig.model_validate(data)
+        cfg.validate_all()
+        return cfg
+    except ValueError as e:
+        raise ValueError(f"Configuration validation failed: {e}") from e
+
+
 def load_config(path: str | Path) -> PipelineConfig:
     """Load YAML config from disk and validate with Pydantic.
 
@@ -218,22 +264,5 @@ def load_config(path: str | Path) -> PipelineConfig:
     ValueError:
         If the configuration is invalid.
     """
-    path = Path(path)
-    if not path.exists():
-        raise FileNotFoundError(f"Configuration file not found: {path}")
-
-    try:
-        with path.open("r", encoding="utf-8") as f:
-            data = yaml.safe_load(f)
-    except yaml.YAMLError as e:
-        raise ValueError(f"Failed to parse YAML config: {e}") from e
-
-    if data is None:
-        raise ValueError("Configuration file is empty")
-
-    try:
-        cfg = PipelineConfig.model_validate(data)
-        cfg.validate_all()
-        return cfg
-    except ValueError as e:
-        raise ValueError(f"Configuration validation failed: {e}") from e
+    data = load_config_dict(path)
+    return build_config(data)

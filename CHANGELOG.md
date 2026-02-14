@@ -6,7 +6,10 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 ## [Unreleased]
 
-- Placeholder for upcoming changes.
+- Added deterministic run fingerprinting based on canonical config, ROI geometry, and input file fingerprints.
+- Introduced run identity utilities and pipeline integration for early fingerprint computation.
+- Added run identity tests and updated documentation for run fingerprinting.
+- Added shapely dependency for ROI geometry hashing.
 
 ## [0.2.0]
 

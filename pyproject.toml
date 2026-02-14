@@ -23,7 +23,8 @@ dependencies = [
   "pyyaml>=5.4.0",
   "plotly>=5.0.0",
   "pydantic>=2.0",
-  "scipy>=1.9.0"
+  "scipy>=1.9.0",
+  "shapely>=2.0.0"
 ]
 
 [project.optional-dependencies]
@@ -46,7 +47,7 @@ Homepage = "https://github.com/gmarupilla/AgroTerraFlow"
 "Bug Tracker" = "https://github.com/gmarupilla/AgroTerraFlow/issues"
 
 [tool.setuptools]
-packages = ["terraflow"]
+packages = ["terraflow", "terraflow.core"]
 
 [tool.mypy]
 python_version = "3.13"
