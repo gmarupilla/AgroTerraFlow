@@ -32,7 +32,7 @@ jobs:
           .venv/bin/pip-licenses --format=markdown --output-file=license-report.md --with-urls
 
       - name: Upload license report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: license-report
           path: license-report.md
