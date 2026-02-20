@@ -87,7 +87,11 @@ class ROI(BaseModel):
     type:
         Type of ROI (currently only 'bbox' is supported).
     xmin, ymin, xmax, ymax:
-        Bounding box coordinates in the raster's CRS.
+        Bounding box coordinates expressed in *roi_crs* (default WGS 84 degrees).
+    roi_crs:
+        EPSG code or WKT string for the CRS of the bounding box coordinates.
+        Defaults to ``"EPSG:4326"`` (latitude/longitude degrees).  The pipeline
+        automatically reprojects to the raster's native CRS before clipping.
     """
 
     type: Literal["bbox"] = "bbox"
@@ -95,6 +99,7 @@ class ROI(BaseModel):
     ymin: float
     xmax: float
     ymax: float
+    roi_crs: str = "EPSG:4326"
 
     model_config = ConfigDict(extra="forbid")
 

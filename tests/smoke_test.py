@@ -21,13 +21,15 @@ def test_summarize_raster_file_real_data_roi():
     repo_root = Path(__file__).resolve().parents[1]
     raster_path = repo_root / "data" / "usda_cdl.tif"
 
+    # WGS84 bbox over western Kansas – matches the demo_config ROI and is
+    # known to intersect the usda_cdl.tif extent.
     roi = {
-        "xmin": 0,
-        "ymin": 0,
-        "xmax": 1000,
-        "ymax": 1000,
+        "xmin": -101.0,
+        "ymin": 38.0,
+        "xmax": -94.0,
+        "ymax": 40.0,
     }
 
-    summary = summarize_raster_file(raster_path, roi=roi)
+    summary = summarize_raster_file(raster_path, roi=roi, roi_crs="EPSG:4326")
 
     assert summary.count >= 0

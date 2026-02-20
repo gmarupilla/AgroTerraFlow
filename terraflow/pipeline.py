@@ -6,6 +6,8 @@ import random
 
 import numpy as np
 import pandas as pd
+from pyproj import Transformer
+from rasterio.crs import CRS
 from rasterio.transform import xy
 
 from .config import PipelineConfig, build_config, load_config_dict
@@ -210,6 +212,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     )
 
     raster = load_raster(cfg.raster_path)
+    raster_crs = raster.crs  # capture before any error path closes the dataset
     try:
         climate_df = load_climate_csv(cfg.climate_csv)
     except Exception:
@@ -217,15 +220,18 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         raise
 
     logger.info(
-        "Loaded raster and climate data: %s, %s",
+        "Loaded raster: %s (CRS: EPSG:%s)",
         cfg.raster_path,
-        cfg.climate_csv,
+        raster_crs.to_epsg() or "custom",
     )
+    logger.info("Loaded climate data: %s", cfg.climate_csv)
 
-    # Clip raster to ROI and compute a simple vegetation index by using band 1 values.
+    # Clip raster to ROI; roi_crs tells clip_raster_to_roi what CRS the bbox
+    # coordinates are expressed in so it can reproject them if needed.
     clipped_data, clipped_transform = clip_raster_to_roi(
         raster,
         cfg.roi.model_dump(),
+        roi_crs=cfg.roi.roi_crs,
     )
     logger.info("Clipped raster to ROI")
 
@@ -263,13 +269,27 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         "Sampled %d cells from %d valid cells in ROI", max_cells, len(valid_indices)
     )
 
-    # Pre-compute geographic coordinates for all sampled cells
-    cell_lats = []
-    cell_lons = []
+    # Pre-compute cell centre coordinates in native raster CRS.
+    _native_xs: List[float] = []
+    _native_ys: List[float] = []
     for row, col in sampled_indices:
         x, y = xy(clipped_transform, row, col, offset="center")
-        cell_lats.append(y)
-        cell_lons.append(x)
+        _native_xs.append(float(x))
+        _native_ys.append(float(y))
+
+    # Reproject to WGS84 (EPSG:4326) so that:
+    #   - lat/lon output columns always contain geographic degrees, and
+    #   - spatial climate interpolation operates in the same coordinate space
+    #     as the weather station lat/lon values.
+    _wgs84 = CRS.from_epsg(4326)
+    if not raster_crs.equals(_wgs84):
+        _coord_tf = Transformer.from_crs(raster_crs, _wgs84, always_xy=True)
+        _lons, _lats = _coord_tf.transform(_native_xs, _native_ys)
+        cell_lons: List[float] = list(_lons)
+        cell_lats: List[float] = list(_lats)
+    else:
+        cell_lons = _native_xs
+        cell_lats = _native_ys
 
     # Interpolate climate values for all cells at once
     cell_climate_df = interpolator.interpolate(np.array(cell_lats), np.array(cell_lons))

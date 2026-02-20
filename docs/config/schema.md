@@ -17,6 +17,17 @@ It is validated with Pydantic v2 and rejects unknown fields. Geographic coordina
 
 ## ROI (bbox)
 
+| Field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `type` | string | `"bbox"` | Must be `"bbox"` (only supported type). |
+| `xmin` | float | — | West boundary. |
+| `ymin` | float | — | South boundary. |
+| `xmax` | float | — | East boundary. |
+| `ymax` | float | — | North boundary. |
+| `roi_crs` | string | `"EPSG:4326"` | CRS of the bbox coordinates. Use any EPSG code or WKT string accepted by pyproj. Set to the raster's native CRS (e.g. `"EPSG:5070"`) when coordinates are in projected metres. |
+
+### Raster in WGS 84 (most common)
+
 ```yaml
 roi:
   type: bbox
@@ -24,7 +35,38 @@ roi:
   ymin: 34.0
   xmax: -118.0
   ymax: 35.5
+  # roi_crs defaults to EPSG:4326 — no change needed
 ```
+
+### Raster in a projected CRS (e.g. EPSG:5070 Albers or UTM)
+
+Provide the bbox in WGS 84 degrees and let TerraFlow reproject automatically:
+
+```yaml
+roi:
+  type: bbox
+  xmin: -120.5
+  ymin: 34.0
+  xmax: -118.0
+  ymax: 35.5
+  roi_crs: "EPSG:4326"   # pipeline reprojects to raster CRS before clipping
+```
+
+Or supply the bbox in the same projected CRS as the raster:
+
+```yaml
+roi:
+  type: bbox
+  xmin: 500000
+  ymin: 4200000
+  xmax: 600000
+  ymax: 4300000
+  roi_crs: "EPSG:32614"  # UTM Zone 14N — no reprojection needed
+```
+
+> **Note** — regardless of the input CRS, the pipeline always writes `lat` / `lon`
+> output columns in WGS 84 geographic degrees so downstream tools receive
+> consistent coordinates.
 
 ## Model parameters
 
