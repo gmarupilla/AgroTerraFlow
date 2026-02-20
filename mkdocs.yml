@@ -41,6 +41,7 @@ theme:
     - navigation.sections
     - navigation.top
     - navigation.footer
+    - navigation.breadcrumbs
     # TOC
     - toc.follow
     # Search

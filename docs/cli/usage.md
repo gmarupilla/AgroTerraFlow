@@ -13,19 +13,36 @@ TerraFlow exposes a lightweight CLI for running the pipeline.
 
 ## Run with a config file
 
-```bash
-terraflow --config path/to/config.yml
-```
+=== "Direct CLI"
 
-The command will:
+    ```bash
+    terraflow --config path/to/config.yml
+    ```
 
-1. Load and validate the YAML config.
-2. Run the pipeline.
-3. Write outputs to the configured output directory.
+    The command will:
 
-> **Note:** Relative paths in the config file are resolved relative to the config
-> file's own directory, not the current working directory. This means configs are
-> portable — you can run `terraflow -c /any/dir/config.yml` from any location.
+    1. Load and validate the YAML config
+    2. Run the pipeline
+    3. Write outputs to the configured output directory
+
+=== "Python Module"
+
+    ```python
+    from terraflow.pipeline import main
+    
+    # Run the pipeline programmatically
+    main("path/to/config.yml")
+    ```
+
+=== "Without Install"
+
+    ```bash
+    # Use python -m fallback (no install required)
+    python -m terraflow.cli --config path/to/config.yml
+    ```
+
+!!! tip "Portable Configs"
+    Relative paths in the config file are resolved relative to the config file's own directory, not the current working directory. This means configs are portable — you can run `terraflow -c /any/dir/config.yml` from any location.
 
 ## Common flags
 

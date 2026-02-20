@@ -35,47 +35,52 @@ It is validated with Pydantic v2 and rejects unknown fields. Geographic coordina
 | `ymax` | float | — | North boundary. |
 | `roi_crs` | string | `"EPSG:4326"` | CRS of the bbox coordinates. Use any EPSG code or WKT string accepted by pyproj. Set to the raster's native CRS (e.g. `"EPSG:5070"`) when coordinates are in projected metres. |
 
-### Raster in WGS 84 (most common)
+### ROI Examples
 
-```yaml
-roi:
-  type: bbox
-  xmin: -120.5
-  ymin: 34.0
-  xmax: -118.0
-  ymax: 35.5
-  # roi_crs defaults to EPSG:4326 — no change needed
-```
+=== "WGS 84 (Common)"
 
-### Raster in a projected CRS (e.g. EPSG:5070 Albers or UTM)
+    Most common case — specifying your region in latitude/longitude degrees.
 
-Provide the bbox in WGS 84 degrees and let TerraFlow reproject automatically:
+    ```yaml title="config.yml"
+    roi:
+      type: bbox
+      xmin: -120.5   # West longitude
+      ymin: 34.0     # South latitude
+      xmax: -118.0   # East longitude
+      ymax: 35.5     # North latitude
+      # roi_crs defaults to EPSG:4326 — no change needed
+    ```
 
-```yaml
-roi:
-  type: bbox
-  xmin: -120.5
-  ymin: 34.0
-  xmax: -118.0
-  ymax: 35.5
-  roi_crs: "EPSG:4326"   # pipeline reprojects to raster CRS before clipping
-```
+=== "Projected CRS (Specify in WGS84)"
 
-Or supply the bbox in the same projected CRS as the raster:
+    Your raster is in a projected CRS (e.g., UTM, Albers), but you specify ROI in WGS84 degrees. TerraFlow reprojects automatically.
 
-```yaml
-roi:
-  type: bbox
-  xmin: 500000
-  ymin: 4200000
-  xmax: 600000
-  ymax: 4300000
-  roi_crs: "EPSG:32614"  # UTM Zone 14N — no reprojection needed
-```
+    ```yaml title="config.yml"
+    roi:
+      type: bbox
+      xmin: -120.5   # WGS84 degrees
+      ymin: 34.0
+      xmax: -118.0
+      ymax: 35.5
+      roi_crs: "EPSG:4326"   # Pipeline reprojects to raster CRS
+    ```
 
-> **Note** — regardless of the input CRS, the pipeline always writes `lat` / `lon`
-> output columns in WGS 84 geographic degrees so downstream tools receive
-> consistent coordinates.
+=== "Projected CRS (Native Units)"
+
+    Your raster is in UTM/Albers and you want to specify ROI in meters directly.
+
+    ```yaml title="config.yml"
+    roi:
+      type: bbox
+      xmin: 500000    # UTM easting (meters)
+      ymin: 4200000   # UTM northing (meters)
+      xmax: 600000
+      ymax: 4300000
+      roi_crs: "EPSG:32614"  # UTM Zone 14N — no reprojection
+    ```
+
+!!! note "Output Always in WGS84"
+    Regardless of input CRS, the pipeline always writes `lat` / `lon` output columns in WGS 84 geographic degrees so downstream tools receive consistent coordinates.
 
 ## Model parameters
 
@@ -94,28 +99,39 @@ model_params:
 
 ## Climate configuration (v0.2.0 — New feature)
 
-Climate data is now applied **per-cell** using configurable interpolation strategies. This replaces the global mean approach from v0.1.
+Climate data is now applied ==per-cell== using configurable interpolation strategies. This replaces the global mean approach from v0.1.
 
-### Strategy 1: Spatial Interpolation (Recommended)
+=== "Spatial Interpolation (Recommended)"
 
-Use scipy.interpolate.griddata for linear interpolation with nearest-neighbor fallback. Best for scattered weather station data.
+    Use `scipy.interpolate.griddata` for linear interpolation with nearest-neighbor fallback. Best for scattered weather station data.
 
-```yaml
-climate:
-  strategy: spatial        # Linear interpolation with nearest-neighbor fallback
-  fallback_to_mean: true  # Use global mean for cells outside interpolation range
-```
+    ```yaml title="config.yml"
+    climate:
+      strategy: spatial        # Linear interpolation
+      fallback_to_mean: true  # Use global mean for outliers
+    ```
 
-### Strategy 2: Index-Based Matching
+    !!! tip "Best For"
+        - Weather station networks
+        - Satellite-derived gridded data
+        - Arbitrary point observations
+        - Requires ≥3 observation points
 
-Match climate records to cells by row order or explicit cell ID. Best for pre-aligned data.
+=== "Index-Based Matching"
 
-```yaml
-climate:
-  strategy: index
-  cell_id_column: null    # Optional: column name for explicit cell ID matching
-  fallback_to_mean: true  # Use global mean when climate data is shorter than cell count
-```
+    Match climate records to cells by row order or explicit cell ID. Best for pre-aligned data.
+
+    ```yaml title="config.yml"
+    climate:
+      strategy: index
+      cell_id_column: null    # Optional: column for explicit ID matching
+      fallback_to_mean: true  # Pad with mean if data < cells
+    ```
+
+    !!! tip "Best For"
+        - Pre-processed climate data aligned to your raster
+        - Deterministic matching without interpolation
+        - Large datasets where speed matters
 
 ### Climate CSV Format (Required)
 

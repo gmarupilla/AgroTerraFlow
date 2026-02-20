@@ -15,6 +15,7 @@ Reproducible geospatial tool for agricultural suitability modeling. Give it a la
 <div class="grid cards" markdown>
 
 -   :material-clock-fast:{ .lg .middle } **TerraFlow in 10 Minutes**
+    { .card-green }
 
     ---
 
@@ -23,6 +24,7 @@ Reproducible geospatial tool for agricultural suitability modeling. Give it a la
     [:octicons-arrow-right-24: Get started](quickstart.md)
 
 -   :material-map-marker-outline:{ .lg .middle } **Field Guide**
+    { .card-blue }
 
     ---
 
@@ -31,6 +33,7 @@ Reproducible geospatial tool for agricultural suitability modeling. Give it a la
     [:octicons-arrow-right-24: Read the Field Guide](field-guide.md)
 
 -   :material-cog:{ .lg .middle } **Technical Reference**
+    { .card-purple }
 
     ---
 

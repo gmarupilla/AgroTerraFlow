@@ -22,6 +22,22 @@ Users need to constrain analysis to specific geographic regions. Different ROI t
 
 TerraFlow needs to balance flexibility with implementation simplicity.
 
+```mermaid
+flowchart LR
+    A[Full Raster] --> B[Bounding Box ROI]
+    B --> C[Clipped Raster]
+    
+    subgraph "ROI Definition"
+    D[xmin, ymin] -.-> B
+    E[xmax, ymax] -.-> B
+    end
+    
+    C --> F[Sampled Cells]
+    
+    style B fill:#2d8a55,stroke:#1e5c3a,color:#fff
+    style C fill:#40a86e,stroke:#2d6a4f,color:#fff
+```
+
 ## Decision
 
 TerraFlow currently supports only **bounding box (bbox)** ROI type. This is enforced in:

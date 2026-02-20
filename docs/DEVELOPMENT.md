@@ -16,21 +16,40 @@ This guide helps you set up a development environment, understand the codebase, 
 
 ### 1. Clone and Setup
 
-```bash
-git clone https://github.com/gmarupilla/AgroTerraFlow.git
-cd TerraFlow
+=== "Unix/macOS"
 
-# Create virtual environment
-python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+    ```bash
+    git clone https://github.com/gmarupilla/AgroTerraFlow.git
+    cd TerraFlow
 
-# Install with dev dependencies
-pip install -e ".[dev]"
-```
+    # Create virtual environment
+    python3 -m venv .venv
+    source .venv/bin/activate
+
+    # Install with dev dependencies
+    pip install -e ".[dev]"
+    ```
+
+=== "Windows"
+
+    ```powershell
+    git clone https://github.com/gmarupilla/AgroTerraFlow.git
+    cd TerraFlow
+
+    # Create virtual environment
+    python -m venv .venv
+    .venv\Scripts\activate
+
+    # Install with dev dependencies
+    pip install -e ".[dev]"
+    ```
+
+!!! tip "Virtual Environment"
+    Always use a virtual environment to isolate dependencies and avoid conflicts with system packages.
 
 ### 2. Run Tests
 
-```bash
+```bash title="Test Commands"
 # Run all tests
 pytest tests/
 
@@ -44,9 +63,12 @@ pytest tests/test_cli.py -v
 pytest tests/test_cli.py::test_cli_help_message -v
 ```
 
+!!! tip "Coverage Reports"
+    HTML coverage reports are generated in `htmlcov/` directory. Open `htmlcov/index.html` in your browser to see detailed coverage.
+
 ### 3. Code Quality
 
-```bash
+```bash title="Code Quality Tools"
 # Format code
 black terraflow/ tests/
 
@@ -55,6 +77,9 @@ ruff check terraflow/ tests/
 
 # Type checking (with Pylance in VS Code)
 ```
+
+!!! warning "Pre-commit Checks"
+    Always run formatting and linting before committing code. Consider setting up pre-commit hooks to automate this.
 
 ---
 

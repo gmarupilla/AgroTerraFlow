@@ -15,15 +15,27 @@ Last Updated: 2026-02-06
 
 This document outlines the strategic direction for TerraFlow development, organized by priority and implementation complexity. Features are grouped into three main tracks:
 
-1. **Stability & Quality** ✅ (COMPLETED)
-2. **Capability Expansion** ✅ (COMPLETED - v0.2.0 released)
-3. **Production Features** (Planned for v1.0)
+<div class="grid" markdown>
+
+:material-check-circle:{ .lg .middle style="color: #00c853" } **Track 1: Stability & Quality** <span class="status-completed">COMPLETED</span>
+:   Reliability, testability, and maintainability improvements
+
+:material-check-circle:{ .lg .middle style="color: #00c853" } **Track 2: Capability Expansion** <span class="status-completed">v0.2.0 RELEASED</span>
+:   Per-cell climate interpolation and enhanced data support
+
+:material-timer-sand:{ .lg .middle style="color: #00b0ff" } **Track 3: Production Features** <span class="status-planned">v1.0 PLANNED</span>
+:   Progress tracking, fingerprinting, and operational deployment
+
+</div>
 
 ---
 
-## Track 1: Stability & Quality ✅ (COMPLETED)
+## Track 1: Stability & Quality <span class="status-completed">✅ COMPLETED</span>
 
 Features completed in this phase improve reliability, testability, and maintainability.
+
+!!! success "Fully Implemented"
+    All features in this track have been completed and released in v0.1.x series.
 
 ### ✅ Resource Management
 - [x] Fix unclosed rasterio file handles (resource leak)
@@ -64,100 +76,55 @@ Features completed in this phase improve reliability, testability, and maintaina
 
 ---
 
-## Track 2: Capability Expansion ✅ (COMPLETED IN v0.2.0)
+## Track 2: Capability Expansion <span class="status-completed">✅ v0.2.0 RELEASED</span>
 
 Features that add significant value while maintaining focus on agricultural modeling.
 
-### ✅ Enhanced Climate Data Support (v0.2.0)
-- [x] Per-cell climate interpolation using scipy.interpolate.griddata
-- [x] Spatial interpolation strategy for scattered weather stations
-- [x] Index-based matching strategy for pre-aligned data
-- [x] Graceful fallback to global mean for sparse/extrapolated data
-- [x] Coordinate validation with pydantic models (lat [-90,90], lon [-180,180])
-- [x] Comprehensive climate CSV validation and error messages
-- [x] 32 comprehensive tests for interpolation and edge cases
-- [x] Architecture Decision Record (ADR-003) for climate strategy
-- [x] Updated documentation with climate configuration examples
+!!! success "Enhanced Climate Data Support (v0.2.0)"
+    Per-cell climate interpolation is now fully implemented with two configurable strategies:
+    
+    - ✅ Spatial interpolation using `scipy.interpolate.griddata`
+    - ✅ Index-based matching for pre-aligned data
+    - ✅ Graceful fallback to global mean for sparse data
+    - ✅ Comprehensive validation and 32 test cases
+    - ✅ Full documentation and ADR-003
 
-### 📌 Progress Tracking & Observability (Priority: HIGH)
+### 📌 Progress Tracking & Observability <span class="status-planned">v1.0 PLANNED</span>
 
 **Goal**: Users can monitor long-running jobs and understand what's happening.
 
-#### Features
-- **Progress bar**: Show sampling progress for large ROIs
-  - Display: `Sampling cells: [████████░░] 80/100`
-  - Use: `tqdm` library (optional dependency)
-  
-- **Runtime estimation**: Predict total time based on raster size
-  - Calculate in load phase before starting sampling
-  - Log: "Estimated time: 2.5 minutes for 10,000 cells"
-  
-- **Sampling statistics logging**:
-  - Valid cell count in ROI
-  - Sampling ratio (sampled / valid)
-  - Geographic extent statistics
-  
-**Implementation Files**: `pipeline.py`
-**Estimated Effort**: 4-6 hours
-**Tests Required**: Progress accuracy, timeout handling
+!!! example "Planned Features"
+    **Progress bar**: Show sampling progress for large ROIs
+    ```
+    Sampling cells: [████████░░] 80/100
+    ```
+    
+    **Runtime estimation**: Predict total time based on raster size  
+    **Sampling statistics**: Valid cell count, sampling ratio, geographic extent
+
+**Implementation**: `pipeline.py` | **Effort**: 4-6 hours | **Tests**: Progress accuracy, timeout handling
 
 ---
 
-### 📌 Enhanced Climate Data Support (Priority: HIGH)
-
-**Goal**: Support per-cell climate variation instead of single global average.
-
-### 📌 Progress Tracking & Observability (Priority: HIGH - Planned for v1.0)
-
-**Goal**: Users can monitor long-running jobs and understand what's happening.
-
-#### Features
-- **Progress bar**: Show sampling progress for large ROIs
-  - Display: `Sampling cells: [████████░░] 80/100`
-  - Use: `tqdm` library (optional dependency)
-  
-- **Runtime estimation**: Predict total time based on raster size
-  - Calculate in load phase before starting sampling
-  - Log: "Estimated time: 2.5 minutes for 10,000 cells"
-  
-- **Sampling statistics logging**:
-  - Valid cell count in ROI
-  - Sampling ratio (sampled / valid)
-  - Geographic extent statistics
-  
-**Implementation Files**: `pipeline.py`
-**Estimated Effort**: 4-6 hours
-**Tests Required**: Progress accuracy, timeout handling
-
----
-
-### 📌 Run Fingerprinting & Reproducibility (Priority: HIGH - Planned for v1.0)
+### 📌 Run Fingerprinting & Reproducibility <span class="status-planned">v1.0 PLANNED</span>
 
 **Goal**: Track inputs/outputs for reproducibility and auditing.
 
-#### Features
-- **Manifest file** (`manifest.json`):
-  ```json
-  {
-    "version": "0.2.0",
-    "timestamp": "2026-02-06T14:30:00Z",
-    "config_hash": "sha256:abc123...",
-    "raster_hash": "sha256:def456...",
-    "climate_hash": "sha256:ghi789...",
-    "output_hash": "sha256:jkl012...",
-    "sampled_cells": 500,
-    "valid_cells_in_roi": 1000,
-    "execution_time_seconds": 12.34
-  }
-  ```
+!!! example "Manifest File"
+    Generate `manifest.json` with complete provenance tracking:
+    
+    ```json
+    {
+      "version": "0.2.0",
+      "timestamp": "2026-02-06T14:30:00Z",
+      "config_hash": "sha256:abc123...",
+      "raster_hash": "sha256:def456...",
+      "sampled_cells": 500,
+      "execution_time_seconds": 12.34
+    }
+    ```
 
-- **Checksum computation**: SHA256 for all input/output files
-- **Provenance tracking**: Record exact config used, versions, parameters
-- **Reproducibility verification**: Re-run with same config produces identical hash
-
-#### Implementation Files**: `utils.py`, `pipeline.py`, new `fingerprint.py`
-**Estimated Effort**: 6-8 hours
-**Tests Required**: Hash consistency, manifest validation
+**Implementation**: `utils.py`, `pipeline.py`, new `fingerprint.py` | **Effort**: 6-8 hours
 
 ---
 1. Keep rasterio window-based reads

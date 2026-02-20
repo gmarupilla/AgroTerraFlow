@@ -22,6 +22,28 @@ Previously, TerraFlow applied a single global mean climate value to all sampled 
 
 We needed a system to apply per-cell climate values while supporting different data sources and matching strategies.
 
+```mermaid
+flowchart TD
+    A[Weather Stations] --> B{Interpolation Strategy}
+    C[Raster Cells] --> B
+    
+    B -->|Spatial| D[scipy.griddata]
+    B -->|Index| E[Direct Matching]
+    
+    D --> F[Triangulation]
+    F --> G[Linear Interpolation]
+    G --> H[Per-Cell Climate Values]
+    
+    E --> I[Row-to-Cell Mapping]
+    I --> H
+    
+    H --> J[Suitability Scoring]
+    
+    style D fill:#00b0ff,stroke:#0091ea,color:#fff
+    style E fill:#7c4dff,stroke:#651fff,color:#fff
+    style H fill:#2d8a55,stroke:#1e5c3a,color:#fff
+```
+
 ## Decision
 
 Implement `ClimateInterpolator` with two configurable strategies:

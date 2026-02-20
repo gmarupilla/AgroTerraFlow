@@ -24,6 +24,19 @@ TerraFlow looks at a patch of land (a region you define by its corners on a map)
 
 It does this for hundreds of specific locations within your region, assigns each one a score, and hands you a spreadsheet.
 
+```mermaid
+flowchart LR
+    A[Land Cover Map] --> D[TerraFlow Pipeline]
+    B[Climate Data] --> D
+    C[Configuration] --> D
+    D --> E[results.csv]
+    E --> F[Excel/QGIS]
+    E --> G[Interactive Map]
+    
+    style D fill:#2d8a55,stroke:#1e5c3a,color:#fff
+    style E fill:#40a86e,stroke:#2d6a4f,color:#fff
+```
+
 ---
 
 ## What data goes in
@@ -35,7 +48,8 @@ This is a satellite-derived image that divides the land into pixels. Each pixel 
 
 The most common source in the US is the **USDA Cropland Data Layer (CDL)**, which is freely available and updated annually.
 
-**You do not need to process this file.** Your technical team handles it.
+!!! note
+    You do not need to process this file. Your technical team handles it.
 
 ### 2. A climate file
 A table of readings from nearby weather stations. Each row is one station with:
@@ -77,7 +91,8 @@ TerraFlow writes a file called `results.csv`. It is a spreadsheet with one row p
 | **medium** | 0.33 – 0.67 | Possible — one or more factors are marginal; consider supplemental irrigation or variety selection |
 | **low** | 0.0 – 0.33 | Poor fit — temperature, rainfall, or land cover is significantly outside the target range |
 
-> **Important:** The score reflects the conditions you configured. If your team set the thresholds for wheat, a "high" score means conditions are good for wheat — not necessarily for every crop.
+!!! warning "Important Context"
+    The score reflects the conditions you configured. If your team set the thresholds for wheat, a "high" score means conditions are good for wheat — not necessarily for every crop.
 
 ---
 
@@ -97,38 +112,29 @@ To map the results:
 
 ## Frequently asked questions
 
-**Q: The region I care about is not in the results — why?**
+???+ faq "The region I care about is not in the results — why?"
+    The results only cover locations *within* the bounding box your team configured, and only up to the `max_cells` limit. Ask your technical team to expand the region or increase the cell limit.
 
-The results only cover locations *within* the bounding box your team configured, and only up to the `max_cells` limit. Ask your technical team to expand the region or increase the cell limit.
+???+ faq "Two locations have the same score but different temperatures — is that normal?"
+    Yes. The score combines three factors (vegetation index, temperature, and rainfall), each with a weight. Two locations can reach the same total score through different combinations.
 
-**Q: Two locations have the same score but different temperatures — is that normal?**
+???+ faq "Can I trust the lat/lon values to load into my GPS or GIS?"
+    Yes. TerraFlow always outputs coordinates in decimal degrees (WGS84), which is the standard used by GPS devices, Google Maps, and all major GIS software.
 
-Yes. The score combines three factors (vegetation index, temperature, and rainfall), each with a weight. Two locations can reach the same total score through different combinations.
+???+ faq "The score is 0.72 — is that good?"
+    That depends entirely on what thresholds your team configured. A score of 0.72 always means "high" (above 0.67), but whether that's a strong candidate depends on your crop's actual requirements. Discuss the thresholds with whoever set up the configuration.
 
-**Q: Can I trust the lat/lon values to load into my GPS or GIS?**
+???+ faq "I have last year's results and this year's results — can I compare them?"
+    Yes, and that's one of TerraFlow's key features. Because the same configuration always produces the same sampling pattern, you can directly compare scores across years at the same lat/lon locations. Changes in score reflect changes in climate or land cover, not randomness.
 
-Yes. TerraFlow always outputs coordinates in decimal degrees (WGS84), which is the standard used by GPS devices, Google Maps, and all major GIS software.
+???+ faq "What does 'run fingerprint' mean?"
+    It is a unique identifier automatically assigned to each run, like a receipt number. It proves that your results were produced by a specific configuration and data set. If you need to repeat or audit an analysis, give this number to your technical team.
 
-**Q: The score is 0.72 — is that good?**
-
-That depends entirely on what thresholds your team configured. A score of 0.72 always means "high" (above 0.67), but whether that's a strong candidate depends on your crop's actual requirements. Discuss the thresholds with whoever set up the configuration.
-
-**Q: I have last year's results and this year's results — can I compare them?**
-
-Yes, and that's one of TerraFlow's key features. Because the same configuration always produces the same sampling pattern, you can directly compare scores across years at the same lat/lon locations. Changes in score reflect changes in climate or land cover, not randomness.
-
-**Q: What does "run fingerprint" mean?**
-
-It is a unique identifier automatically assigned to each run, like a receipt number. It proves that your results were produced by a specific configuration and data set. If you need to repeat or audit an analysis, give this number to your technical team.
-
----
-
-## What TerraFlow cannot tell you
-
-- Whether a specific parcel is legally available for farming
-- Soil type, drainage, or slope — only what's captured in the land-cover raster
-- Crop yield predictions — it scores *suitability*, not productivity
-- Real-time conditions — results reflect whatever climate data you provided
+???+ faq "What doesn't TerraFlow provide?"
+    - Whether a specific parcel is legally available for farming
+    - Soil type, drainage, or slope — only what's captured in the land-cover raster
+    - Crop yield predictions — it scores *suitability*, not productivity
+    - Real-time conditions — results reflect whatever climate data you provided
 
 ---
 

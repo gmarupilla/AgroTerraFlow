@@ -49,47 +49,67 @@ TerraFlow makes it:
 
 ## How does the pipeline work?
 
-```
-Your config.yml
-      │
-      ▼
-1. Load land-cover raster (GeoTIFF)
-      │   ← crop to your region of interest (ROI)
-      ▼
-2. Load climate CSV (weather stations)
-      │   ← interpolate to each land pixel
-      ▼
-3. Score each pixel
-      │   vegetation index  ×  weight_v
-      │ + temperature score ×  weight_t
-      │ + rainfall score    ×  weight_r
-      ▼
-4. Write results.csv
-      cell_id | lat | lon | score | label
+```mermaid
+flowchart TD
+    A[Your config.yml] --> B[Load land-cover raster]
+    B --> C[Crop to ROI]
+    C --> D[Load climate CSV]
+    D --> E[Interpolate climate to each pixel]
+    E --> F[Calculate scores]
+    F --> G[Apply weighted formula]
+    G --> H[Generate labels]
+    H --> I[Write results.csv]
+    
+    F --> |vegetation × w_v| G
+    F --> |temperature × w_t| G
+    F --> |rainfall × w_r| G
+    
+    I --> J[cell_id | lat | lon | score | label]
+    
+    style A fill:#2d8a55,stroke:#1e5c3a,color:#fff
+    style I fill:#2d8a55,stroke:#1e5c3a,color:#fff
+    style G fill:#40a86e,stroke:#2d6a4f,color:#fff
 ```
 
-**Key design choices:**
-
-- Coordinates are always output in WGS84 degrees (lat/lon) regardless of what map projection the input raster uses.
-- The same config + data always produces the same output — sampling is seeded from a SHA-256 fingerprint of your inputs.
-- Relative paths in configs are resolved relative to the config file itself, so configs are portable.
+!!! tip "Key Design Choices"
+    - **WGS84 output**: Coordinates are always in WGS84 degrees (lat/lon) regardless of input projection
+    - **Reproducible sampling**: Same config + data always produces identical output via SHA-256 fingerprint seeding
+    - **Portable configs**: Relative paths resolve relative to the config file location, not working directory
 
 ---
 
 ## Try it now (5 commands)
 
-```bash
-# 1. Clone and install
-git clone https://github.com/gmarupilla/AgroTerraFlow.git
-cd TerraFlow
-pip install -e ".[dev]"
+=== "Quick Start (CLI)"
 
-# 2. Run the demo
-terraflow -c examples/demo_config.yml
+    ```bash
+    # 1. Clone and install
+    git clone https://github.com/gmarupilla/AgroTerraFlow.git
+    cd TerraFlow
+    pip install -e ".[dev]"
 
-# 3. Look at the results
-head -5 outputs/demo_run/results.csv
-```
+    # 2. Run the demo
+    terraflow -c examples/demo_config.yml
+
+    # 3. Look at the results
+    head -5 outputs/demo_run/results.csv
+    ```
+
+=== "Python Module"
+
+    ```python
+    from terraflow.pipeline import main
+    from pathlib import Path
+
+    # Run the pipeline from Python
+    config_path = Path("examples/demo_config.yml")
+    main(str(config_path))
+
+    # Results written to outputs/demo_run/results.csv
+    import pandas as pd
+    df = pd.read_csv("outputs/demo_run/results.csv")
+    print(df.head())
+    ```
 
 Expected output (values will vary by sampled cells):
 
@@ -121,19 +141,19 @@ cell_id,lat,lon,v_index,mean_temp,total_rain,score,label
 
 The config file controls everything. Here is a minimal example:
 
-```yaml
-raster_path: "../data/my_land_cover.tif"
-climate_csv: "../data/weather_stations.csv"
+```yaml title="config.yml"
+raster_path: "../data/my_land_cover.tif"  # (1)!
+climate_csv: "../data/weather_stations.csv"  # (2)!
 output_dir: "../outputs/my_run"
 
-roi:
+roi:  # (3)!
   type: bbox
   xmin: -101.0   # West boundary (longitude)
   ymin: 38.0     # South boundary (latitude)
   xmax: -94.0    # East boundary (longitude)
   ymax: 40.0     # North boundary (latitude)
 
-model_params:
+model_params:  # (4)!
   v_min: 0.0     # Lowest acceptable vegetation index
   v_max: 255.0   # Highest vegetation index in your raster
   t_min: 10.0    # Minimum suitable temperature (°C)
@@ -144,8 +164,14 @@ model_params:
   w_t: 0.3       # Weight for temperature score
   w_r: 0.3       # Weight for rainfall score
 
-max_cells: 500   # How many locations to sample
+max_cells: 500   # How many locations to sample  # (5)!
 ```
+
+1. Path to your land-cover GeoTIFF. Relative paths resolve from config file location.
+2. CSV with columns: `lat`, `lon`, `mean_temp`, `total_rain` for weather stations.
+3. Region of interest bounding box in WGS84 degrees (longitude/latitude).
+4. Crop-specific thresholds defining optimal ranges for vegetation, temperature, and rainfall.
+5. Number of random locations to sample within the ROI for analysis.
 
 Save this as `config.yml` and run:
 
