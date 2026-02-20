@@ -60,6 +60,62 @@ def test_run_pipeline_with_synthetic_data(
     assert results_csv.exists()
 
 
+def test_run_pipeline_config_in_subdirectory(
+    tmp_path: Path,
+    synthetic_raster: Path,
+    synthetic_climate_csv: Path,
+):
+    """Relative paths in a config file must resolve against the config's directory,
+    not the caller's working directory (TERRA-001)."""
+    # Place data files one level up from where the config will live
+    sub_dir = tmp_path / "configs"
+    sub_dir.mkdir()
+    out_dir = tmp_path / "outputs"
+
+    # Write config with relative paths (../... relative to sub_dir)
+    rel_raster = Path("..") / synthetic_raster.name
+    rel_climate = Path("..") / synthetic_climate_csv.name
+    rel_out = Path("..") / "outputs"
+
+    # Copy fixtures into tmp_path root so relative paths resolve correctly
+    import shutil
+    shutil.copy(synthetic_raster, tmp_path / synthetic_raster.name)
+    shutil.copy(synthetic_climate_csv, tmp_path / synthetic_climate_csv.name)
+
+    cfg_content = f"""
+raster_path: "{rel_raster.as_posix()}"
+climate_csv: "{rel_climate.as_posix()}"
+output_dir: "{rel_out.as_posix()}"
+
+roi:
+  type: "bbox"
+  xmin: -101.0
+  ymin: 39.0
+  xmax: -99.0
+  ymax: 41.0
+
+model_params:
+  v_min: 0.0
+  v_max: 25.0
+  t_min: 0.0
+  t_max: 40.0
+  r_min: 0.0
+  r_max: 300.0
+  w_v: 0.4
+  w_t: 0.3
+  w_r: 0.3
+
+max_cells: 5
+"""
+    cfg_file = sub_dir / "config.yml"
+    cfg_file.write_text(cfg_content, encoding="utf-8")
+
+    df = run_pipeline(cfg_file)
+
+    assert not df.empty
+    assert (out_dir / "results.csv").exists()
+
+
 def test_aggregate_climate_means():
     import pandas as pd
 

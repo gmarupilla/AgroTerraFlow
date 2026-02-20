@@ -184,10 +184,19 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     """
     config_path = Path(config_path)
     config_dict = load_config_dict(config_path)
+    config_dir = config_path.resolve().parent
+
+    # Resolve relative input/output paths against the config file's directory so
+    # that configs are portable regardless of the caller's working directory.
+    for _key in ("raster_path", "climate_csv", "output_dir"):
+        if _key in config_dict and config_dict[_key] is not None:
+            _p = Path(str(config_dict[_key]))
+            if not _p.is_absolute():
+                config_dict[_key] = str((config_dir / _p).resolve())
+
     cfg: PipelineConfig = build_config(config_dict)
     logger.info("Loaded config from %s", config_path)
 
-    config_dir = config_path.resolve().parent
     config_bytes_hash = hashlib.sha256(canonicalize_config(config_dict)).hexdigest()
     roi_hash = _resolve_roi_hash(config_dict, config_dir)
     input_paths = _collect_input_paths(config_dict, config_dir)

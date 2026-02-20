@@ -42,6 +42,9 @@ dev = [
   "seaborn>=0.13"
 ]
 
+[project.scripts]
+terraflow = "terraflow.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/gmarupilla/AgroTerraFlow"
 "Bug Tracker" = "https://github.com/gmarupilla/AgroTerraFlow/issues"

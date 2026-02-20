@@ -101,28 +101,25 @@ make run-demo
 
 which is equivalent to:
 
-```
-python -m terraflow.cli --config examples/demo_config.yml
+```bash
+terraflow --config examples/demo_config.yml
 ```
 
 ## CLI Usage
 
-After installation, TerraFlow exposes a CLI:
+After `pip install terraflow-agro`, TerraFlow exposes a `terraflow` command:
 
-```
-terraflow run --config config.yml
+```bash
+terraflow --config config.yml
 ```
 
-Or explicitly:
-
-```
-python -m terraflow.cli --config config.yml
-```
+> Relative paths inside the config file resolve relative to the config file's own
+> directory, so configs are portable regardless of your working directory.
 
 Example:
 
 ```bash
-terraflow run --config examples/demo_config.yml
+terraflow --config examples/demo_config.yml
 ```
 
 Your results will appear in:
