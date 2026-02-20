@@ -4,65 +4,88 @@ description: Reproducible geospatial modeling for agricultural suitability analy
 icon: material/sprout
 ---
 
-# TerraFlow Documentation
+# TerraFlow
 
-TerraFlow is a reproducible geospatial tool for agricultural suitability modeling — it takes a land-cover map, climate data, and a configuration file, and produces a scored, location-stamped results table.
-
-**Choose your starting point:**
+Reproducible geospatial tool for agricultural suitability modeling. Give it a land-cover map, climate data, and a config file — it hands you a scored, location-stamped results table.
 
 ---
 
-## I want to understand what this is (10 min)
+## Choose your path
 
-> New to TerraFlow? Start here — no coding required.
+<div class="grid cards" markdown>
 
-**[→ TerraFlow in 10 Minutes](quickstart.md)**
+-   :material-clock-fast:{ .lg .middle } **TerraFlow in 10 Minutes**
 
-Covers: what TerraFlow does, the problem it solves, how the pipeline works, a live demo, and what the output means.
+    ---
 
----
+    New to TerraFlow? Start here — no coding required. Covers what it does, the problem it solves, how the pipeline works, and what the output means.
 
-## I work with the results (land manager, consultant, extension agent)
+    [:octicons-arrow-right-24: Get started](quickstart.md)
 
-> You receive results from TerraFlow but don't run it yourself.
+-   :material-map-marker-outline:{ .lg .middle } **Field Guide**
 
-**[→ Field Guide — Understanding TerraFlow Results](field-guide.md)**
+    ---
 
-Covers: what each output column means, how to read scores and labels, how to open results in Excel or a mapping tool, common questions, and how to share results with others.
+    You receive results but don't run TerraFlow yourself. Plain-English guide to scores, labels, opening results in Excel or QGIS, and sharing with others.
 
----
+    [:octicons-arrow-right-24: Read the Field Guide](field-guide.md)
 
-## I run or develop TerraFlow (technical user, contributor)
+-   :material-cog:{ .lg .middle } **Technical Reference**
 
-> You install TerraFlow, configure it, or contribute to the codebase.
+    ---
 
-**Start running:**
-- [CLI Usage](cli/usage.md) — how to call `terraflow` from the command line
-- [Configuration Schema](config/schema.md) — every YAML field documented, including `roi_crs`
-- [Configuration Examples](config/examples.md) — ready-to-use config templates
+    You install, configure, or contribute to TerraFlow. CLI, YAML schema, architecture docs, ADRs, and API reference.
 
-**Understand the system:**
-- [Architecture Overview](architecture/overview.md) — module boundaries and data flow
-- [Run Identity & Fingerprinting](architecture/run-identity.md) — how reproducibility is guaranteed
-- [Output Artifact Contract](architecture/artifacts.md) — what files are written and their schemas
-- [Architecture Decisions (ADRs)](architecture/) — why key design choices were made
+    [:octicons-arrow-right-24: CLI Usage](cli/usage.md) · [:octicons-arrow-right-24: Config Schema](config/schema.md)
 
-**Contribute:**
-- [Development Guide](DEVELOPMENT.md) — environment setup, testing, coverage
-- [Contributing Guidelines](contributing.md) — PR process, code standards
-- [Roadmap](ROADMAP.md) — what's planned next
-
-**API reference:**
-- [Climate module](api/climate.md)
-- [Core module](api/core.md)
-- [Ingest module](api/ingest.md)
+</div>
 
 ---
 
 ## v0.2.0 highlights
 
-- **Per-cell climate values** — spatial interpolation using `scipy.griddata` (not a single global mean)
-- **CRS-aware ROI clipping** — supply your bounding box in WGS84 degrees regardless of the raster's native projection
-- **Guaranteed WGS84 output** — `lat`/`lon` columns always contain geographic degrees
-- **Reproducible sampling** — cell selection is seeded from the run fingerprint; same config = same rows
-- **Portable configs** — relative paths resolve against the config file's location, not the caller's working directory
+<div class="grid" markdown>
+
+:material-thermometer: **Per-cell climate values**
+:   Spatial interpolation via `scipy.griddata` — not a single global mean.
+
+:material-earth: **CRS-aware ROI clipping**
+:   Supply your bounding box in WGS 84 degrees regardless of the raster's native projection.
+
+:material-map: **Guaranteed WGS 84 output**
+:   `lat`/`lon` columns always contain geographic degrees, safe for any mapping tool.
+
+:material-fingerprint: **Reproducible sampling**
+:   Cell selection is seeded from the run fingerprint — same config always yields the same rows.
+
+:material-file-move: **Portable configs**
+:   Relative paths resolve against the config file's location, not the caller's working directory.
+
+</div>
+
+---
+
+## Technical documentation
+
+**Start running:**
+
+- [CLI Usage](cli/usage.md) — how to call `terraflow` from the command line
+- [Configuration Schema](config/schema.md) — every YAML field documented, including `roi_crs`
+- [Configuration Examples](config/examples.md) — ready-to-use config templates
+
+**Understand the system:**
+
+- [Architecture Overview](architecture/overview.md) — module boundaries and data flow
+- [Run Identity & Fingerprinting](architecture/run-identity.md) — how reproducibility is guaranteed
+- [Output Artifact Contract](architecture/artifacts.md) — what files are written and their schemas
+- [Architecture Decisions (ADRs)](architecture/adr-001-band-selection.md) — why key design choices were made
+
+**Contribute:**
+
+- [Development Guide](DEVELOPMENT.md) — environment setup, testing, coverage
+- [Contributing Guidelines](contributing.md) — PR process, code standards
+- [Roadmap](ROADMAP.md) — what's planned next
+
+**API reference:**
+
+- [Climate module](api/climate.md) · [Core module](api/core.md) · [Ingest module](api/ingest.md)

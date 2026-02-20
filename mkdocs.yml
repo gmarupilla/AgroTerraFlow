@@ -1,46 +1,108 @@
 site_name: TerraFlow
-site_description: Reproducible geospatial modeling with spatial climate interpolation (v0.2.0)
+site_description: Reproducible geospatial modeling with spatial climate interpolation — config-driven, fingerprinted, and spatially aware.
+site_url: https://gmarupilla.github.io/AgroTerraFlow/
 repo_url: https://github.com/gmarupilla/AgroTerraFlow
+repo_name: gmarupilla/AgroTerraFlow
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2026 TerraFlow Contributors
 
 theme:
   name: material
   favicon: favicon.svg
   logo: terraflow-icon.svg
+
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
+      primary: custom
+      accent: custom
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
+      primary: custom
+      accent: custom
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
+
+  font:
+    text: Inter
+    code: JetBrains Mono
+
   features:
+    # Navigation
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tracking
     - navigation.tabs
+    - navigation.tabs.sticky
     - navigation.sections
     - navigation.top
+    - navigation.footer
+    # TOC
     - toc.follow
+    # Search
+    - search.suggest
+    - search.highlight
+    - search.share
+    # Content
     - content.code.copy
+    - content.code.annotate
+    - content.tooltips
+    - content.tabs.link
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/gmarupilla/AgroTerraFlow
+      name: TerraFlow on GitHub
+  version:
+    provider: mike
+    default: stable
+
+extra_css:
+  - stylesheets/extra.css
 
 markdown_extensions:
+  # Standard extensions
+  - attr_list
+  - md_in_html
+  - def_list
+  - tables
+  - abbr
   - admonition
+  - footnotes
+  # PyMdown extensions
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.details
-  - pymdownx.tabbed
-  - pymdownx.highlight
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.keys
+  - pymdownx.mark
   - toc:
       permalink: true
+      title: On this page
 
 plugins:
-  - search
+  - search:
+      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
   - tags
   - mermaid2
   - mkdocstrings:
@@ -50,6 +112,12 @@ plugins:
             - .
           options:
             show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            docstring_style: numpy
+            merge_init_into_class: true
 
 nav:
   - Home: index.md

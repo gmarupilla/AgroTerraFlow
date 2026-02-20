@@ -1,0 +1,248 @@
+/* ══════════════════════════════════════════════════════════════
+   TerraFlow — custom theme
+   Brand palette: forest-green inspired by the site icon
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Brand colour tokens ─────────────────────────────────────── */
+:root,
+[data-md-color-scheme="default"] {
+  --tf-green-950:  #0d2818;
+  --tf-green-800:  #1e5c3a;
+  --tf-green-700:  #2d6a4f;
+  --tf-green-500:  #2d8a55;
+  --tf-green-400:  #40a86e;
+  --tf-green-300:  #60c48a;
+  --tf-green-200:  #86d6a8;
+
+  /* Material primary/accent overrides */
+  --md-primary-fg-color:              #1e5c3a;
+  --md-primary-fg-color--light:       #2d8a55;
+  --md-primary-fg-color--dark:        #0d2818;
+  --md-accent-fg-color:               #40a86e;
+  --md-accent-fg-color--transparent:  rgba(64, 168, 110, 0.15);
+
+  /* Softer link colour in body text */
+  --md-typeset-a-color:               #2d6a4f;
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color:              #60c48a;
+  --md-primary-fg-color--light:       #86d6a8;
+  --md-primary-fg-color--dark:        #2d6a4f;
+  --md-accent-fg-color:               #86d6a8;
+  --md-accent-fg-color--transparent:  rgba(134, 214, 168, 0.15);
+
+  --md-typeset-a-color:               #60c48a;
+}
+
+/* ── Site header — branded gradient ──────────────────────────── */
+.md-header {
+  background: linear-gradient(135deg, #1e5c3a 0%, #0d2818 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+/* Keep header legible in both modes */
+.md-header__title,
+.md-header__topic,
+.md-header__button,
+.md-search__icon {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+/* ── Navigation tabs — slightly elevated feel ────────────────── */
+.md-tabs {
+  background: #163d29;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.md-tabs__link {
+  opacity: 0.75;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.md-tabs__link--active,
+.md-tabs__link:hover {
+  opacity: 1;
+}
+
+/* ── Tables — rounded, subtle shadow ─────────────────────────── */
+.md-typeset table:not([class]) {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  border: none;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--tf-green-800);
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border: none;
+  padding: 0.65rem 1rem;
+}
+
+[data-md-color-scheme="slate"] .md-typeset table:not([class]) th {
+  background-color: var(--tf-green-700);
+}
+
+.md-typeset table:not([class]) td {
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+  padding: 0.55rem 1rem;
+}
+
+.md-typeset table:not([class]) tr:hover td {
+  background: var(--md-accent-fg-color--transparent);
+}
+
+/* ── Code blocks — softer radius, cleaner look ───────────────── */
+.md-typeset pre {
+  border-radius: 0.5rem;
+}
+
+.md-typeset code {
+  border-radius: 0.25rem;
+}
+
+/* Language label badge on code blocks */
+.md-typeset .highlight .filename,
+.md-typeset .highlight span.filename {
+  border-radius: 0.5rem 0.5rem 0 0;
+  background: var(--tf-green-800);
+  color: rgba(255,255,255,0.85);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* ── Admonitions — softer corners ────────────────────────────── */
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 0.5rem;
+  border-width: 0 0 0 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.md-typeset .admonition-title,
+.md-typeset summary {
+  border-radius: 0.45rem 0.45rem 0 0;
+  font-weight: 600;
+}
+
+/* ── Navigation sidebar — tighter, cleaner ───────────────────── */
+.md-nav__title {
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--md-primary-fg-color);
+}
+
+.md-nav__link--active {
+  color: var(--md-primary-fg-color);
+  font-weight: 600;
+}
+
+/* ── Footer — subtle branding ────────────────────────────────── */
+.md-footer {
+  background: var(--tf-green-950);
+}
+
+.md-footer-meta {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* ── Search bar — slight rounding ────────────────────────────── */
+.md-search__form {
+  border-radius: 0.5rem;
+}
+
+/* ── Buttons (attr_list: { .md-button } ) ────────────────────── */
+.md-typeset .md-button {
+  border-radius: 0.4rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  transition: background 0.18s, box-shadow 0.18s, transform 0.12s;
+}
+
+.md-typeset .md-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(30, 92, 58, 0.3);
+}
+
+.md-typeset .md-button--primary {
+  background: var(--tf-green-800);
+  border-color: var(--tf-green-800);
+  color: #fff;
+}
+
+.md-typeset .md-button--primary:hover {
+  background: var(--tf-green-700);
+  border-color: var(--tf-green-700);
+}
+
+/* ── Grid cards (Material built-in) — TerraFlow style ───────── */
+.md-typeset .grid.cards > ul > li,
+.md-typeset .grid.cards > ol > li {
+  border-radius: 0.5rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s;
+}
+
+.md-typeset .grid.cards > ul > li:hover,
+.md-typeset .grid.cards > ol > li:hover {
+  border-color: var(--md-primary-fg-color);
+  box-shadow: 0 4px 16px rgba(30, 92, 58, 0.15);
+  transform: translateY(-2px);
+}
+
+/* ── Tag chips ───────────────────────────────────────────────── */
+.md-tag {
+  border-radius: 1rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  background: var(--md-accent-fg-color--transparent);
+  color: var(--md-primary-fg-color);
+  border: 1px solid var(--md-accent-fg-color);
+}
+
+/* ── TOC sidebar — active item highlight bar ─────────────────── */
+.md-nav--secondary .md-nav__link--active {
+  color: var(--md-primary-fg-color);
+  border-left: 2px solid var(--md-primary-fg-color);
+  padding-left: calc(0.6rem - 2px);
+}
+
+/* ── Mermaid diagrams — subtle card treatment ────────────────── */
+.mermaid {
+  background: var(--md-code-bg-color);
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+/* ── Typographic tweaks ──────────────────────────────────────── */
+.md-typeset h1 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.md-typeset h2 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  border-bottom: 2px solid var(--md-default-fg-color--lightest);
+  padding-bottom: 0.3rem;
+}
+
+.md-typeset h3 {
+  font-weight: 600;
+}
+
+/* ── Scroll-to-top button ────────────────────────────────────── */
+.md-top {
+  border-radius: 2rem;
+  background: var(--tf-green-800);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
