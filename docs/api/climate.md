@@ -1,3 +1,12 @@
+---
+title: Climate API
+description: API reference for terraflow.climate — ClimateInterpolator, spatial and index strategies, and per-cell value assignment.
+icon: material/weather-partly-cloudy
+tags:
+  - API
+  - Reference
+---
+
 # terraflow.climate
 
 The climate module provides spatial interpolation and index-based matching for aligning climate observations to raster cells.

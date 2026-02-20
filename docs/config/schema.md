@@ -1,3 +1,12 @@
+---
+title: Configuration Schema
+description: Complete YAML configuration reference for TerraFlow — ROI, model parameters, climate strategies, and CRS options.
+icon: material/file-cog-outline
+tags:
+  - Configuration
+  - Reference
+---
+
 # Configuration Schema
 
 TerraFlow v0.2.0 uses a single YAML configuration file that maps to the `PipelineConfig` model.

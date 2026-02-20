@@ -1,3 +1,12 @@
+---
+title: CLI Usage
+description: How to run TerraFlow from the command line — flags, config resolution, and output locations.
+icon: material/console
+tags:
+  - CLI
+  - Reference
+---
+
 # CLI Usage
 
 TerraFlow exposes a lightweight CLI for running the pipeline.

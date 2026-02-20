@@ -1,3 +1,12 @@
+---
+title: "ADR-004: CRS Reprojection for ROI and Output Coordinates"
+description: Decision record for pyproj-based ROI reprojection and guaranteed WGS 84 output coordinates — fixes TERRA-010 and TERRA-011.
+icon: material/numeric-4-box-outline
+tags:
+  - Architecture
+  - ADR
+---
+
 # ADR-004: CRS Reprojection for ROI and Output Coordinates
 
 **Status**: Accepted

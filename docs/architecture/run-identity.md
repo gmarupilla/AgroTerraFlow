@@ -1,3 +1,13 @@
+---
+title: Run Identity & Fingerprinting
+description: How TerraFlow computes deterministic run fingerprints from config, ROI, and input file hashes to guarantee reproducibility.
+icon: material/fingerprint
+tags:
+  - Architecture
+  - Reproducibility
+  - Reference
+---
+
 # Run Identity
 
 Every pipeline execution is identified by a deterministic `run_fingerprint` computed as:

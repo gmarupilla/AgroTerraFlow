@@ -1,3 +1,12 @@
+---
+title: Configuration Examples
+description: Ready-to-use TerraFlow YAML configuration templates for common scenarios — WGS84 rasters, projected CRS, spatial and index climate strategies.
+icon: material/file-document-multiple-outline
+tags:
+  - Configuration
+  - Examples
+---
+
 # Configuration Examples
 
 Below is a complete example configuration aligned with v0.2.0 with spatial climate interpolation.

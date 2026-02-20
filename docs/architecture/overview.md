@@ -1,3 +1,12 @@
+---
+title: Architecture Overview
+description: Module boundaries, data flow, and reproducibility model for TerraFlow's geospatial pipeline.
+icon: material/sitemap
+tags:
+  - Architecture
+  - Reference
+---
+
 # TerraFlow Overview
 
 TerraFlow is a reproducible geospatial modeling framework that turns local geospatial inputs into

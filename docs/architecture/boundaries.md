@@ -1,3 +1,12 @@
+---
+title: Architecture Boundaries
+description: The ingest/core layer split — why separating data loading from pipeline logic keeps TerraFlow deterministic and auditable.
+icon: material/border-all
+tags:
+  - Architecture
+  - Reference
+---
+
 # Architecture Boundaries
 
 TerraFlow splits the pipeline into two primary layers:

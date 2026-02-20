@@ -1,3 +1,13 @@
+---
+title: Output Artifact Contract
+description: The guaranteed output files written by every TerraFlow run — results.csv, manifest.json, and report.json schemas.
+icon: material/file-check-outline
+tags:
+  - Architecture
+  - Reference
+  - Outputs
+---
+
 # Artifact Contract
 
 Each run writes a consistent set of artifacts under:

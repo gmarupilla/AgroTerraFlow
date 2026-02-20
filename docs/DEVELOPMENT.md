@@ -1,3 +1,13 @@
+---
+title: Development Guide
+description: Environment setup, project structure, testing, code style, and step-by-step guide for contributing to TerraFlow.
+icon: material/wrench
+tags:
+  - Development
+  - Contributing
+  - Reference
+---
+
 # TerraFlow Development Guide
 
 This guide helps you set up a development environment, understand the codebase, and contribute to TerraFlow.

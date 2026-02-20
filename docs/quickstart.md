@@ -1,3 +1,12 @@
+---
+title: TerraFlow in 10 Minutes
+description: Learn what TerraFlow does, how the pipeline works, and run your first suitability analysis — all in under 10 minutes.
+icon: material/clock-fast
+tags:
+  - Getting Started
+  - Tutorial
+---
+
 # TerraFlow in 10 Minutes
 
 Everything you need to go from zero to a working suitability map — what it is, why it exists, how it works, and a live run you can follow along with.

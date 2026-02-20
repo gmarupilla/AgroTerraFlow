@@ -1,3 +1,13 @@
+---
+title: Field Guide — Understanding Results
+description: A plain-English guide to reading TerraFlow outputs. For land managers, agricultural consultants, and extension agents who work with results without writing code.
+icon: material/map-marker-outline
+tags:
+  - Non-Technical
+  - Results
+  - Land Management
+---
+
 # Field Guide — Understanding TerraFlow Results
 
 *For land managers, agricultural consultants, extension agents, and anyone who uses the outputs without writing the code.*

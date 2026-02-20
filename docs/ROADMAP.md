@@ -1,3 +1,12 @@
+---
+title: Roadmap
+description: Strategic direction for TerraFlow — completed tracks, planned v1.0 features, and future production capabilities.
+icon: material/road-variant
+tags:
+  - Development
+  - Reference
+---
+
 # TerraFlow Feature Roadmap
 
 Last Updated: 2026-02-06

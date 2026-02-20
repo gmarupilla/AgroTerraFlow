@@ -1,3 +1,12 @@
+---
+title: Contributing Guidelines
+description: How to set up locally, run tests and linting, preview docs, and submit a pull request to TerraFlow.
+icon: material/source-pull
+tags:
+  - Development
+  - Contributing
+---
+
 # Contributing
 
 Thanks for helping improve TerraFlow! Here are the basics for v0.2.0+.

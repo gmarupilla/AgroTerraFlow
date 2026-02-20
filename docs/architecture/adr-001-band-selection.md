@@ -1,3 +1,12 @@
+---
+title: "ADR-001: Single-Band Raster Processing"
+description: Decision record for processing only Band 1 from input rasters — rationale, consequences, and future alternatives.
+icon: material/numeric-1-box-outline
+tags:
+  - Architecture
+  - ADR
+---
+
 # ADR-001: Single-Band Raster Processing
 
 **Date**: 2026-02-06  

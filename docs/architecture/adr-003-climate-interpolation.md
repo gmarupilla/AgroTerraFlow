@@ -1,3 +1,12 @@
+---
+title: "ADR-003: Climate Data Interpolation Strategies"
+description: Decision record for per-cell spatial interpolation — spatial vs index strategies, scipy.griddata, and fallback handling.
+icon: material/numeric-3-box-outline
+tags:
+  - Architecture
+  - ADR
+---
+
 # ADR-003: Climate Data Interpolation Strategies
 
 **Status**: Accepted  

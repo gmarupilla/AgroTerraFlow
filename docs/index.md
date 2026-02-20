@@ -1,3 +1,9 @@
+---
+title: TerraFlow
+description: Reproducible geospatial modeling for agricultural suitability analysis — config-driven, fingerprinted, and spatially aware.
+icon: material/sprout
+---
+
 # TerraFlow Documentation
 
 TerraFlow is a reproducible geospatial tool for agricultural suitability modeling — it takes a land-cover map, climate data, and a configuration file, and produces a scored, location-stamped results table.

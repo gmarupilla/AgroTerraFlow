@@ -1,3 +1,12 @@
+---
+title: "ADR-002: Bounding Box Only ROI Support"
+description: Decision record for restricting ROI to bounding boxes — performance rationale, consequences, and polygon roadmap.
+icon: material/numeric-2-box-outline
+tags:
+  - Architecture
+  - ADR
+---
+
 # ADR-002: Bounding Box Only ROI Support
 
 **Date**: 2026-02-06  
