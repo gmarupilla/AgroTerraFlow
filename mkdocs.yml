@@ -4,6 +4,8 @@ repo_url: https://github.com/gmarupilla/AgroTerraFlow
 
 theme:
   name: material
+  favicon: favicon.svg
+  logo: terraflow-icon.svg
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -50,11 +52,14 @@ plugins:
 
 nav:
   - Home: index.md
+  - TerraFlow in 10 Minutes: quickstart.md
+  - Field Guide: field-guide.md
   - Architecture:
       - TerraFlow Overview: architecture/overview.md
       - ADR-001 Band Selection: architecture/adr-001-band-selection.md
       - ADR-002 BBox ROI: architecture/adr-002-bbox-roi.md
       - ADR-003 Climate Interpolation: architecture/adr-003-climate-interpolation.md
+      - ADR-004 CRS Reprojection: architecture/adr-004-crs-reprojection.md
       - Boundaries: architecture/boundaries.md
       - Run Identity: architecture/run-identity.md
       - Artifact Contract: architecture/artifacts.md
