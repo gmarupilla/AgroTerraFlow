@@ -35,7 +35,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           make test-cov
-      
+
       - name: Run linting
         run: |
           make lint
@@ -43,6 +43,14 @@ jobs:
       - name: Run type checks
         run: |
           make typecheck
+
+      - name: Packaging sanity check
+        run: |
+          .venv/bin/python -m build --sdist --wheel --outdir dist/ .
+          .venv/bin/python -c "import zipfile, glob; whl = glob.glob('dist/*.whl')[0]; names = zipfile.ZipFile(whl).namelist(); assert any('terraflow' in n for n in names), 'wheel missing terraflow package'"
+
+      - name: Smoke run (synthetic data)
+        run: make smoke-test
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5

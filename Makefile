@@ -7,7 +7,7 @@ PRE_COMMIT = .venv/bin/pre-commit
 MYPY = .venv/bin/mypy
 PIP_LICENSES = .venv/bin/pip-licenses
 
-.PHONY: help venv install dev test test-cov typecheck license-check run build clean docker-build docker-run lint lint-fix pre-commit docs-serve docs-build
+.PHONY: help venv install dev test test-cov smoke-test typecheck license-check run build clean docker-build docker-run lint lint-fix pre-commit docs-serve docs-build paper
 
 help:
 	@echo "Available commands:"
@@ -16,6 +16,7 @@ help:
 	@echo "  make dev           - Install terraflow-agro + dev dependencies"
 	@echo "  make test          - Run unit tests"
 	@echo "  make test-cov      - Run tests with coverage"
+	@echo "  make smoke-test    - Run end-to-end smoke tests (synthetic data)"
 	@echo "  make typecheck     - Run mypy type checks"
 	@echo "  make license-check - Report dependency licenses"
 	@echo "  make run           - Run example workflow"
@@ -27,6 +28,7 @@ help:
 	@echo "  make pre-commit    - Install git pre-commit hooks"
 	@echo "  make docs-serve    - Serve MkDocs site locally"
 	@echo "  make docs-build    - Build MkDocs site (strict)"
+	@echo "  make paper         - Compile JOSS paper PDF via Docker (openjournals/inara)"
 
 # ---------------------------
 # Environment setup
@@ -50,6 +52,9 @@ test:
 
 test-cov:
 	$(PYTHON) -m pytest -v --cov --cov-report=term-missing --cov-report=xml
+
+smoke-test:
+	$(PYTHON) -m pytest tests/test_e2e_smoke.py -v -m smoke
 
 typecheck:
 	$(MYPY) --config-file pyproject.toml
@@ -102,3 +107,11 @@ docs-serve:
 docs-build:
 	$(UV) pip install --python $(PYTHON) -r docs/requirements.txt
 	$(PYTHON) -m mkdocs build --strict
+
+
+paper:
+	docker run --rm \
+		--volume $(PWD)/paper:/data \
+		--user $(shell id -u):$(shell id -g) \
+		--env JOURNAL=joss \
+		openjournals/inara
