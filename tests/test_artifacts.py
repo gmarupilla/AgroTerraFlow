@@ -378,7 +378,7 @@ class TestDeterminism:
         # Capture mtime of parquet BEFORE second call
         mtime_before = (run_dir / "features.parquet").stat().st_mtime
 
-        df2 = run_pipeline(cfg)
+        run_pipeline(cfg)
 
         mtime_after = (run_dir / "features.parquet").stat().st_mtime
         assert mtime_before == mtime_after, "No-op rerun must not overwrite artifacts"

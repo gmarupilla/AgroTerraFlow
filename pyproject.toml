@@ -39,6 +39,7 @@ dev = [
   "types-PyYAML>=6.0",
   "ruff",
   "black",
+  "build",
   "marimo>=0.19",
   "matplotlib>=3.7",
   "seaborn>=0.13"
