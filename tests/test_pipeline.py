@@ -65,9 +65,14 @@ def test_run_pipeline_with_synthetic_data(
     assert df["lat"].between(-90.0, 90.0).all(), "lat must be in [-90, 90]"
     assert df["lon"].between(-180.0, 180.0).all(), "lon must be in [-180, 180]"
 
-    # Results file exists
-    results_csv = out_dir / "results.csv"
-    assert results_csv.exists()
+    # Artifacts live under runs/<run_fingerprint>/
+    run_fp = df.attrs["run_fingerprint"]
+    run_dir = out_dir / "runs" / run_fp
+    assert run_dir.is_dir(), f"run_dir missing: {run_dir}"
+    assert (run_dir / "features.parquet").exists()
+    assert (run_dir / "manifest.json").exists()
+    assert (run_dir / "report.json").exists()
+    assert (run_dir / "results.csv").exists()
 
 
 def test_run_pipeline_config_in_subdirectory(
@@ -123,7 +128,9 @@ max_cells: 5
     df = run_pipeline(cfg_file)
 
     assert not df.empty
-    assert (out_dir / "results.csv").exists()
+    run_fp = df.attrs["run_fingerprint"]
+    run_dir = out_dir / "runs" / run_fp
+    assert (run_dir / "results.csv").exists()
 
 
 def test_pipeline_lat_lon_wgs84_for_projected_raster(tmp_path: Path):

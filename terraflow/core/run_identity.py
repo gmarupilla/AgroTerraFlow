@@ -133,19 +133,26 @@ def compute_run_fingerprint(
     roi_hash: str,
     input_fingerprints: list[dict],
 ) -> str:
-    """Compute a deterministic run fingerprint for the given inputs."""
+    """Compute a deterministic run fingerprint for the given inputs.
+
+    The fingerprint is derived exclusively from content-addressable components:
+    - canonical config JSON (sorted keys)
+    - ROI geometry hash (WKB of normalised shapely geometry)
+    - per-input SHA-256 + byte-size (mtime is intentionally excluded so the
+      fingerprint is stable across filesystem copies and CI re-checks)
+    """
     config_hash = hashlib.sha256(canonicalize_config(config_dict)).hexdigest()
 
+    # mtime is deliberately excluded: fingerprint must be content-based only.
     inputs_payload = [
         {
             "sha256": fp["sha256"],
             "size_bytes": fp["size_bytes"],
-            "mtime": fp["mtime"],
         }
         for fp in input_fingerprints
     ]
     inputs_payload.sort(
-        key=lambda item: (item["sha256"], item["size_bytes"], item["mtime"])
+        key=lambda item: (item["sha256"], item["size_bytes"])
     )
 
     payload = {

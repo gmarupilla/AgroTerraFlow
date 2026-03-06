@@ -27,7 +27,15 @@ It takes three inputs:
 | A climate data file | Temperature and rainfall readings from nearby weather stations | CSV with lat, lon, mean_temp, total_rain |
 | A configuration file | Your choices: which region, what crop thresholds, how many sites | `config.yml` |
 
-And produces one output: `results.csv` — a table where every row is a sampled location with a **suitability score** (0–1) and a **label** (low / medium / high).
+And produces three outputs under `output_dir/runs/<fingerprint>/`:
+
+| File | What it contains |
+|---|---|
+| `features.parquet` | Per-cell suitability features — canonical analysis-ready format |
+| `manifest.json` | Full provenance: config snapshot, input SHA-256 fingerprints, DataCatalog metadata |
+| `report.json` | QA summaries: coverage fraction, nodata counts, step timings |
+
+A backward-compatible `results.csv` (same data as Parquet) is also written to the same run directory.
 
 ---
 
@@ -91,24 +99,28 @@ flowchart TD
     # 2. Run the demo
     terraflow -c examples/demo_config.yml
 
-    # 3. Look at the results
-    head -5 outputs/demo_run/results.csv
+    # 3. Look at the results (run dir named after fingerprint)
+    ls outputs/demo_run/runs/
+    # → <run_fingerprint>/
+    #     features.parquet  manifest.json  report.json  results.csv
     ```
 
 === "Python Module"
 
     ```python
-    from terraflow.pipeline import main
     from pathlib import Path
-
-    # Run the pipeline from Python
-    config_path = Path("examples/demo_config.yml")
-    main(str(config_path))
-
-    # Results written to outputs/demo_run/results.csv
     import pandas as pd
-    df = pd.read_csv("outputs/demo_run/results.csv")
-    print(df.head())
+    from terraflow.pipeline import run_pipeline
+
+    df = run_pipeline("examples/demo_config.yml")
+
+    # Locate the run directory from the returned DataFrame attrs
+    run_dir = Path(df.attrs["run_dir"])
+    print(f"Run fingerprint: {df.attrs['run_fingerprint']}")
+
+    # Read canonical Parquet output
+    features = pd.read_parquet(run_dir / "features.parquet")
+    print(features.head())
     ```
 
 Expected output (values will vary by sampled cells):
@@ -127,6 +139,7 @@ cell_id,lat,lon,v_index,mean_temp,total_rain,score,label
 
 | Column | Meaning |
 |---|---|
+| `run_id` | `run_fingerprint` — links this row to `manifest.json` |
 | `cell_id` | Index of the sampled pixel within your ROI |
 | `lat` / `lon` | Geographic coordinates in WGS84 degrees |
 | `v_index` | Raw value from the land-cover raster at this pixel |

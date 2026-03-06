@@ -99,12 +99,22 @@ max_cells: 10
     with patch.object(sys, "argv", ["terraflow", "-c", str(cfg_file)]):
         main()
 
-    # Verify output was created
-    results_file = tmp_path / "outputs" / "results.csv"
+    # Artifacts live under outputs/runs/<run_fingerprint>/
+    outputs_dir = tmp_path / "outputs"
+    runs_dir = outputs_dir / "runs"
+    assert runs_dir.is_dir(), "runs/ directory must be created"
+    run_subdirs = list(runs_dir.iterdir())
+    assert len(run_subdirs) == 1, "Exactly one run directory expected"
+    run_dir = run_subdirs[0]
+
+    results_file = run_dir / "results.csv"
     assert results_file.exists()
     results_df = pd.read_csv(results_file)
     assert len(results_df) > 0
     assert "score" in results_df.columns
+    assert (run_dir / "features.parquet").exists()
+    assert (run_dir / "manifest.json").exists()
+    assert (run_dir / "report.json").exists()
 
 
 def test_cli_raster_file_not_found(tmp_path: Path, capsys):
