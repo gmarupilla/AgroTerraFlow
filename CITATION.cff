@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use TerraFlow in your research, please cite it as below."
+type: software
+title: "TerraFlow: A Reproducible Workflow for Geospatial Agricultural Modeling"
+version: 0.2.0
+date-released: "2026-02-24"
+license: MIT
+repository-code: "https://github.com/gmarupilla/AgroTerraFlow"
+url: "https://terraflow.marupilla.dev"
+doi: 10.5281/zenodo.18490119
+abstract: >
+  TerraFlow is an open-source Python library for reproducible, auditable geospatial
+  workflows in agricultural and environmental data science. It provides a
+  config-driven pipeline for raster ingestion, ROI clipping, spatial climate
+  interpolation, suitability scoring, and provenance-tracked artifact export.
+  Every run produces a deterministic content-addressed fingerprint enabling
+  independent verification of results.
+keywords:
+  - geospatial
+  - agriculture
+  - reproducibility
+  - raster
+  - climate
+  - workflow
+  - Python
+authors:
+  - family-names: Marupilla
+    given-names: Gnaneswara
+    orcid: "https://orcid.org/0000-0002-6030-8707"
+  - family-names: Bayina
+    given-names: Chandhini
+    orcid: "https://orcid.org/0009-0002-1359-1762"
+    affiliation: "University of Central Missouri, Missouri, United States"

@@ -5,7 +5,7 @@
 [![Publish to PyPI](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/publish-pypi.yml/badge.svg)](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/publish-pypi.yml)
 [![Build JOSS Manuscript](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/manuscript.yml/badge.svg)](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/manuscript.yml)
 [![PyPI](https://img.shields.io/pypi/v/terraflow-agro.svg)](https://pypi.org/project/terraflow-agro/)
-[![Python Version](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=gmarupilla_AgroTerraFlow)](https://sonarcloud.io/summary/new_code?id=gmarupilla_AgroTerraFlow)
 [![Codecov](https://codecov.io/gh/gmarupilla/AgroTerraFlow/branch/main/graph/badge.svg)](https://codecov.io/gh/gmarupilla/AgroTerraFlow)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -16,10 +16,10 @@ It provides:
 * Geospatial preprocessing (rasters, vectors, ROI clipping)
 * Spatially-aware climate data (per-cell spatial interpolation with fallback strategies) - NEW in v0.2.0
 * Config-driven model execution with Pydantic v2 validation
-* Python package with CLI interface (`terraflow run`)
+* Python package with CLI interface (`terraflow --config <file>`)
 * Docker workflow support
 * JOSS-compatible research workflow and manuscript
-* Comprehensive test suite (33+ tests) with 100% pass rate
+* Comprehensive test suite (127 tests) with 100% pass rate
 * Interactive Jupyter notebook for testing and visualization
 * Architecture Decision Records (ADRs) for design documentation
 
@@ -30,13 +30,13 @@ Use TerraFlow to build, test, and publish reproducible agricultural analytics pi
 **Core Capabilities:**
 * Modern Python package (pyproject.toml, PEP 621 compliant)
 * Fully uv-installable (`uv pip install terraflow-agro`)
-* Reproducible CLI interface (`terraflow run --config <file>`)
+* Reproducible CLI interface (`terraflow --config <file>`)
 * Pydantic v2 configuration models with geographic coordinate validation - enhanced in v0.2.0
 * Spatial interpolation using scipy.interpolate.griddata - new in v0.2.0
 * Extensible workflow architecture with clean separation of concerns
 
 **Development & Testing:**
-* Comprehensive test suite with pytest (33+ tests across 10 test files)
+* Comprehensive test suite with pytest (127 tests across 10 test files)
 * Linting with ruff and black
 * Makefile automation for dev/test/build/release workflows
 * Interactive Jupyter notebook for comprehensive testing
@@ -226,7 +226,7 @@ This runs ruff and black for code formatting and style checks.
 
 ## Testing
 
-TerraFlow includes a comprehensive test suite with 33+ tests covering all core functionality.
+TerraFlow includes a comprehensive test suite with 127 tests covering all core functionality.
 
 ### Run all tests
 
