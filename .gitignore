@@ -335,3 +335,12 @@ outputs/
 # Demo raster (public USDA CDL data — download with: make get-demo-data)
 data/*.tif
 data/*.tiff
+
+# Marimo session cache
+__marimo__/
+
+# Local test run outputs
+test_outputs/
+
+# MkDocs build output (site/ is already covered by /site above, but belt-and-suspenders)
+site/

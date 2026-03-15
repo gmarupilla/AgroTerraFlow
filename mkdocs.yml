@@ -109,6 +109,7 @@ plugins:
   - mkdocs-jupyter:
       execute: false
       include_source: true
+      include: ["*.ipynb"]
   - mkdocstrings:
       handlers:
         python:
