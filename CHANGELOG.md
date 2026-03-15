@@ -7,11 +7,28 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.2.1] — 2026-03-15
+
+### Fixed
+- Broadened Python support floor from 3.13 to **3.10** (`requires-python`, mypy target, CI matrix now tests 3.10/3.11/3.12).
+- `rasterio.CRS` has no `.equals()` method — replaced with `==` / `!=` in `geo.py` and `pipeline.py`.
+- Docker build: added missing `curl` to apt deps; fixed `uv` install path (`UV_INSTALL_DIR=/usr/local/bin`); copied `data/` and `scripts/` into image; generate synthetic demo raster at build time so container runs end-to-end with no external data.
+
 ### Added
-- Deterministic run fingerprinting based on canonical config, ROI geometry hash, and input file SHA-256 hashes.
-- `core/run_identity` module: `compute_run_fingerprint`, `hash_roi_geometry`, `fingerprint_file` utilities.
+- `CITATION.cff` with both authors and ORCIDs for Zenodo/GitHub citation support.
+- Deterministic run fingerprinting: `core/run_identity` module (`compute_run_fingerprint`, `hash_roi_geometry`, `fingerprint_file`).
 - Shapely dependency for geometry normalisation in ROI hashing.
 - Run identity tests and documentation.
+- `[tool.ruff]` configuration in `pyproject.toml`; notebooks and scripts excluded from linting.
+- `.dockerignore` to keep build context lean.
+- CI `docker-e2e` job: builds image, runs demo pipeline, verifies `features.parquet`, `manifest.json`, `report.json`.
+- Demo notebook converted from broken marimo iframe to a 30-cell Jupyter `.ipynb` rendered via `mkdocs-jupyter`.
+
+### Changed
+- README: corrected test count (127), Python badge (3.10+), CLI invocation (`terraflow --config`, not `terraflow run --config`).
+- Demo raster (`data/usda_cdl.tif`) removed from git; now downloaded from USDA CropScape or generated synthetically via `make get-demo-data`.
+- Removed `fly.toml` (unrelated web deployment config) and aspirational `docs/joss-readiness.md` / `docs/ard-readiness.md`.
+- `.gitignore`: added `.vscode/`, `.claude/`, `.cursor/`, `.aider*`, `__marimo__/`, `test_outputs/`.
 
 ## [0.2.0] — 2026-02-24
 
