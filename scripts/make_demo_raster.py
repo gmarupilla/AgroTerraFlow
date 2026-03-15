@@ -2,11 +2,14 @@
 Generate a synthetic demo raster for TerraFlow's quickstart example.
 
 The raster mimics the structure of a USDA Cropland Data Layer (CDL) clip:
-  - Geographic extent: lon -101 to -94, lat 38 to 40 (western Kansas)
-  - CRS: EPSG:4326 (WGS 84)
-  - Pixel size: ~30 m at this latitude (~0.00027 degrees)
+  - CRS: EPSG:5070 (USA Contiguous Albers Equal Area Conic — CDL native)
+  - Pixel size: 30 m (CDL native resolution)
+  - Approximate extent: western Kansas (same region as demo_config.yml ROI)
   - Values: integers 1–255 (CDL crop classification codes), nodata = 0
-  - Single band, uint8
+  - Single band, uint8, LZW-compressed
+
+The synthetic raster is ~800×800 px (~600 KB), matching the size of a real
+CropScape clip over this region.
 
 For real USDA CDL data, see data/README.md.
 """
@@ -19,39 +22,37 @@ from pathlib import Path
 import numpy as np
 import rasterio
 from rasterio.crs import CRS
-from rasterio.transform import from_bounds
+from rasterio.transform import from_origin
 
 OUTPUT = Path(__file__).resolve().parents[1] / "data" / "usda_cdl.tif"
 
-# Demo ROI: western Kansas — matches examples/demo_config.yml
-XMIN, YMIN, XMAX, YMAX = -101.0, 38.0, -94.0, 40.0
+# Approximate Albers (EPSG:5070) origin for western Kansas
+# (matches the ~bbox from a real CropScape download of the demo ROI)
+WEST_X = 86925.0   # left edge in Albers metres
+NORTH_Y = 1774455.0  # top edge in Albers metres
+PIXEL_M = 30.0     # 30 m — CDL native resolution
+WIDTH = 779
+HEIGHT = 779
 
-# ~300 m pixel (10× CDL native resolution) — sufficient for demo purposes
-PIXEL_DEG = 0.00269494585236
-
-WIDTH = int(round((XMAX - XMIN) / PIXEL_DEG))
-HEIGHT = int(round((YMAX - YMIN) / PIXEL_DEG))
-
-# Common CDL crop codes for Kansas: corn=1, soybeans=5, winter_wheat=24,
-# sorghum=4, fallow=61, grass/pasture=176, developed=121, water=83
-CDL_CODES = np.array([1, 4, 5, 24, 61, 121, 176], dtype=np.uint8)
+# Common CDL crop codes for Kansas:
+# corn=1, sorghum=4, soybeans=5, winter_wheat=24, fallow=61,
+# developed_low=122, grass_pasture=176
+CDL_CODES = np.array([1, 4, 5, 24, 61, 122, 176], dtype=np.uint8)
 
 rng = np.random.default_rng(seed=42)
 
 # Spatial blocks give a more realistic CDL appearance than pure noise.
-block_h, block_w = HEIGHT // 40, WIDTH // 40
-blocks = rng.integers(0, len(CDL_CODES), size=(block_h, block_w), dtype=np.uint8)
+block_size = 20
+blocks = rng.integers(0, len(CDL_CODES), size=(HEIGHT // block_size, WIDTH // block_size), dtype=np.uint8)
 data = CDL_CODES[
-    np.repeat(np.repeat(blocks, HEIGHT // block_h, axis=0), WIDTH // block_w, axis=1)
+    np.repeat(np.repeat(blocks, block_size, axis=0), block_size, axis=1)
 ]
-# Trim/pad to exact dimensions
 data = data[:HEIGHT, :WIDTH]
 
-# Scatter ~3 % nodata (value 0) to simulate masked cells
-nodata_mask = rng.random(data.shape) < 0.03
-data[nodata_mask] = 0
+# Scatter ~3 % nodata (value 0) to simulate masked/boundary cells
+data[rng.random(data.shape) < 0.03] = 0
 
-transform = from_bounds(XMIN, YMIN, XMAX, YMAX, WIDTH, HEIGHT)
+transform = from_origin(WEST_X, NORTH_Y, PIXEL_M, PIXEL_M)
 
 OUTPUT.parent.mkdir(parents=True, exist_ok=True)
 with rasterio.open(
@@ -62,7 +63,7 @@ with rasterio.open(
     width=WIDTH,
     count=1,
     dtype=np.uint8,
-    crs=CRS.from_epsg(4326),
+    crs=CRS.from_epsg(5070),
     transform=transform,
     nodata=0,
     compress="lzw",
