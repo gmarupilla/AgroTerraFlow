@@ -61,3 +61,27 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml
           fail_ci_if_error: false
+
+  docker-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t terraflow:ci .
+
+      - name: Run demo pipeline end-to-end
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/docker-out:/app/outputs \
+            terraflow:ci \
+            --config examples/demo_config.yml
+
+      - name: Verify pipeline outputs exist
+        run: |
+          run_dir=$(ls -d docker-out/demo_run/runs/*)
+          echo "Run dir: $run_dir"
+          test -f "$run_dir/features.parquet"
+          test -f "$run_dir/manifest.json"
+          test -f "$run_dir/report.json"
