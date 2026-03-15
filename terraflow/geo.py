@@ -5,8 +5,7 @@ import rasterio
 from pyproj import Transformer
 from rasterio.crs import CRS
 from rasterio.io import DatasetReader
-from rasterio.windows import from_bounds
-from rasterio.windows import Window
+from rasterio.windows import Window, from_bounds
 
 from .utils import logger
 

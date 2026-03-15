@@ -1,5 +1,6 @@
-from pathlib import Path
 import textwrap
+from pathlib import Path
+
 import pytest
 
 from terraflow.config import load_config

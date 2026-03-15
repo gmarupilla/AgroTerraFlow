@@ -1,10 +1,11 @@
 """Unit tests for the CLI module."""
 
 import sys
+import textwrap
 from pathlib import Path
 from unittest.mock import patch
+
 import pytest
-import textwrap
 
 from terraflow.cli import main
 
@@ -59,9 +60,9 @@ max_cells: 10
 
     # Create synthetic data files
     import numpy as np
+    import pandas as pd
     import rasterio
     from rasterio.transform import from_origin
-    import pandas as pd
 
     data_dir = tmp_path / "data"
     data_dir.mkdir(parents=True, exist_ok=True)

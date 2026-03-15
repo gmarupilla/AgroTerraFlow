@@ -1,5 +1,5 @@
-from pathlib import Path
 import textwrap
+from pathlib import Path
 
 import numpy as np
 import rasterio
@@ -7,7 +7,7 @@ from pyproj import Transformer
 from rasterio.crs import CRS
 from rasterio.transform import from_origin
 
-from terraflow.pipeline import run_pipeline, _aggregate_climate
+from terraflow.pipeline import _aggregate_climate, run_pipeline
 
 
 def test_run_pipeline_with_synthetic_data(

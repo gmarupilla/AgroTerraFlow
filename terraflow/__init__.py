@@ -11,13 +11,13 @@ This package provides utilities to:
 from .config import PipelineConfig, load_config
 from .pipeline import run_pipeline
 from .stats import (
-    RasterSummary,
     ClimateSummary,
+    RasterSummary,
     RunReport,
+    batch_summarize,
+    compare_rasters,
     summarize_raster,
     summarize_raster_file,
-    compare_rasters,
-    batch_summarize,
 )
 
 __all__ = [

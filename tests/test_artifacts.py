@@ -29,9 +29,8 @@ import rasterio
 from rasterio.transform import from_origin
 
 from terraflow.core.run_identity import compute_run_fingerprint, fingerprint_file, hash_roi_geometry
-from terraflow.ingest import build_data_catalog, DataCatalog, RasterLayer, ClimateLayer
-from terraflow.pipeline import run_pipeline, FEATURES_COLUMNS_ORDERED, FEATURES_SCHEMA_VERSION
-
+from terraflow.ingest import ClimateLayer, DataCatalog, RasterLayer, build_data_catalog
+from terraflow.pipeline import FEATURES_COLUMNS_ORDERED, FEATURES_SCHEMA_VERSION, run_pipeline
 
 # ---------------------------------------------------------------------------
 # Shared helpers / fixtures

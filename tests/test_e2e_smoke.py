@@ -23,8 +23,7 @@ import pytest
 import rasterio
 from rasterio.transform import from_origin
 
-from terraflow.pipeline import run_pipeline, FEATURES_COLUMNS_ORDERED
-
+from terraflow.pipeline import FEATURES_COLUMNS_ORDERED, run_pipeline
 
 # ---------------------------------------------------------------------------
 # Helpers

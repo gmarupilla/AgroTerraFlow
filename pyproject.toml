@@ -64,6 +64,14 @@ no_implicit_optional = true
 ignore_missing_imports = true
 files = ["terraflow", "tests"]
 
+[tool.ruff]
+exclude = ["docs/", "notebooks/", "scripts/", "*.ipynb"]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
 [tool.pytest.ini_options]
 markers = [
     "smoke: end-to-end smoke tests using synthetic data (run with: pytest -m smoke)",

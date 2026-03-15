@@ -6,10 +6,8 @@ This script produces a suitability heatmap instead of a histogram.
 
 from pathlib import Path
 
-import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-
+import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUTS = ROOT / "outputs" / "demo_run"

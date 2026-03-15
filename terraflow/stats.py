@@ -5,8 +5,8 @@ from typing import Dict, Iterable, Literal, Optional, Tuple
 
 import numpy as np
 import rasterio
-from rasterio.io import DatasetReader
 from pydantic import BaseModel, Field
+from rasterio.io import DatasetReader
 
 from .geo import clip_raster_to_roi
 
