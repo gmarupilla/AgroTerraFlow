@@ -34,10 +34,10 @@ PIXEL_M = 30.0     # 30 m — CDL native resolution
 WIDTH = 779
 HEIGHT = 779
 
-# Common CDL crop codes for Kansas:
+# CDL crop codes present in the 2025 western Kansas clip:
 # corn=1, sorghum=4, soybeans=5, winter_wheat=24, fallow=61,
-# developed_low=122, grass_pasture=176
-CDL_CODES = np.array([1, 4, 5, 24, 61, 122, 176], dtype=np.uint8)
+# developed_open=121, developed_low=122, grass_pasture=176, shrubland=152
+CDL_CODES = np.array([1, 4, 5, 24, 61, 121, 122, 152, 176], dtype=np.uint8)
 
 rng = np.random.default_rng(seed=42)
 

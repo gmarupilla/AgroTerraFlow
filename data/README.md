@@ -14,7 +14,7 @@ annual raster of crop-specific land cover for the contiguous United States.
 
 **Data source (official government release):**
 > USDA National Agricultural Statistics Service.
-> *Cropland Data Layer.* Published crop-specific data layer.
+> *Cropland Data Layer, 2025.* Published crop-specific data layer.
 > Available at: <https://www.nass.usda.gov/Research_and_Science/Cropland/Release/>
 > Interactive portal (CropScape): <https://nassgeodata.gmu.edu/CropScape/>
 
@@ -49,8 +49,8 @@ Using real CDL data is recommended for any analysis beyond the quickstart demo.
 
 When using real CDL data in published work, cite as:
 
-> USDA National Agricultural Statistics Service (2023).
-> *Cropland Data Layer.* Accessed via CropScape.
+> USDA National Agricultural Statistics Service (2025).
+> *Cropland Data Layer, 2025.* Accessed via CropScape.
 > <https://nassgeodata.gmu.edu/CropScape/>
 
 This citation corresponds to `@usda_cdl` in `paper/biblio.bib`.
