@@ -7,7 +7,7 @@ PRE_COMMIT = .venv/bin/pre-commit
 MYPY = .venv/bin/mypy
 PIP_LICENSES = .venv/bin/pip-licenses
 
-.PHONY: help venv install dev test test-cov smoke-test typecheck license-check run build clean docker-build docker-run lint lint-fix pre-commit docs-serve docs-build paper
+.PHONY: help venv install dev test test-cov smoke-test typecheck license-check run build clean docker-build docker-run lint lint-fix pre-commit docs-serve docs-build paper get-demo-data
 
 help:
 	@echo "Available commands:"
@@ -29,6 +29,7 @@ help:
 	@echo "  make docs-serve    - Serve MkDocs site locally"
 	@echo "  make docs-build    - Build MkDocs site (strict)"
 	@echo "  make paper         - Compile JOSS paper PDF via Docker (openjournals/inara)"
+	@echo "  make get-demo-data - Download USDA CDL demo raster from CropScape (public domain)"
 
 # ---------------------------
 # Environment setup
@@ -108,6 +109,14 @@ docs-build:
 	$(UV) pip install --python $(PYTHON) -r docs/requirements.txt
 	$(PYTHON) -m mkdocs build --strict
 
+
+get-demo-data:
+	@echo "Downloading USDA CDL demo raster (western Kansas, 2023)..."
+	@echo "Source: USDA NASS CropScape WCS — public domain (17 U.S.C. § 105)"
+	curl -fL \
+		"https://nassgeodata.gmu.edu/CropScapeService/wms_cropscape?service=WCS&version=2.0.1&request=GetCoverage&coverageid=cdl_2023&bbox=-101,38,-94,40&crs=EPSG:4326&format=image/tiff" \
+		-o data/usda_cdl.tif
+	@echo "Saved to data/usda_cdl.tif"
 
 paper:
 	docker run --rm \
