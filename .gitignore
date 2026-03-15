@@ -329,9 +329,5 @@ paper/*.jats
 paper/*.crossref.xml
 paper/jats/
 
-# Demo/sample raster data (large binary — download separately)
-data/*.tif
-data/*.tiff
-
 # Pipeline output artifacts (generated at runtime)
 outputs/
