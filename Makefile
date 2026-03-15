@@ -111,12 +111,11 @@ docs-build:
 
 
 get-demo-data:
-	@echo "Downloading USDA CDL demo raster (western Kansas, 2023)..."
-	@echo "Source: USDA NASS CropScape WCS — public domain (17 U.S.C. § 105)"
-	curl -fL \
-		"https://nassgeodata.gmu.edu/CropScapeService/wms_cropscape?service=WCS&version=2.0.1&request=GetCoverage&coverageid=cdl_2023&bbox=-101,38,-94,40&crs=EPSG:4326&format=image/tiff" \
-		-o data/usda_cdl.tif
+	@echo "Generating synthetic demo raster (western Kansas extent, CDL-compatible)..."
+	$(PYTHON) scripts/make_demo_raster.py
 	@echo "Saved to data/usda_cdl.tif"
+	@echo ""
+	@echo "For real USDA CDL data see data/README.md (USDA NASS CropScape)."
 
 paper:
 	docker run --rm \
