@@ -301,24 +301,14 @@ poetry.toml
 # LSP config files
 pyrightconfig.json
 
-### VisualStudioCode ###
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/*.code-snippets
-
-# Local History for Visual Studio Code
+### Editor / AI tool configs (machine-local, not project state) ###
+.vscode/
+.claude/
+.cursor/
+.aider*
 .history/
-
-# Built Visual Studio Code Extensions
-*.vsix
-
-### VisualStudioCode Patch ###
-# Ignore all local history of files
-.history
 .ionide
+*.vsix
 
 # Local audit
 AUDIT.md
