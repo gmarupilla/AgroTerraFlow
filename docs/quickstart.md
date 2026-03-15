@@ -93,13 +93,16 @@ flowchart TD
     ```bash
     # 1. Clone and install
     git clone https://github.com/gmarupilla/AgroTerraFlow.git
-    cd TerraFlow
+    cd AgroTerraFlow
     pip install -e ".[dev]"
 
-    # 2. Run the demo
+    # 2. Get the demo raster (see "Demo raster" section below)
+    make get-demo-data
+
+    # 3. Run the demo
     terraflow -c examples/demo_config.yml
 
-    # 3. Look at the results (run dir named after fingerprint)
+    # 4. Look at the results (run dir named after fingerprint)
     ls outputs/demo_run/runs/
     # → <run_fingerprint>/
     #     features.parquet  manifest.json  report.json  results.csv
@@ -132,6 +135,65 @@ cell_id,lat,lon,v_index,mean_temp,total_rain,score,label
 2,39.88,-97.61,12.0,20.1,135.9,0.23,low
 ...
 ```
+
+---
+
+## Demo raster
+
+The demo uses a clip from the **USDA Cropland Data Layer (CDL) 2025** —
+a publicly available, public domain land-cover map published annually by
+the USDA National Agricultural Statistics Service (NASS).
+
+`data/usda_cdl.tif` is not stored in the repository. Obtain it one of two ways:
+
+### Option A — Generate synthetic (offline, instant)
+
+```bash
+make get-demo-data
+```
+
+Creates a CDL-compatible synthetic GeoTIFF with realistic crop codes
+(corn, soybeans, winter wheat, sorghum, grass/pasture) in the same
+geographic extent and projection as the real file. Sufficient for all
+demos, tests, and development work.
+
+### Option B — Download real USDA CDL data from CropScape
+
+To reproduce results using the exact government dataset:
+
+1. Go to **<https://nassgeodata.gmu.edu/CropScape/>**
+2. In the top toolbar, click **"Download Data"**
+3. Draw a rectangle over western Kansas, or click **"Define Area by Coordinates"**
+   and enter:
+
+    | Field | Value |
+    |---|---|
+    | West (xmin) | `-101` |
+    | East (xmax) | `-94` |
+    | South (ymin) | `38` |
+    | North (ymax) | `40` |
+
+4. In the download dialog that appears, select the **CDL** tab *(not Freq or Mask)*
+5. Set **Year** to `2025`
+6. Set **Projection** to `USA Contiguous Albers Equal Area Conic USGS`
+   *(the default — TerraFlow reprojects automatically)*
+7. Click **Submit** and wait for the download
+8. Extract the `.tif` from the zip and save it as:
+
+    ```
+    data/usda_cdl.tif
+    ```
+
+Then run:
+
+```bash
+terraflow -c examples/demo_config.yml
+```
+
+!!! note "Citation"
+    When using real CDL data in published work, cite as:
+    USDA National Agricultural Statistics Service (2025). *Cropland Data Layer, 2025.*
+    Accessed via CropScape. <https://nassgeodata.gmu.edu/CropScape/>
 
 ---
 
@@ -202,4 +264,4 @@ terraflow -c config.yml
 | Customise the config in detail | [Configuration Schema](config/schema.md) |
 | Contribute to the codebase | [Development Guide](DEVELOPMENT.md) |
 | Understand the architecture and design decisions | [Architecture Overview](architecture/overview.md) |
-| See the full list of known issues and improvements | `AUDIT.md` (git-ignored, developers only) |
+| Track open issues and improvements | [GitHub Issues](https://github.com/gmarupilla/AgroTerraFlow/issues) |

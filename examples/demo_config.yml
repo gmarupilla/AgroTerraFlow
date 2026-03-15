@@ -1,13 +1,25 @@
+# TerraFlow demo configuration — western Kansas, USDA CDL 2025
+#
+# Demo raster (data/usda_cdl.tif) is not stored in git.
+# To obtain it, run:
+#   make get-demo-data          # synthetic CDL-compatible raster (offline)
+#
+# Or download the real USDA CDL 2025 from CropScape:
+#   https://nassgeodata.gmu.edu/CropScape/
+#   → Download Data → CDL tab → Year 2025 → bbox below → Submit
+#
+# Data source: USDA NASS Cropland Data Layer (public domain, 17 U.S.C. § 105)
+
 raster_path: "../data/usda_cdl.tif"
 climate_csv: "../data/demo_climate.csv"
 output_dir: "../outputs/demo_run"
 
 roi:
   type: "bbox"
-  xmin: -101
-  ymin: 38
-  xmax: -94
-  ymax: 40
+  xmin: -101   # West  (longitude, WGS84)
+  ymin: 38     # South (latitude,  WGS84)
+  xmax: -94    # East  (longitude, WGS84)
+  ymax: 40     # North (latitude,  WGS84)
 
 model_params:
   v_min: 0
