@@ -464,7 +464,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
 
     # Reproject to WGS84 (EPSG:4326).
     _wgs84 = CRS.from_epsg(4326)
-    if not raster_crs.equals(_wgs84):
+    if raster_crs != _wgs84:
         _coord_tf = Transformer.from_crs(raster_crs, _wgs84, always_xy=True)
         _lons, _lats = _coord_tf.transform(_native_xs, _native_ys)
         cell_lons: List[float] = list(_lons)

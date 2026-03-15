@@ -62,7 +62,7 @@ def clip_raster_to_roi(
     # Reproject ROI bounds to raster CRS when they differ.
     raster_crs = raster.crs
     src_crs = CRS.from_user_input(roi_crs)
-    if not src_crs.equals(raster_crs):
+    if src_crs != raster_crs:
         transformer = Transformer.from_crs(src_crs, raster_crs, always_xy=True)
         # Transform all 4 corners so non-linear projections are handled correctly,
         # then take the axis-aligned bounding box of the results.

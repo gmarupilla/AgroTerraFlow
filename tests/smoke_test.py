@@ -1,14 +1,21 @@
 from pathlib import Path
 
+import pytest
+
 from terraflow.stats import summarize_raster_file
 
+_RASTER_PATH = Path(__file__).resolve().parents[1] / "data" / "usda_cdl.tif"
+_SKIP_REAL_DATA = pytest.mark.skipif(
+    not _RASTER_PATH.exists(),
+    reason="demo raster data/usda_cdl.tif not present; see data/README.md",
+)
 
+
+@_SKIP_REAL_DATA
 def test_summarize_raster_file_real_data():
 
     repo_root = Path(__file__).resolve().parents[1]
     raster_path = repo_root / "data" / "usda_cdl.tif"
-
-    assert raster_path.exists(), f"Expected raster at {raster_path}"
 
     summary = summarize_raster_file(raster_path)
 
@@ -17,6 +24,7 @@ def test_summarize_raster_file_real_data():
     assert summary.max is not None
 
 
+@_SKIP_REAL_DATA
 def test_summarize_raster_file_real_data_roi():
     repo_root = Path(__file__).resolve().parents[1]
     raster_path = repo_root / "data" / "usda_cdl.tif"
