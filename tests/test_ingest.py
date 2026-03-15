@@ -1,13 +1,14 @@
 """Tests for error handling in the ingest module."""
 
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
 import rasterio
 from rasterio.transform import from_origin
 
-from terraflow.ingest import load_raster, load_climate_csv
+from terraflow.ingest import load_climate_csv, load_raster
 
 
 class TestLoadRaster:

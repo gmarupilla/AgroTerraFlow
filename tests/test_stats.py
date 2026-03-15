@@ -1,16 +1,16 @@
 from pathlib import Path
 
 import numpy as np
+import pytest
 import rasterio
 from rasterio.transform import from_origin
-import pytest
 
 from terraflow.stats import (
     RasterSummary,
+    batch_summarize,
+    compare_rasters,
     summarize_raster,
     summarize_raster_file,
-    compare_rasters,
-    batch_summarize,
 )
 
 

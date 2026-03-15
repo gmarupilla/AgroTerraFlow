@@ -1,5 +1,5 @@
 from terraflow.config import ModelParams
-from terraflow.model import suitability_score, suitability_label
+from terraflow.model import suitability_label, suitability_score
 
 
 def _default_params() -> ModelParams:

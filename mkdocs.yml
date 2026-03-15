@@ -106,6 +106,9 @@ plugins:
       separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
   - tags
   - mermaid2
+  - mkdocs-jupyter:
+      execute: false
+      include_source: true
   - mkdocstrings:
       handlers:
         python:
@@ -143,9 +146,7 @@ nav:
       - terraflow.ingest: api/ingest.md
       - terraflow.climate: api/climate.md
   - Notebooks:
-      - TerraFlow v0.2.0 (Marimo): notebooks/terraflow_v0_2_0_comprehensive_test.md
+      - TerraFlow v0.2.0 Demo: notebooks/terraflow_v0_2_0_comprehensive_test.ipynb
   - Development: DEVELOPMENT.md
   - Roadmap: ROADMAP.md
   - Contributing: contributing.md
-  - JOSS Readiness: joss-readiness.md
-  - ARD Readiness: ard-readiness.md

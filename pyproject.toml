@@ -7,7 +7,7 @@ name = "terraflow-agro"
 version = "0.2.0"
 description = "TerraFlow: a reproducible workflow for geospatial agricultural modeling."
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 license = { text = "MIT" }
 
 authors = [
@@ -56,13 +56,21 @@ Homepage = "https://github.com/gmarupilla/AgroTerraFlow"
 packages = ["terraflow", "terraflow.core"]
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.10"
 warn_unused_ignores = true
 warn_redundant_casts = true
 warn_unused_configs = true
 no_implicit_optional = true
 ignore_missing_imports = true
 files = ["terraflow", "tests"]
+
+[tool.ruff]
+exclude = ["docs/", "notebooks/", "scripts/", "*.ipynb"]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
 
 [tool.pytest.ini_options]
 markers = [

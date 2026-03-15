@@ -35,11 +35,12 @@ Example:
 """
 
 import logging
+from typing import Literal, Optional
+
 import numpy as np
 import pandas as pd
+from pydantic import BaseModel, ConfigDict, field_validator
 from scipy.interpolate import griddata
-from typing import Literal, Optional
-from pydantic import BaseModel, field_validator, ConfigDict
 
 logger = logging.getLogger(__name__)
 

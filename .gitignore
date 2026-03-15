@@ -328,3 +328,10 @@ paper/*.pdf
 paper/*.jats
 paper/*.crossref.xml
 paper/jats/
+
+# Pipeline output artifacts (generated at runtime)
+outputs/
+
+# Demo raster (public USDA CDL data — download with: make get-demo-data)
+data/*.tif
+data/*.tiff
