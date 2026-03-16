@@ -186,7 +186,7 @@ class ClimateInterpolator:
         self.cell_id_column = cell_id_column
         self.fallback_to_mean = fallback_to_mean
         self.cv_metrics: Dict = {}
-        self._krig_variogram_model: Optional[str] = None
+        self._krig_variogram_model: str = "spherical"  # overwritten by _init_kriging
 
         self._validate_columns()
 
@@ -332,7 +332,7 @@ class ClimateInterpolator:
                 if rmse < best_rmse:
                     best_rmse = rmse
                     best_model = model
-            except Exception as exc:
+            except (ValueError, RuntimeError, np.linalg.LinAlgError) as exc:
                 logger.debug("Variogram model '%s' failed during selection: %s", model, exc)
 
         if best_model is None:
@@ -361,7 +361,7 @@ class ClimateInterpolator:
                     "mae": round(float(mae), 6),
                     "n_stations": int(n),
                 }
-            except Exception as exc:
+            except (ValueError, RuntimeError, np.linalg.LinAlgError) as exc:
                 logger.warning("LOOCV failed for variable '%s': %s", var, exc)
                 cv_per_var[var] = {"rmse": None, "mae": None, "n_stations": int(n)}
 
@@ -471,7 +471,7 @@ class ClimateInterpolator:
                     method="linear",
                     fill_value=np.nan,
                 )
-            except Exception as exc:
+            except (ValueError, RuntimeError) as exc:
                 logger.info(
                     "Linear interpolation failed (%s), falling back to nearest-neighbor",
                     exc,
