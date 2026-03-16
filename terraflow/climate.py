@@ -567,7 +567,7 @@ class ClimateInterpolator:
 
             for i, (clat, clon) in enumerate(zip(cell_lats_arr, cell_lons_arr)):
                 dists = np.sqrt((lats_src - clat) ** 2 + (lons_src - clon) ** 2)
-                zero_mask = dists == 0.0
+                zero_mask = dists < 1e-10
                 if zero_mask.any():
                     # Cell coincides with a station — return exact value
                     interp_values[i] = vals[np.argmax(zero_mask)]
