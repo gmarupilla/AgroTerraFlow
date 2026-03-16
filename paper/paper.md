@@ -224,7 +224,11 @@ TerraFlow provides the following reproducibility guarantees:
 - **CRS enforcement**: cell coordinates are always WGS84 geographic degrees in
   output, tested for both geographic (EPSG:4326) and projected (EPSG:32614)
   input rasters.
-- **Automated tests**: 124+ tests across 14 test files cover artifact schema
+- **Seeded cell sampling**: when fewer cells are requested than exist in the
+  ROI (`max_cells < n_valid_cells`), the sampled cell set is drawn using a
+  `numpy.random.default_rng` generator seeded from the SHA-256 of the
+  `run_fingerprint`.  Identical inputs always produce the same cell set.
+- **Automated tests**: 127+ tests across 14 test files cover artifact schema
   contracts, determinism regression, CRS handling, nodata coverage, CLI
   behaviour, and unit tests for each module.
 - **Continuous integration**: GitHub Actions CI runs lint, type checks, tests
@@ -232,11 +236,6 @@ TerraFlow provides the following reproducibility guarantees:
   every push and pull request.
 - **Pinned dependencies and Docker**: optional Docker execution provides a
   fully reproducible environment across machines.
-
-*Known limitation*: random cell sampling (`max_cells < n_valid_cells`) uses
-Python's default PRNG and is not seeded by the run fingerprint, so the
-sampled cell set may differ between runs with the same fingerprint.
-Seeded sampling is planned for a future release.
 
 # Example Usage
 
@@ -262,7 +261,6 @@ sufficient to reproduce results on another machine.
 
 Possible extensions include:
 
-- Seeded random sampling for fully bit-reproducible cell sets.
 - STAC/COG integration for scalable cloud-native geospatial retrieval.
 - Additional input layers: soil rasters, elevation (DEM), NDVI time series.
 - ML-based yield or risk prediction models as pipeline model extensions.

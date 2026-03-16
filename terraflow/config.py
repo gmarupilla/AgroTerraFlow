@@ -118,10 +118,19 @@ class ClimateConfig(BaseModel):
     - 'spatial': Interpolate climate values using geographic coordinates (lat/lon).
     - 'index': Match cells to climate records by row index or explicit cell ID.
 
+    When strategy is 'spatial', three interpolation methods are available:
+    - 'linear': Delaunay-triangulation linear interpolation (scipy.griddata, default).
+    - 'kriging': Ordinary Kriging — geostatistically optimal with per-cell uncertainty
+      (requires pykrige; ≥5 stations recommended).
+    - 'idw': Inverse Distance Weighting — fast, no uncertainty estimate.
+
     Attributes
     ----------
     strategy:
         Matching strategy: 'spatial' (interpolation) or 'index' (direct matching).
+    interpolation_method:
+        Interpolation algorithm when strategy='spatial'.
+        Choices: 'linear' (default), 'kriging', 'idw'.
     cell_id_column:
         Column name in climate CSV for cell ID (used with 'index' strategy).
         If None with 'index' strategy, uses row order matching.
@@ -131,6 +140,7 @@ class ClimateConfig(BaseModel):
     """
 
     strategy: Literal["spatial", "index"] = "spatial"
+    interpolation_method: Literal["linear", "kriging", "idw"] = "linear"
     cell_id_column: str | None = None
     fallback_to_mean: bool = True
 
@@ -144,15 +154,20 @@ class ClimateConfig(BaseModel):
             raise ValueError(f"strategy must be 'spatial' or 'index', got '{v}'")
         return v
 
+    @field_validator("interpolation_method")
+    @classmethod
+    def validate_interpolation_method(cls, v: str) -> str:
+        """Ensure interpolation_method is valid."""
+        if v not in ("linear", "kriging", "idw"):
+            raise ValueError(
+                f"interpolation_method must be 'linear', 'kriging', or 'idw', got '{v}'"
+            )
+        return v
+
     def validate_config(self) -> None:
         """Validate consistency of climate configuration."""
-        if self.strategy == "index" and self.cell_id_column is not None:
-            # cell_id_column is optional; OK to have it
-            pass
-        elif self.strategy == "spatial" and self.cell_id_column is not None:
-            # cell_id_column not used in spatial strategy
-            pass
-        # No conflicting configurations
+        # interpolation_method only applies to spatial strategy
+        pass
 
 
 class PipelineConfig(BaseModel):

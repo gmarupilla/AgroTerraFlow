@@ -1,41 +1,50 @@
 """Climate data handling with spatial interpolation and matching strategies.
 
-This module provides tools for aligning climate data with raster cells using either
-index-based lookup or spatial interpolation. It supports graceful fallbacks when
-climate data is incomplete or sparse.
+This module provides tools for aligning climate data with raster cells using
+index-based lookup or spatial interpolation.  Three spatial methods are
+supported:
 
-All climate data validation is performed using pydantic models for type safety,
-coordinate validation, and consistency checking.
+* **linear** (default) — Delaunay-triangulation linear interpolation via
+  ``scipy.interpolate.griddata``.  Fast, zero extra dependencies, no
+  uncertainty estimate.
+* **kriging** — Ordinary Kriging via ``pykrige``.  Geostatistically optimal
+  (Best Linear Unbiased Predictor) with automatic variogram model selection
+  (spherical / exponential / Gaussian) based on Leave-One-Out Cross-Validation
+  (LOOCV).  Returns per-cell prediction standard deviation as
+  ``{var}_krig_std`` columns.  Requires ≥ ``MIN_KRIGING_STATIONS`` stations.
+* **idw** — Inverse Distance Weighting (power=2).  Faster than kriging, no
+  extra dependencies beyond numpy, no uncertainty estimate.
 
-Example:
-    Load and interpolate climate data for raster cells:
+Cross-validation (LOOCV) is computed at initialisation time for the kriging
+method and stored in ``ClimateInterpolator.cv_metrics``.  The pipeline writes
+these metrics to ``report.json`` under ``interpolation_cv``.
 
-    ```python
+Example
+-------
+.. code-block:: python
+
     import pandas as pd
     from terraflow.climate import ClimateInterpolator
 
-    # Load climate data with lat/lon coordinates
     climate_df = pd.read_csv("climate.csv")
-
-    # Create cell coordinates (lat/lon arrays)
     cell_lats = [40.5, 40.6, 40.7]
     cell_lons = [-74.5, -74.4, -74.3]
 
-    # Initialize interpolator with spatial strategy
     interpolator = ClimateInterpolator(
         climate_df=climate_df,
         strategy="spatial",
-        fallback_to_mean=True
+        interpolation_method="kriging",
+        fallback_to_mean=True,
     )
-
-    # Interpolate climate to cell locations
     cell_climate = interpolator.interpolate(cell_lats, cell_lons)
-    # Returns DataFrame with interpolated temp and rainfall per cell
-    ```
+    # Returns DataFrame with mean_temp, total_rain,
+    # mean_temp_krig_std, total_rain_krig_std columns.
 """
 
+from __future__ import annotations
+
 import logging
-from typing import Literal, Optional
+from typing import Dict, Literal, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -43,6 +52,15 @@ from pydantic import BaseModel, ConfigDict, field_validator
 from scipy.interpolate import griddata
 
 logger = logging.getLogger(__name__)
+
+#: Minimum number of climate stations required for kriging.
+#: Below this threshold the tool falls back to linear interpolation and
+#: logs a warning.  Variogram estimation is unreliable with very sparse
+#: networks (fewer than 5 stations yields < 10 lag pairs).
+MIN_KRIGING_STATIONS: int = 5
+
+#: Variogram models tried during automatic model selection.
+_VARIOGRAM_MODELS: Tuple[str, ...] = ("spherical", "exponential", "gaussian")
 
 
 class CoordinateRange(BaseModel):
@@ -81,68 +99,121 @@ class CoordinateRange(BaseModel):
 class ClimateInterpolator:
     """Spatially interpolate or index-match climate data to raster cells.
 
-    Supports two strategies for aligning climate observations to raster cells:
-    - "spatial": Interpolate climate values using geographic coordinates
-    - "index": Match cells to climate records by row index or cell ID
+    Supports two top-level strategies for aligning climate observations to
+    raster cells:
 
-    All configuration uses pydantic models for type safety and validation.
+    * ``"spatial"`` — interpolate from weather-station coordinates to cell
+      centroids.  Three algorithms are available via ``interpolation_method``:
+      ``"linear"`` (default), ``"kriging"``, ``"idw"``.
+    * ``"index"`` — match cells to climate records by row order or cell ID.
 
-    Attributes:
-        climate_df (pd.DataFrame): Climate data with columns like temperature, rainfall.
-        strategy (str): Matching strategy - "spatial" or "index" (validated via pydantic).
-        cell_id_column (str, optional): Column name for cell ID matching (for "index" strategy).
-        fallback_to_mean (bool): If True, use global mean for cells outside interpolation range.
-        _climate_mean (dict): Cached mean values of climate variables.
-        climate_columns (list): List of climate variable columns (non-coordinate columns).
+    When ``interpolation_method="kriging"``, the interpolator:
+
+    1. Selects the best variogram model (spherical / exponential / Gaussian)
+       by Leave-One-Out Cross-Validation (LOOCV) RMSE on the first climate
+       variable.
+    2. Stores per-variable LOOCV RMSE and MAE in ``cv_metrics``.
+    3. Returns ``{var}_krig_std`` columns alongside the point estimates.
+
+    Attributes
+    ----------
+    climate_df : pd.DataFrame
+        Climate data with ``lat``, ``lon``, and numeric variable columns.
+    strategy : str
+        Top-level matching strategy (``"spatial"`` or ``"index"``).
+    interpolation_method : str
+        Spatial algorithm (``"linear"``, ``"kriging"``, or ``"idw"``).
+        Only used when ``strategy="spatial"``.
+    cell_id_column : str or None
+        Optional column for explicit cell-ID matching (``"index"`` strategy).
+    fallback_to_mean : bool
+        If True, replace NaN predictions with the global variable mean.
+    cv_metrics : dict
+        LOOCV results populated at init when ``interpolation_method="kriging"``.
+        Empty dict for other methods.
+    climate_columns : list[str]
+        Numeric climate variable columns (excludes ``lat``, ``lon``,
+        ``cell_id_column``).
     """
 
     def __init__(
         self,
         climate_df: pd.DataFrame,
         strategy: Literal["spatial", "index"] = "spatial",
+        interpolation_method: Literal["linear", "kriging", "idw"] = "linear",
         cell_id_column: Optional[str] = None,
         fallback_to_mean: bool = True,
     ):
-        """Initialize climate interpolator with pydantic-validated configuration.
+        """Initialise the interpolator and (for kriging) select variogram model.
 
-        Args:
-            climate_df: DataFrame with climate data. Must have 'lat' and 'lon' columns.
-            strategy: "spatial" for interpolation, "index" for direct row matching.
-            cell_id_column: Column name mapping cells to climate records (for "index" strategy).
-            fallback_to_mean: If True, use global mean for missing/out-of-range values.
+        Parameters
+        ----------
+        climate_df:
+            DataFrame with climate data.  Must have ``lat`` and ``lon``
+            columns.
+        strategy:
+            ``"spatial"`` for coordinate-based interpolation; ``"index"``
+            for direct row/ID matching.
+        interpolation_method:
+            Spatial interpolation algorithm.  ``"linear"`` uses
+            ``scipy.griddata``; ``"kriging"`` uses PyKrige OrdinaryKriging
+            with automatic variogram model selection; ``"idw"`` uses inverse
+            distance weighting.  Only relevant when ``strategy="spatial"``.
+        cell_id_column:
+            Column name for cell-ID matching (``"index"`` strategy only).
+        fallback_to_mean:
+            Replace NaN / extrapolated values with the global variable mean.
 
-        Raises:
-            ValueError: If strategy is invalid, required columns missing, or invalid coordinates.
+        Raises
+        ------
+        ValueError
+            If ``strategy`` or ``interpolation_method`` is invalid, required
+            columns are missing, or coordinate ranges are violated.
+        ImportError
+            If ``interpolation_method="kriging"`` and PyKrige is not installed.
         """
-        # Validate strategy using pydantic-like pattern
         if strategy not in ("spatial", "index"):
             raise ValueError(f"strategy must be 'spatial' or 'index', got '{strategy}'")
+        if interpolation_method not in ("linear", "kriging", "idw"):
+            raise ValueError(
+                f"interpolation_method must be 'linear', 'kriging', or 'idw', "
+                f"got '{interpolation_method}'"
+            )
 
         self.climate_df = climate_df.copy()
         self.strategy = strategy
+        self.interpolation_method = interpolation_method
         self.cell_id_column = cell_id_column
         self.fallback_to_mean = fallback_to_mean
+        self.cv_metrics: Dict = {}
+        self._krig_variogram_model: Optional[str] = None
 
-        # Validate required columns
         self._validate_columns()
 
-        # Validate and prepare coordinates
         if self.strategy == "spatial":
             self._validate_spatial_data()
 
-        # Cache mean climate values for fallback
         self._climate_mean = self._compute_mean_climate()
 
+        if self.strategy == "spatial" and self.interpolation_method == "kriging":
+            self._init_kriging()
+
         logger.info(
-            f"ClimateInterpolator initialized with strategy='{strategy}', "
-            f"{len(climate_df)} records, climate_columns={self.climate_columns}"
+            "ClimateInterpolator initialised: strategy='%s', "
+            "interpolation_method='%s', records=%d, variables=%s",
+            strategy,
+            interpolation_method,
+            len(self.climate_df),
+            self.climate_columns,
         )
+
+    # ------------------------------------------------------------------
+    # Initialisation helpers
+    # ------------------------------------------------------------------
 
     def _validate_columns(self) -> None:
         """Validate that climate data has required columns."""
         required_cols = {"lat", "lon"}
-
-        # Identify climate variable columns (not lat/lon, not cell_id)
         exclude_cols = {"lat", "lon"}
         if self.cell_id_column:
             exclude_cols.add(self.cell_id_column)
@@ -152,44 +223,33 @@ class ClimateInterpolator:
                 f"climate_df must have 'lat' and 'lon' columns. "
                 f"Found: {list(self.climate_df.columns)}"
             )
-        # Select numeric climate variable columns only (exclude ids/strings)
         potential_cols = [c for c in self.climate_df.columns if c not in exclude_cols]
         climate_numeric = [
             c
             for c in potential_cols
             if pd.api.types.is_numeric_dtype(self.climate_df[c])
         ]
-
         if len(climate_numeric) == 0:
             raise ValueError(
                 "climate_df must have at least one climate variable column "
                 "(beyond 'lat', 'lon', and optional cell_id_column)"
             )
-
         self.climate_columns = list(climate_numeric)
 
     def _validate_spatial_data(self) -> None:
-        """Validate lat/lon coordinates for spatial strategy using pydantic patterns.
-
-        Checks:
-        - All lat/lon values are valid numbers
-        - Latitude in [-90, 90]
-        - Longitude in [-180, 180]
-        - Warns about duplicates or NaN values
-        """
+        """Validate lat/lon coordinates for spatial strategy."""
         lats = self.climate_df["lat"]
         lons = self.climate_df["lon"]
 
-        # Check for NaN values
         nan_count = lats.isna().sum() + lons.isna().sum()
         if nan_count > 0:
             logger.warning(
-                f"Found {nan_count} NaN values in lat/lon coordinates. "
-                f"Removing rows with missing coordinates."
+                "Found %d NaN values in lat/lon coordinates. "
+                "Removing rows with missing coordinates.",
+                nan_count,
             )
             self.climate_df = self.climate_df.dropna(subset=["lat", "lon"])
 
-        # Validate latitude range using pydantic CoordinateRange pattern
         lat_min, lat_max = lats.min(), lats.max()
         if lat_min < -90 or lat_max > 90:
             raise ValueError(
@@ -197,7 +257,6 @@ class ClimateInterpolator:
                 f"found range [{lat_min:.2f}, {lat_max:.2f}]"
             )
 
-        # Validate longitude range using pydantic CoordinateRange pattern
         lon_min, lon_max = lons.min(), lons.max()
         if lon_min < -180 or lon_max > 180:
             raise ValueError(
@@ -205,40 +264,171 @@ class ClimateInterpolator:
                 f"found range [{lon_min:.2f}, {lon_max:.2f}]"
             )
 
-        # Verify all coordinates pass pydantic-style validation
         for idx, (lat, lon) in enumerate(zip(lats, lons)):
             try:
                 CoordinateRange(latitude=lat, longitude=lon)
             except ValueError as e:
                 raise ValueError(f"Row {idx}: Invalid coordinate ({lat}, {lon}): {e}")
 
-        # Warn about duplicate coordinates
         duplicates = self.climate_df.duplicated(subset=["lat", "lon"], keep=False).sum()
         if duplicates > 0:
             logger.warning(
-                f"Found {duplicates} duplicate lat/lon coordinates in climate data. "
-                f"Interpolation may produce ambiguous results."
+                "Found %d duplicate lat/lon coordinates in climate data. "
+                "Interpolation may produce ambiguous results.",
+                duplicates,
             )
 
     def _compute_mean_climate(self) -> dict:
-        """Compute mean values for each climate variable for fallback."""
-        mean_vals = {}
-        for col in self.climate_columns:
-            mean_vals[col] = self.climate_df[col].mean()
-        return mean_vals
+        """Cache mean values of each climate variable for fallback use."""
+        return {col: float(self.climate_df[col].mean()) for col in self.climate_columns}
+
+    # ------------------------------------------------------------------
+    # Kriging initialisation: variogram selection + LOOCV
+    # ------------------------------------------------------------------
+
+    def _init_kriging(self) -> None:
+        """Select the best variogram model via LOOCV and compute CV metrics.
+
+        If fewer than ``MIN_KRIGING_STATIONS`` stations are available, falls
+        back to ``"linear"`` interpolation with a warning.
+
+        Side effects
+        ------------
+        Sets ``self._krig_variogram_model`` and populates ``self.cv_metrics``.
+        """
+        try:
+            from pykrige.ok import OrdinaryKriging  # noqa: F401
+        except ImportError as exc:
+            raise ImportError(
+                "PyKrige is required for kriging interpolation. "
+                "Install with: pip install pykrige"
+            ) from exc
+
+        n = len(self.climate_df)
+        if n < MIN_KRIGING_STATIONS:
+            logger.warning(
+                "Only %d climate stations available; kriging requires ≥%d. "
+                "Falling back to linear interpolation.",
+                n,
+                MIN_KRIGING_STATIONS,
+            )
+            self.interpolation_method = "linear"
+            return
+
+        lons = self.climate_df["lon"].values.astype(float)
+        lats = self.climate_df["lat"].values.astype(float)
+
+        # --- Variogram model selection on the first climate variable ----------
+        primary_var = self.climate_columns[0]
+        vals_primary = self.climate_df[primary_var].values.astype(float)
+
+        best_model = "spherical"
+        best_rmse = np.inf
+
+        for model in _VARIOGRAM_MODELS:
+            try:
+                rmse = self._loocv_rmse(lons, lats, vals_primary, model)
+                logger.debug("Variogram '%s': LOOCV RMSE=%.4f (%s)", model, rmse, primary_var)
+                if rmse < best_rmse:
+                    best_rmse = rmse
+                    best_model = model
+            except Exception as exc:
+                logger.debug("Variogram model '%s' failed during selection: %s", model, exc)
+
+        self._krig_variogram_model = best_model
+        logger.info(
+            "Kriging variogram selected: '%s' (LOOCV RMSE=%.4f for '%s')",
+            best_model,
+            best_rmse,
+            primary_var,
+        )
+
+        # --- Full LOOCV for all variables with the selected model -------------
+        cv_per_var: Dict = {}
+        for var in self.climate_columns:
+            vals = self.climate_df[var].values.astype(float)
+            try:
+                rmse, mae = self._loocv_full(lons, lats, vals, best_model)
+                cv_per_var[var] = {
+                    "rmse": round(float(rmse), 6),
+                    "mae": round(float(mae), 6),
+                    "n_stations": int(n),
+                }
+            except Exception as exc:
+                logger.warning("LOOCV failed for variable '%s': %s", var, exc)
+                cv_per_var[var] = {"rmse": None, "mae": None, "n_stations": int(n)}
+
+        self.cv_metrics = {
+            "method": "loocv",
+            "variogram_model": best_model,
+            "per_variable": cv_per_var,
+        }
+
+    def _loocv_rmse(self, lons: np.ndarray, lats: np.ndarray, vals: np.ndarray, model: str) -> float:
+        """Return LOOCV RMSE for a given variogram model (used for model selection)."""
+        from pykrige.ok import OrdinaryKriging
+
+        errors = []
+        for i in range(len(vals)):
+            ok = OrdinaryKriging(
+                np.delete(lons, i),
+                np.delete(lats, i),
+                np.delete(vals, i),
+                variogram_model=model,
+                verbose=False,
+                enable_plotting=False,
+            )
+            pred, _ = ok.execute("points", np.array([lons[i]]), np.array([lats[i]]))
+            errors.append(float(pred[0]) - vals[i])
+        return float(np.sqrt(np.mean(np.array(errors) ** 2)))
+
+    def _loocv_full(
+        self, lons: np.ndarray, lats: np.ndarray, vals: np.ndarray, model: str
+    ) -> Tuple[float, float]:
+        """Return (RMSE, MAE) for the given variogram model (full LOOCV)."""
+        from pykrige.ok import OrdinaryKriging
+
+        errors = []
+        for i in range(len(vals)):
+            ok = OrdinaryKriging(
+                np.delete(lons, i),
+                np.delete(lats, i),
+                np.delete(vals, i),
+                variogram_model=model,
+                verbose=False,
+                enable_plotting=False,
+            )
+            pred, _ = ok.execute("points", np.array([lons[i]]), np.array([lats[i]]))
+            errors.append(float(pred[0]) - vals[i])
+        errs = np.array(errors)
+        return float(np.sqrt(np.mean(errs ** 2))), float(np.mean(np.abs(errs)))
+
+    # ------------------------------------------------------------------
+    # Public interface
+    # ------------------------------------------------------------------
 
     def interpolate(self, cell_lats: np.ndarray, cell_lons: np.ndarray) -> pd.DataFrame:
         """Interpolate or match climate data to cell locations.
 
-        Args:
-            cell_lats: Array of cell latitudes.
-            cell_lons: Array of cell longitudes.
+        Parameters
+        ----------
+        cell_lats:
+            Array of cell latitudes (WGS84).
+        cell_lons:
+            Array of cell longitudes (WGS84).
 
-        Returns:
-            DataFrame with one row per cell, columns for each climate variable.
+        Returns
+        -------
+        pd.DataFrame
+            One row per cell, columns for each climate variable.  When
+            ``interpolation_method="kriging"``, additional
+            ``{var}_krig_std`` columns are included (prediction standard
+            deviation from the kriging variance).
 
-        Raises:
-            ValueError: If strategy is "index" and cell/climate counts don't match.
+        Raises
+        ------
+        ValueError
+            If array lengths do not match.
         """
         cell_lats = np.asarray(cell_lats)
         cell_lons = np.asarray(cell_lons)
@@ -251,31 +441,39 @@ class ClimateInterpolator:
 
         if self.strategy == "spatial":
             return self._interpolate_spatial(cell_lats, cell_lons)
-        else:  # "index"
+        else:
             return self._match_by_index(cell_lats, cell_lons)
+
+    # ------------------------------------------------------------------
+    # Spatial interpolation dispatch
+    # ------------------------------------------------------------------
 
     def _interpolate_spatial(
         self, cell_lats: np.ndarray, cell_lons: np.ndarray
     ) -> pd.DataFrame:
-        """Spatially interpolate climate values to cell locations.
+        if self.interpolation_method == "kriging":
+            return self._interpolate_kriging(cell_lats, cell_lons)
+        elif self.interpolation_method == "idw":
+            return self._interpolate_idw(cell_lats, cell_lons)
+        else:
+            return self._interpolate_linear(cell_lats, cell_lons)
 
-        Uses scipy.interpolate.griddata with linear interpolation.
-        Falls back to nearest-neighbor interpolation if data is insufficient
-        for linear triangulation.
+    def _interpolate_linear(
+        self, cell_lats: np.ndarray, cell_lons: np.ndarray
+    ) -> pd.DataFrame:
+        """Delaunay-triangulation linear interpolation (scipy.griddata).
+
+        Falls back to nearest-neighbour when fewer than 3 points are
+        available; applies global mean fallback for extrapolated NaNs.
         """
         climate_lats = self.climate_df["lat"].values
         climate_lons = self.climate_df["lon"].values
-
-        # Create points array for interpolation
         climate_points = np.column_stack([climate_lats, climate_lons])
         cell_points = np.column_stack([cell_lats, cell_lons])
 
-        # Interpolate each climate variable
         result = {}
         for col in self.climate_columns:
             values = self.climate_df[col].values
-
-            # Try linear interpolation; fall back to nearest if not enough points
             try:
                 interp_values = griddata(
                     climate_points,
@@ -284,10 +482,10 @@ class ClimateInterpolator:
                     method="linear",
                     fill_value=np.nan,
                 )
-            except Exception as e:
-                # Not enough points for linear interpolation, use nearest
+            except Exception as exc:
                 logger.info(
-                    f"Linear interpolation failed ({e}), falling back to nearest-neighbor"
+                    "Linear interpolation failed (%s), falling back to nearest-neighbor",
+                    exc,
                 )
                 interp_values = griddata(
                     climate_points,
@@ -297,45 +495,129 @@ class ClimateInterpolator:
                     fill_value=np.nan,
                 )
 
-            # Fill NaN values with mean if fallback enabled
             if self.fallback_to_mean:
                 nan_mask = np.isnan(interp_values)
                 if nan_mask.any():
                     interp_values[nan_mask] = self._climate_mean[col]
                     logger.info(
-                        f"Filled {nan_mask.sum()} cells with mean {col} "
-                        f"({self._climate_mean[col]:.3f}) due to extrapolation"
+                        "Filled %d cells with mean %s (%.3f) due to extrapolation",
+                        nan_mask.sum(),
+                        col,
+                        self._climate_mean[col],
                     )
-
             result[col] = interp_values
 
         return pd.DataFrame(result)
 
+    def _interpolate_kriging(
+        self, cell_lats: np.ndarray, cell_lons: np.ndarray
+    ) -> pd.DataFrame:
+        """Ordinary Kriging interpolation with per-cell uncertainty.
+
+        Uses the variogram model selected during ``_init_kriging``.  Returns
+        one ``{var}_krig_std`` column per climate variable (kriging prediction
+        standard deviation = sqrt of kriging variance).
+        """
+        from pykrige.ok import OrdinaryKriging
+
+        lons_src = self.climate_df["lon"].values.astype(float)
+        lats_src = self.climate_df["lat"].values.astype(float)
+        cell_lons_arr = np.asarray(cell_lons, dtype=float)
+        cell_lats_arr = np.asarray(cell_lats, dtype=float)
+
+        result = {}
+        for var in self.climate_columns:
+            vals = self.climate_df[var].values.astype(float)
+
+            ok = OrdinaryKriging(
+                lons_src,
+                lats_src,
+                vals,
+                variogram_model=self._krig_variogram_model,
+                verbose=False,
+                enable_plotting=False,
+            )
+            z_pred, sigma_sq = ok.execute("points", cell_lons_arr, cell_lats_arr)
+
+            # sigma_sq can have small numerical negatives near station locations
+            krig_std = np.sqrt(np.maximum(np.asarray(sigma_sq, dtype=float), 0.0))
+            z_pred_arr = np.asarray(z_pred, dtype=float)
+
+            if self.fallback_to_mean:
+                nan_mask = np.isnan(z_pred_arr)
+                if nan_mask.any():
+                    z_pred_arr[nan_mask] = self._climate_mean[var]
+                    logger.info(
+                        "Filled %d NaN kriging predictions with mean %s",
+                        nan_mask.sum(),
+                        var,
+                    )
+
+            result[var] = z_pred_arr
+            result[f"{var}_krig_std"] = krig_std
+
+        return pd.DataFrame(result)
+
+    def _interpolate_idw(
+        self, cell_lats: np.ndarray, cell_lons: np.ndarray, power: float = 2.0
+    ) -> pd.DataFrame:
+        """Inverse Distance Weighting interpolation (power=2).
+
+        No uncertainty estimate.  Handles the exact-station-coincidence case
+        by returning the station value directly.
+        """
+        lons_src = self.climate_df["lon"].values.astype(float)
+        lats_src = self.climate_df["lat"].values.astype(float)
+        cell_lons_arr = np.asarray(cell_lons, dtype=float)
+        cell_lats_arr = np.asarray(cell_lats, dtype=float)
+
+        result = {}
+        for var in self.climate_columns:
+            vals = self.climate_df[var].values.astype(float)
+            interp_values = np.empty(len(cell_lats_arr), dtype=float)
+
+            for i, (clat, clon) in enumerate(zip(cell_lats_arr, cell_lons_arr)):
+                dists = np.sqrt((lats_src - clat) ** 2 + (lons_src - clon) ** 2)
+                zero_mask = dists == 0.0
+                if zero_mask.any():
+                    # Cell coincides with a station — return exact value
+                    interp_values[i] = vals[np.argmax(zero_mask)]
+                else:
+                    weights = 1.0 / (dists ** power)
+                    interp_values[i] = np.sum(weights * vals) / np.sum(weights)
+
+            if self.fallback_to_mean:
+                nan_mask = np.isnan(interp_values)
+                if nan_mask.any():
+                    interp_values[nan_mask] = self._climate_mean[var]
+
+            result[var] = interp_values
+
+        return pd.DataFrame(result)
+
+    # ------------------------------------------------------------------
+    # Index-based matching
+    # ------------------------------------------------------------------
+
     def _match_by_index(
         self, cell_lats: np.ndarray, cell_lons: np.ndarray
     ) -> pd.DataFrame:
-        """Match climate records to cells by index or cell ID.
-
-        For "index" strategy, assumes climate_df rows correspond to cells in order.
-        Optionally uses cell_id_column to match records by ID.
-        """
+        """Match climate records to cells by row index or cell ID."""
         n_cells = len(cell_lats)
         n_climate = len(self.climate_df)
 
         if self.cell_id_column is None:
-            # Match by row order
             if n_climate < n_cells:
-                # Not enough climate records for all cells
                 if self.fallback_to_mean:
                     logger.warning(
-                        f"Climate records ({n_climate}) < cells ({n_cells}). "
-                        f"Using global mean for unmatched cells."
+                        "Climate records (%d) < cells (%d). "
+                        "Using global mean for unmatched cells.",
+                        n_climate,
+                        n_cells,
                     )
-                    # Pad with mean values if climate data is shorter
                     result_dict = {}
                     for col in self.climate_columns:
                         values = list(self.climate_df[col].values)
-                        # Extend with mean if not enough records
                         while len(values) < n_cells:
                             values.append(self._climate_mean[col])
                         result_dict[col] = values[:n_cells]
@@ -347,26 +629,22 @@ class ClimateInterpolator:
                         f"ensure climate CSV has at least {n_cells} rows."
                     )
             elif n_climate > n_cells:
-                # More climate records than cells; take first n_cells
                 logger.info(
-                    f"Climate records ({n_climate}) > cells ({n_cells}). "
-                    f"Using first {n_cells} records."
+                    "Climate records (%d) > cells (%d). Using first %d records.",
+                    n_climate,
+                    n_cells,
+                    n_cells,
                 )
                 return self.climate_df[self.climate_columns].head(n_cells).copy()
             else:
-                # Exact match
                 return self.climate_df[self.climate_columns].copy()
         else:
-            # Match by cell ID column
             if self.cell_id_column not in self.climate_df.columns:
                 raise ValueError(
                     f"cell_id_column '{self.cell_id_column}' not found in climate_df. "
                     f"Available columns: {list(self.climate_df.columns)}"
                 )
-
-            # Assume cell IDs are in cell_lats (or passed separately)
-            # For now, use row order assumption
             logger.info(
-                f"Index-based matching using cell_id_column='{self.cell_id_column}'"
+                "Index-based matching using cell_id_column='%s'", self.cell_id_column
             )
             return self.climate_df[self.climate_columns].copy()

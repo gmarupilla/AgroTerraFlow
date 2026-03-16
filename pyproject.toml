@@ -25,6 +25,7 @@ dependencies = [
   "plotly>=5.0.0",
   "pydantic>=2.0",
   "scipy>=1.9.0",
+  "pykrige>=1.7",
   "shapely>=2.0.0",
   "pyproj>=3.0"
 ]
