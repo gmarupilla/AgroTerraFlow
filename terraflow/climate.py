@@ -322,18 +322,25 @@ class ClimateInterpolator:
         primary_var = self.climate_columns[0]
         vals_primary = self.climate_df[primary_var].values.astype(float)
 
-        best_model = "spherical"
+        best_model: Optional[str] = None
         best_rmse = np.inf
 
         for model in _VARIOGRAM_MODELS:
             try:
-                rmse = self._loocv_rmse(lons, lats, vals_primary, model)
+                rmse, _ = self._loocv(lons, lats, vals_primary, model)
                 logger.debug("Variogram '%s': LOOCV RMSE=%.4f (%s)", model, rmse, primary_var)
                 if rmse < best_rmse:
                     best_rmse = rmse
                     best_model = model
             except Exception as exc:
                 logger.debug("Variogram model '%s' failed during selection: %s", model, exc)
+
+        if best_model is None:
+            logger.warning(
+                "All variogram models failed LOOCV; falling back to linear interpolation."
+            )
+            self.interpolation_method = "linear"
+            return
 
         self._krig_variogram_model = best_model
         logger.info(
@@ -348,7 +355,7 @@ class ClimateInterpolator:
         for var in self.climate_columns:
             vals = self.climate_df[var].values.astype(float)
             try:
-                rmse, mae = self._loocv_full(lons, lats, vals, best_model)
+                rmse, mae = self._loocv(lons, lats, vals, best_model)
                 cv_per_var[var] = {
                     "rmse": round(float(rmse), 6),
                     "mae": round(float(mae), 6),
@@ -364,28 +371,10 @@ class ClimateInterpolator:
             "per_variable": cv_per_var,
         }
 
-    def _loocv_rmse(self, lons: np.ndarray, lats: np.ndarray, vals: np.ndarray, model: str) -> float:
-        """Return LOOCV RMSE for a given variogram model (used for model selection)."""
-        from pykrige.ok import OrdinaryKriging
-
-        errors = []
-        for i in range(len(vals)):
-            ok = OrdinaryKriging(
-                np.delete(lons, i),
-                np.delete(lats, i),
-                np.delete(vals, i),
-                variogram_model=model,
-                verbose=False,
-                enable_plotting=False,
-            )
-            pred, _ = ok.execute("points", np.array([lons[i]]), np.array([lats[i]]))
-            errors.append(float(pred[0]) - vals[i])
-        return float(np.sqrt(np.mean(np.array(errors) ** 2)))
-
-    def _loocv_full(
+    def _loocv(
         self, lons: np.ndarray, lats: np.ndarray, vals: np.ndarray, model: str
     ) -> Tuple[float, float]:
-        """Return (RMSE, MAE) for the given variogram model (full LOOCV)."""
+        """Return (RMSE, MAE) via Leave-One-Out Cross-Validation for a variogram model."""
         from pykrige.ok import OrdinaryKriging
 
         errors = []
@@ -401,7 +390,7 @@ class ClimateInterpolator:
             pred, _ = ok.execute("points", np.array([lons[i]]), np.array([lats[i]]))
             errors.append(float(pred[0]) - vals[i])
         errs = np.array(errors)
-        return float(np.sqrt(np.mean(errs ** 2))), float(np.mean(np.abs(errs)))
+        return float(np.sqrt(np.mean(errs**2))), float(np.mean(np.abs(errs)))
 
     # ------------------------------------------------------------------
     # Public interface
