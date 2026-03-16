@@ -268,7 +268,7 @@ class ClimateInterpolator:
             try:
                 CoordinateRange(latitude=lat, longitude=lon)
             except ValueError as e:
-                raise ValueError(f"Row {idx}: Invalid coordinate ({lat}, {lon}): {e}")
+                raise ValueError(f"Row {idx}: Invalid coordinate ({lat}, {lon}): {e}") from e
 
         duplicates = self.climate_df.duplicated(subset=["lat", "lon"], keep=False).sum()
         if duplicates > 0:
@@ -296,13 +296,13 @@ class ClimateInterpolator:
         ------------
         Sets ``self._krig_variogram_model`` and populates ``self.cv_metrics``.
         """
-        try:
-            from pykrige.ok import OrdinaryKriging  # noqa: F401
-        except ImportError as exc:
+        import importlib.util
+
+        if importlib.util.find_spec("pykrige") is None:
             raise ImportError(
                 "PyKrige is required for kriging interpolation. "
                 "Install with: pip install pykrige"
-            ) from exc
+            )
 
         n = len(self.climate_df)
         if n < MIN_KRIGING_STATIONS:
@@ -589,7 +589,7 @@ class ClimateInterpolator:
     # ------------------------------------------------------------------
 
     def _match_by_index(
-        self, cell_lats: np.ndarray, cell_lons: np.ndarray
+        self, cell_lats: np.ndarray, _cell_lons: np.ndarray
     ) -> pd.DataFrame:
         """Match climate records to cells by row index or cell ID."""
         n_cells = len(cell_lats)
