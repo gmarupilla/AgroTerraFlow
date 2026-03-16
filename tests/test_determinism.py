@@ -11,7 +11,6 @@ import textwrap
 from pathlib import Path
 
 import pandas as pd
-import pytest
 
 
 def _write_config(cfg_file: Path, raster: Path, climate: Path, out_dir: Path) -> Path:
@@ -62,6 +61,7 @@ class TestSamplingDeterminism:
     ):
         """Run pipeline twice with identical config; clear cache between runs."""
         import shutil
+
         from terraflow.pipeline import run_pipeline
 
         shared_out = tmp_path / "shared_out"

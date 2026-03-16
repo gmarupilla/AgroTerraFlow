@@ -758,6 +758,7 @@ class TestPipelineKrigingIntegration:
     ):
         """Pipeline with kriging config must write krig_std columns to features.parquet."""
         import textwrap
+
         from terraflow.pipeline import run_pipeline
 
         cfg_content = textwrap.dedent(f"""
@@ -805,6 +806,7 @@ class TestPipelineKrigingIntegration:
         """Pipeline with kriging must write interpolation_cv to report.json."""
         import json
         import textwrap
+
         from terraflow.pipeline import run_pipeline
 
         cfg_content = textwrap.dedent(f"""
@@ -840,7 +842,6 @@ class TestPipelineKrigingIntegration:
         cfg_file.write_text(cfg_content, encoding="utf-8")
 
         df = run_pipeline(cfg_file)
-        run_dir = df.attrs["run_dir"]
         report = json.loads((tmp_path / "outputs" / "runs" / df.attrs["run_fingerprint"] / "report.json").read_text())
 
         assert "interpolation_cv" in report
