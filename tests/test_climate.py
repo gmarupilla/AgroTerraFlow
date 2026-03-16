@@ -544,3 +544,307 @@ class TestClimateIntegration:
 
         assert len(result) == 3
         assert result["mean_temp"].tolist() == [10.0, 15.0, 20.0]
+
+
+# ---------------------------------------------------------------------------
+# Kriging tests
+# ---------------------------------------------------------------------------
+
+
+def _dense_climate_df() -> pd.DataFrame:
+    """8-station climate DataFrame (≥ MIN_KRIGING_STATIONS) for kriging tests."""
+    return pd.DataFrame(
+        {
+            "lat": [39.97, 39.97, 39.97, 39.97, 40.00, 40.00, 40.00, 40.00],
+            "lon": [-100.03, -100.01, -99.99, -99.97, -100.03, -100.01, -99.99, -99.97],
+            "mean_temp": [17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0],
+            "total_rain": [90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0],
+        }
+    )
+
+
+class TestKrigingInterpolation:
+    """Ordinary Kriging via PyKrige."""
+
+    def test_kriging_returns_krig_std_columns(self):
+        """Kriging output must include {var}_krig_std columns."""
+        interpolator = ClimateInterpolator(
+            climate_df=_dense_climate_df(),
+            strategy="spatial",
+            interpolation_method="kriging",
+        )
+        result = interpolator.interpolate(
+            np.array([39.99, 39.98]),
+            np.array([-100.00, -99.98]),
+        )
+        assert "mean_temp" in result.columns
+        assert "total_rain" in result.columns
+        assert "mean_temp_krig_std" in result.columns
+        assert "total_rain_krig_std" in result.columns
+
+    def test_kriging_std_is_non_negative(self):
+        """Kriging standard deviation must be ≥ 0 everywhere."""
+        interpolator = ClimateInterpolator(
+            climate_df=_dense_climate_df(),
+            strategy="spatial",
+            interpolation_method="kriging",
+        )
+        result = interpolator.interpolate(
+            np.array([39.98, 39.99, 40.01]),
+            np.array([-100.01, -99.99, -99.98]),
+        )
+        assert (result["mean_temp_krig_std"] >= 0).all()
+        assert (result["total_rain_krig_std"] >= 0).all()
+
+    def test_kriging_values_within_plausible_range(self):
+        """Interpolated kriging values should be within input data range."""
+        df = _dense_climate_df()
+        interpolator = ClimateInterpolator(
+            climate_df=df,
+            strategy="spatial",
+            interpolation_method="kriging",
+            fallback_to_mean=True,
+        )
+        result = interpolator.interpolate(
+            np.array([39.99]),
+            np.array([-100.00]),
+        )
+        t_min, t_max = df["mean_temp"].min(), df["mean_temp"].max()
+        # Allow a small margin for kriging's unbiased extrapolation
+        assert t_min - 5 <= result["mean_temp"].iloc[0] <= t_max + 5
+
+    def test_kriging_cv_metrics_populated(self):
+        """cv_metrics must be populated with LOOCV results after kriging init."""
+        interpolator = ClimateInterpolator(
+            climate_df=_dense_climate_df(),
+            strategy="spatial",
+            interpolation_method="kriging",
+        )
+        assert interpolator.cv_metrics, "cv_metrics should not be empty for kriging"
+        assert "variogram_model" in interpolator.cv_metrics
+        assert "per_variable" in interpolator.cv_metrics
+
+        per_var = interpolator.cv_metrics["per_variable"]
+        assert "mean_temp" in per_var
+        assert "total_rain" in per_var
+
+        for var in ("mean_temp", "total_rain"):
+            assert "rmse" in per_var[var]
+            assert "mae" in per_var[var]
+            assert "n_stations" in per_var[var]
+            if per_var[var]["rmse"] is not None:
+                assert per_var[var]["rmse"] >= 0
+                assert per_var[var]["mae"] >= 0
+
+    def test_kriging_variogram_model_is_valid(self):
+        """Selected variogram model must be one of the tried candidates."""
+        interpolator = ClimateInterpolator(
+            climate_df=_dense_climate_df(),
+            strategy="spatial",
+            interpolation_method="kriging",
+        )
+        assert interpolator._krig_variogram_model in ("spherical", "exponential", "gaussian")
+
+    def test_kriging_fallback_to_linear_too_few_stations(self):
+        """Kriging must fall back to linear when stations < MIN_KRIGING_STATIONS."""
+        sparse_df = pd.DataFrame(
+            {
+                "lat": [40.0, 40.1, 40.2],
+                "lon": [-74.0, -74.1, -74.2],
+                "mean_temp": [15.0, 16.0, 17.0],
+            }
+        )
+        interpolator = ClimateInterpolator(
+            climate_df=sparse_df,
+            strategy="spatial",
+            interpolation_method="kriging",
+        )
+        # Should have silently switched to linear
+        assert interpolator.interpolation_method == "linear"
+        # cv_metrics must remain empty (no kriging was done)
+        assert interpolator.cv_metrics == {}
+        # Must still return a valid result
+        result = interpolator.interpolate(np.array([40.1]), np.array([-74.1]))
+        assert len(result) == 1
+        assert "mean_temp" in result.columns
+        # No krig_std columns because linear was used
+        assert "mean_temp_krig_std" not in result.columns
+
+    def test_kriging_no_cv_metrics_for_linear(self):
+        """cv_metrics must be empty dict for linear interpolation."""
+        interpolator = ClimateInterpolator(
+            climate_df=_dense_climate_df(),
+            strategy="spatial",
+            interpolation_method="linear",
+        )
+        assert interpolator.cv_metrics == {}
+
+
+# ---------------------------------------------------------------------------
+# IDW tests
+# ---------------------------------------------------------------------------
+
+
+class TestIDWInterpolation:
+    """Inverse Distance Weighting interpolation."""
+
+    def test_idw_basic_output_shape(self):
+        """IDW output has one row per cell, one column per climate variable."""
+        interpolator = ClimateInterpolator(
+            climate_df=_dense_climate_df(),
+            strategy="spatial",
+            interpolation_method="idw",
+        )
+        result = interpolator.interpolate(
+            np.array([39.99, 40.00]),
+            np.array([-100.01, -99.99]),
+        )
+        assert len(result) == 2
+        assert "mean_temp" in result.columns
+        assert "total_rain" in result.columns
+        # IDW never produces krig_std columns
+        assert "mean_temp_krig_std" not in result.columns
+
+    def test_idw_exact_station_returns_station_value(self):
+        """When cell coincides with a station, IDW must return the exact value."""
+        df = _dense_climate_df()
+        interpolator = ClimateInterpolator(
+            climate_df=df,
+            strategy="spatial",
+            interpolation_method="idw",
+        )
+        # Query at the first station's exact location
+        result = interpolator.interpolate(
+            np.array([df["lat"].iloc[0]]),
+            np.array([df["lon"].iloc[0]]),
+        )
+        assert abs(result["mean_temp"].iloc[0] - df["mean_temp"].iloc[0]) < 1e-9
+
+    def test_idw_values_within_data_range(self):
+        """IDW predictions must stay within the input data range."""
+        df = _dense_climate_df()
+        interpolator = ClimateInterpolator(
+            climate_df=df,
+            strategy="spatial",
+            interpolation_method="idw",
+        )
+        result = interpolator.interpolate(
+            np.array([39.985, 39.990, 39.995]),
+            np.array([-100.01, -99.99, -99.97]),
+        )
+        assert (result["mean_temp"] >= df["mean_temp"].min()).all()
+        assert (result["mean_temp"] <= df["mean_temp"].max()).all()
+
+    def test_idw_no_cv_metrics(self):
+        """IDW does not compute or store cv_metrics."""
+        interpolator = ClimateInterpolator(
+            climate_df=_dense_climate_df(),
+            strategy="spatial",
+            interpolation_method="idw",
+        )
+        assert interpolator.cv_metrics == {}
+
+
+# ---------------------------------------------------------------------------
+# Pipeline integration with kriging
+# ---------------------------------------------------------------------------
+
+
+class TestPipelineKrigingIntegration:
+    """End-to-end pipeline tests with kriging interpolation."""
+
+    def test_pipeline_kriging_produces_krig_std_columns(
+        self, tmp_path, synthetic_raster, synthetic_climate_csv_dense
+    ):
+        """Pipeline with kriging config must write krig_std columns to features.parquet."""
+        import textwrap
+
+        from terraflow.pipeline import run_pipeline
+
+        cfg_content = textwrap.dedent(f"""
+            raster_path: "{synthetic_raster}"
+            climate_csv: "{synthetic_climate_csv_dense}"
+            output_dir: "{tmp_path / 'outputs'}"
+
+            roi:
+              type: "bbox"
+              xmin: -100.04
+              ymin: 39.96
+              xmax: -99.96
+              ymax: 40.01
+
+            climate:
+              strategy: "spatial"
+              interpolation_method: "kriging"
+
+            model_params:
+              v_min: 0.0
+              v_max: 25.0
+              t_min: 0.0
+              t_max: 40.0
+              r_min: 0.0
+              r_max: 300.0
+              w_v: 0.4
+              w_t: 0.3
+              w_r: 0.3
+
+            max_cells: 5
+        """)
+        cfg_file = tmp_path / "cfg_kriging.yml"
+        cfg_file.write_text(cfg_content, encoding="utf-8")
+
+        df = run_pipeline(cfg_file)
+
+        assert "mean_temp_krig_std" in df.columns
+        assert "total_rain_krig_std" in df.columns
+        assert (df["mean_temp_krig_std"] >= 0).all()
+        assert (df["total_rain_krig_std"] >= 0).all()
+
+    def test_pipeline_kriging_report_has_interpolation_cv(
+        self, tmp_path, synthetic_raster, synthetic_climate_csv_dense
+    ):
+        """Pipeline with kriging must write interpolation_cv to report.json."""
+        import json
+        import textwrap
+
+        from terraflow.pipeline import run_pipeline
+
+        cfg_content = textwrap.dedent(f"""
+            raster_path: "{synthetic_raster}"
+            climate_csv: "{synthetic_climate_csv_dense}"
+            output_dir: "{tmp_path / 'outputs'}"
+
+            roi:
+              type: "bbox"
+              xmin: -100.04
+              ymin: 39.96
+              xmax: -99.96
+              ymax: 40.01
+
+            climate:
+              strategy: "spatial"
+              interpolation_method: "kriging"
+
+            model_params:
+              v_min: 0.0
+              v_max: 25.0
+              t_min: 0.0
+              t_max: 40.0
+              r_min: 0.0
+              r_max: 300.0
+              w_v: 0.4
+              w_t: 0.3
+              w_r: 0.3
+
+            max_cells: 5
+        """)
+        cfg_file = tmp_path / "cfg_kriging2.yml"
+        cfg_file.write_text(cfg_content, encoding="utf-8")
+
+        df = run_pipeline(cfg_file)
+        report = json.loads((tmp_path / "outputs" / "runs" / df.attrs["run_fingerprint"] / "report.json").read_text())
+
+        assert "interpolation_cv" in report
+        cv = report["interpolation_cv"]
+        assert "variogram_model" in cv
+        assert "per_variable" in cv

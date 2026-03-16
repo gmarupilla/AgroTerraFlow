@@ -7,6 +7,38 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+- **Ordinary Kriging interpolation** (`interpolation_method: "kriging"` in climate
+  config): uses `pykrige.ok.OrdinaryKriging` with automatic variogram model selection
+  (spherical / exponential / Gaussian) via Leave-One-Out Cross-Validation.  Requires
+  ≥ 5 stations; falls back to `"linear"` with a warning for sparse networks.
+- **Per-cell kriging uncertainty**: `features.parquet` gains `{var}_krig_std` columns
+  (kriging prediction standard deviation) when `interpolation_method: "kriging"`.
+- **Interpolation cross-validation**: `report.json` gains an `interpolation_cv` section
+  with LOOCV RMSE and MAE per climate variable when kriging is configured.
+- **IDW interpolation** (`interpolation_method: "idw"`): inverse distance weighting
+  (power=2) as a lightweight no-dependency spatial alternative.
+- `climate.interpolation_method` config field (choices: `linear` [default],
+  `kriging`, `idw`); existing configs without the field default to `"linear"`.
+- `pykrige>=1.7` runtime dependency (BSD-3-Clause).
+- ADR-005 documenting the kriging design decision.
+- Determinism regression test suite (`tests/test_determinism.py`): four tests covering
+  seeded cell-set stability, score stability, fingerprint presence, and fingerprint
+  stability across independent runs.
+- `synthetic_climate_csv_dense` pytest fixture (8 stations) for kriging tests.
+
+### Fixed
+- **Reproducibility**: cell sampling in `run_pipeline` now uses a
+  `numpy.random.default_rng` seeded from the SHA-256 of the run fingerprint.
+  Identical inputs always produce the same cell set, closing the known limitation
+  acknowledged in v0.2.1.
+
+### Changed
+- `ClimateInterpolator.__init__` accepts a new `interpolation_method` keyword argument
+  (default `"linear"`, fully backward compatible).
+- `paper/paper.md` reproducibility section updated: removed the "known limitation"
+  paragraph, added seeded-sampling bullet; "Future Work" seeded-sampling bullet removed.
+
 ## [0.2.1] — 2026-03-15
 
 ### Fixed

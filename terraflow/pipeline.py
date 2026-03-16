@@ -438,18 +438,27 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     interpolator = ClimateInterpolator(
         climate_df=climate_df,
         strategy=cfg.climate.strategy,
+        interpolation_method=cfg.climate.interpolation_method,
         cell_id_column=cfg.climate.cell_id_column,
         fallback_to_mean=cfg.climate.fallback_to_mean,
     )
     logger.info(
-        "Initialized climate interpolator with strategy='%s'", cfg.climate.strategy
+        "Initialized climate interpolator with strategy='%s', method='%s'",
+        cfg.climate.strategy,
+        interpolator.interpolation_method,  # may differ from config if fallback triggered
     )
 
     # --- Sample cells --------------------------------------------------------
-    import random
-
+    # Derive a deterministic seed from the run fingerprint so that cell
+    # selection is bit-reproducible across independent executions with
+    # identical inputs — closing the reproducibility gap from v0.2.1.
+    _fp_seed = int.from_bytes(
+        hashlib.sha256(run_fingerprint.encode()).digest()[:8], "little"
+    )
+    rng = np.random.default_rng(_fp_seed)
     max_cells = min(cfg.max_cells, n_valid_cells)
-    sampled_indices = random.sample(valid_indices, max_cells)
+    _sample_idx = rng.choice(n_valid_cells, size=max_cells, replace=False)
+    sampled_indices = [valid_indices[i] for i in _sample_idx]
     logger.info(
         "Sampled %d cells from %d valid cells in ROI", max_cells, n_valid_cells
     )
@@ -487,6 +496,9 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     _t_score_start = time.perf_counter()
     records: List[Dict[str, Any]] = []
 
+    # Detect kriging std columns (present when interpolation_method="kriging").
+    _krig_std_cols = [c for c in cell_climate_df.columns if c.endswith("_krig_std")]
+
     for cell_id, (row, col) in enumerate(sampled_indices):
         v_index = float(clipped_data[row, col])
         lat = cell_lats[cell_id]
@@ -502,23 +514,26 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         )
         label = suitability_label(score)
 
-        records.append(
-            {
-                "run_id": run_fingerprint,
-                "cell_id": cell_id,
-                "lat": lat,
-                "lon": lon,
-                "v_index": v_index,
-                "mean_temp": mean_temp,
-                "total_rain": total_rain,
-                "score": score,
-                "label": label,
-            }
-        )
+        record: Dict[str, Any] = {
+            "run_id": run_fingerprint,
+            "cell_id": cell_id,
+            "lat": lat,
+            "lon": lon,
+            "v_index": v_index,
+            "mean_temp": mean_temp,
+            "total_rain": total_rain,
+            "score": score,
+            "label": label,
+        }
+        # Append per-cell kriging std columns when kriging was used.
+        for ksc in _krig_std_cols:
+            record[ksc] = float(cell_climate_df.iloc[cell_id][ksc])
+
+        records.append(record)
 
     df = pd.DataFrame.from_records(records)
-    # Enforce stable column order from schema contract.
-    df = df[FEATURES_COLUMNS_ORDERED]
+    # Enforce stable base column order, then append kriging std columns.
+    df = df[FEATURES_COLUMNS_ORDERED + _krig_std_cols]
     _t_score = time.perf_counter() - _t_score_start
 
     raster.close()
@@ -629,6 +644,9 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
             "total": round(_t_total, 4),
         },
     }
+    # Include LOOCV cross-validation metrics when kriging was used.
+    if interpolator.cv_metrics:
+        report["interpolation_cv"] = interpolator.cv_metrics
     _atomic_write_text(
         run_dir / "report.json",
         json.dumps(report, indent=2, default=str),

@@ -8,6 +8,27 @@ from rasterio.transform import from_origin
 
 
 @pytest.fixture
+def synthetic_climate_csv_dense(tmp_path: Path) -> Path:
+    """Climate CSV with 8 stations — enough for kriging (≥ MIN_KRIGING_STATIONS=5)."""
+    data_dir = tmp_path / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    csv_path = data_dir / "synthetic_climate_dense.csv"
+
+    # 2×4 grid of stations spanning the synthetic raster extent
+    df = pd.DataFrame(
+        {
+            "lat": [39.97, 39.97, 39.97, 39.97, 40.00, 40.00, 40.00, 40.00],
+            "lon": [-100.03, -100.01, -99.99, -99.97, -100.03, -100.01, -99.99, -99.97],
+            "mean_temp": [17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0],
+            "total_rain": [90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0],
+        }
+    )
+    df.to_csv(csv_path, index=False)
+    return csv_path
+
+
+@pytest.fixture
 def synthetic_raster(tmp_path: Path) -> Path:
     """Create a small synthetic GeoTIFF raster for testing."""
     data_dir = tmp_path / "data"
