@@ -310,3 +310,4 @@ For new features, consider:
 - [ADR-001: Band Selection](architecture/adr-001-band-selection.md)
 - [ADR-002: ROI Type](architecture/adr-002-bbox-roi.md)
 - [Configuration Schema](config/schema.md)
+
