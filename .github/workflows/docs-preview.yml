@@ -53,7 +53,7 @@ jobs:
           git add -A
           git diff --cached --quiet && echo "No changes." && exit 0
           git commit -m "docs(preview): pr-${{ github.event.number }} @ ${GITHUB_SHA::8}"
-          git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" gh-pages
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" HEAD:gh-pages
 
       - name: Post or update PR comment
         env:

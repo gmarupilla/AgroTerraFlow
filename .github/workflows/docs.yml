@@ -73,4 +73,4 @@ jobs:
           git add -A
           git diff --cached --quiet && echo "No changes to deploy." && exit 0
           git commit -m "docs: deploy from ${GITHUB_SHA::8}"
-          git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" gh-pages
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" HEAD:gh-pages

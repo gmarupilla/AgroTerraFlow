@@ -37,4 +37,4 @@ jobs:
           cd /tmp/gh-pages
           git add -A
           git commit -m "docs(preview): remove pr-${{ github.event.number }} (PR closed)"
-          git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" gh-pages
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" HEAD:gh-pages
