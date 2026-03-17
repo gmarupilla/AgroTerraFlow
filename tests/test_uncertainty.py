@@ -25,15 +25,15 @@ from terraflow.model import suitability_score, suitability_score_array
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _default_params(**overrides) -> ModelParams:
-    base = dict(
+def _default_params(**overrides: object) -> ModelParams:
+    base: dict[str, object] = dict(
         v_min=0.0, v_max=255.0,
         t_min=0.0, t_max=40.0,
         r_min=0.0, r_max=300.0,
         w_v=0.4, w_t=0.3, w_r=0.3,
     )
     base.update(overrides)
-    return ModelParams(**base)
+    return ModelParams(**base)  # type: ignore[arg-type]
 
 
 def _write_kriging_config(
