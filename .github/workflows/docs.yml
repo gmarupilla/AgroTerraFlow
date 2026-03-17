@@ -10,16 +10,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: pages
+  group: gh-pages-deploy
   cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -39,21 +37,40 @@ jobs:
       - name: Build site
         run: make docs-build
 
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
+      - name: Deploy to gh-pages (preserve pr-* preview dirs)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: site
+          git fetch origin gh-pages
+          git worktree add /tmp/gh-pages origin/gh-pages
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          # Save any existing pr-* preview subdirectories.
+          mkdir -p /tmp/pr-previews
+          for d in /tmp/gh-pages/pr-*/; do
+            [ -d "$d" ] && cp -r "$d" /tmp/pr-previews/
+          done
+
+          # Replace everything except .git, CNAME, .nojekyll, and pr-* dirs.
+          find /tmp/gh-pages -maxdepth 1 \
+            -not -name '.'         \
+            -not -name '.git'      \
+            -not -name '.nojekyll' \
+            -not -name 'CNAME'     \
+            -not -name 'pr-*'      \
+            | xargs rm -rf
+
+          cp -r site/. /tmp/gh-pages/
+
+          # Restore PR preview subdirectories.
+          for d in /tmp/pr-previews/*/; do
+            [ -d "$d" ] && cp -r "$d" /tmp/gh-pages/
+          done
+
+          cd /tmp/gh-pages
+          git add -A
+          git diff --cached --quiet && echo "No changes to deploy." && exit 0
+          git commit -m "docs: deploy from ${GITHUB_SHA::8}"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" gh-pages
