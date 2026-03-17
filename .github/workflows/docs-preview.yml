@@ -1,0 +1,74 @@
+name: Docs Preview
+
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Create virtual environment
+        run: make venv
+
+      - name: Build docs
+        run: make docs-build
+
+      - name: Upload docs artifact
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-preview-pr-${{ github.event.number }}
+          path: site/
+          retention-days: 7
+
+      - name: Post or update PR comment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ARTIFACT_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          ARTIFACT_ID="${{ steps.upload.outputs.artifact-id }}"
+          BODY="<!-- docs-preview -->
+          ### 📚 Docs preview
+
+          Built from commit \`${{ github.event.pull_request.head.sha }}\`.
+
+          **Download:** [\`docs-preview-pr-${{ github.event.number }}\`](${ARTIFACT_URL}) (artifact \`${ARTIFACT_ID}\`)
+
+          Unzip the artifact and open \`index.html\` in your browser to preview the site locally."
+
+          gh pr comment ${{ github.event.number }} \
+            --body "$BODY" \
+            --edit-last \
+            --repo ${{ github.repository }} \
+          || gh pr comment ${{ github.event.number }} \
+            --body "$BODY" \
+            --repo ${{ github.repository }}
+
+      - name: Write job summary
+        run: |
+          ARTIFACT_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "### 📚 Docs Preview" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Artifact **\`docs-preview-pr-${{ github.event.number }}\`** (ID: ${{ steps.upload.outputs.artifact-id }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Download from run](${ARTIFACT_URL})" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "> Unzip and open \`index.html\` locally to browse the preview." >> "$GITHUB_STEP_SUMMARY"
