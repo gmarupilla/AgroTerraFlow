@@ -2,6 +2,7 @@ name: Docs Preview
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, closed]
     paths:
       - "docs/**"
       - "mkdocs.yml"
@@ -16,6 +17,7 @@ concurrency:
 
 jobs:
   preview:
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -45,7 +47,6 @@ jobs:
           git fetch origin gh-pages
           git worktree add /tmp/gh-pages origin/gh-pages
 
-          # Replace only the pr-N subdirectory; everything else stays untouched.
           rm -rf /tmp/gh-pages/pr-${{ github.event.number }}
           cp -r site/ /tmp/gh-pages/pr-${{ github.event.number }}
 
@@ -85,3 +86,32 @@ jobs:
           echo "**Live URL:** [${PREVIEW_URL}](${PREVIEW_URL})" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Deployed to \`gh-pages/pr-${{ github.event.number }}/\` from commit \`${{ github.event.pull_request.head.sha }}\`." >> "$GITHUB_STEP_SUMMARY"
+
+  cleanup:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Delete pr-${{ github.event.number }}/ from gh-pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin gh-pages
+          git worktree add /tmp/gh-pages origin/gh-pages
+
+          PREVIEW_DIR="/tmp/gh-pages/pr-${{ github.event.number }}"
+          if [ ! -d "$PREVIEW_DIR" ]; then
+            echo "No preview directory to clean up."
+            exit 0
+          fi
+
+          rm -rf "$PREVIEW_DIR"
+          cd /tmp/gh-pages
+          git add -A
+          git commit -m "docs(preview): remove pr-${{ github.event.number }} (PR closed)"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" HEAD:gh-pages
