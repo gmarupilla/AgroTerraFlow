@@ -1,3 +1,5 @@
+import numpy as np
+
 from .config import ModelParams
 from .utils import normalize
 
@@ -43,6 +45,48 @@ def suitability_score(
 
     score = params.w_v * v_n + params.w_t * t_n + params.w_r * r_n
     return max(0.0, min(1.0, score))
+
+
+def suitability_score_array(
+    v_index: "np.ndarray",
+    mean_temp: "np.ndarray",
+    total_rain: "np.ndarray",
+    params: ModelParams,
+) -> "np.ndarray":
+    """Vectorized suitability scoring over numpy arrays.
+
+    Equivalent to calling :func:`suitability_score` element-wise but operates
+    on arbitrary-shape numpy arrays.  Used internally for Monte Carlo
+    uncertainty propagation.
+
+    Parameters
+    ----------
+    v_index:
+        Vegetation index values (any shape).
+    mean_temp:
+        Mean temperature values in °C (same shape as *v_index*).
+    total_rain:
+        Total rainfall values in mm (same shape as *v_index*).
+    params:
+        Model parameters containing min/max bounds and weights.
+
+    Returns
+    -------
+    np.ndarray:
+        Suitability scores clipped to [0, 1], same shape as inputs.
+    """
+
+    def _norm(x: "np.ndarray", lo: float, hi: float) -> "np.ndarray":
+        if hi == lo:
+            return np.zeros_like(x, dtype=float)
+        return np.clip((x - lo) / (hi - lo), 0.0, 1.0)
+
+    score = (
+        params.w_v * _norm(v_index, params.v_min, params.v_max)
+        + params.w_t * _norm(mean_temp, params.t_min, params.t_max)
+        + params.w_r * _norm(total_rain, params.r_min, params.r_max)
+    )
+    return np.clip(score, 0.0, 1.0)
 
 
 def suitability_label(score: float) -> str:

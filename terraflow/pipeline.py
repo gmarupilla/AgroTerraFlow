@@ -44,7 +44,7 @@ from .core.run_identity import (
 )
 from .geo import clip_raster_to_roi
 from .ingest import build_data_catalog, load_climate_csv, load_raster
-from .model import suitability_label, suitability_score
+from .model import suitability_label, suitability_score, suitability_score_array
 from .utils import ensure_dir, logger
 
 # ---------------------------------------------------------------------------
@@ -532,8 +532,55 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         records.append(record)
 
     df = pd.DataFrame.from_records(records)
-    # Enforce stable base column order, then append kriging std columns.
-    df = df[FEATURES_COLUMNS_ORDERED + _krig_std_cols]
+
+    # --- Monte Carlo uncertainty propagation ---------------------------------
+    # Requires: uncertainty_samples > 0 AND kriging std columns present.
+    # Perturbs mean_temp and total_rain independently using their per-cell
+    # kriging standard deviations, then scores each draw to derive 5th/95th
+    # percentile confidence intervals on the suitability score.
+    _mc_ci_cols: List[str] = []
+    _n_mc = cfg.model_params.uncertainty_samples
+    if _n_mc > 0:
+        if _krig_std_cols:
+            _mc_ci_cols = ["score_ci_low", "score_ci_high"]
+            _n_cells = len(df)
+            _v_arr = df["v_index"].to_numpy()
+            _temp_arr = df["mean_temp"].to_numpy()
+            _rain_arr = df["total_rain"].to_numpy()
+            # Clip std to ≥ 0 (kriging variance is non-negative but may have
+            # tiny floating-point negatives at station locations).
+            _temp_std = np.maximum(df["mean_temp_krig_std"].to_numpy(), 0.0)
+            _rain_std = np.maximum(df["total_rain_krig_std"].to_numpy(), 0.0)
+
+            # Shape: (n_cells, n_mc) — rng continues deterministic stream.
+            _temp_mc = rng.normal(
+                _temp_arr[:, None], _temp_std[:, None], (_n_cells, _n_mc)
+            )
+            _rain_mc = rng.normal(
+                _rain_arr[:, None], _rain_std[:, None], (_n_cells, _n_mc)
+            )
+            # v_index has no per-cell uncertainty estimate; broadcast constant.
+            _v_mc = np.broadcast_to(_v_arr[:, None], (_n_cells, _n_mc))
+
+            _scores_mc = suitability_score_array(
+                _v_mc, _temp_mc, _rain_mc, cfg.model_params
+            )  # (n_cells, n_mc), values in [0, 1]
+
+            df["score_ci_low"] = np.percentile(_scores_mc, 5, axis=1)
+            df["score_ci_high"] = np.percentile(_scores_mc, 95, axis=1)
+            logger.info(
+                "Monte Carlo uncertainty propagation complete: %d samples per cell",
+                _n_mc,
+            )
+        else:
+            logger.warning(
+                "uncertainty_samples=%d but no kriging std columns available; "
+                "skipping Monte Carlo. Set interpolation_method='kriging' to enable.",
+                _n_mc,
+            )
+
+    # Enforce stable base column order, then append kriging std and CI columns.
+    df = df[FEATURES_COLUMNS_ORDERED + _krig_std_cols + _mc_ci_cols]
     _t_score = time.perf_counter() - _t_score_start
 
     raster.close()
@@ -647,6 +694,22 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     # Include LOOCV cross-validation metrics when kriging was used.
     if interpolator.cv_metrics:
         report["interpolation_cv"] = interpolator.cv_metrics
+
+    # Include Monte Carlo uncertainty summary when CI columns were produced.
+    if _mc_ci_cols:
+        _ci_low = df["score_ci_low"].to_numpy()
+        _ci_high = df["score_ci_high"].to_numpy()
+        report["uncertainty"] = {
+            "method": "monte_carlo",
+            "n_samples": _n_mc,
+            "perturbed_variables": ["mean_temp", "total_rain"],
+            "ci_low_pct": 5,
+            "ci_high_pct": 95,
+            "score_ci_low_mean": float(_ci_low.mean()),
+            "score_ci_high_mean": float(_ci_high.mean()),
+            "mean_ci_width": float((_ci_high - _ci_low).mean()),
+        }
+
     _atomic_write_text(
         run_dir / "report.json",
         json.dumps(report, indent=2, default=str),

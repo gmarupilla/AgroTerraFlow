@@ -21,6 +21,12 @@ class ModelParams(BaseModel):
         Min/max rainfall values for normalization (in mm).
     w_v, w_t, w_r:
         Weights for vegetation, temperature, and rainfall (should sum to 1.0).
+    uncertainty_samples:
+        Number of Monte Carlo draws per cell for uncertainty propagation.
+        0 (default) disables Monte Carlo.  Requires ``interpolation_method='kriging'``
+        to produce per-cell standard deviations.  Adds ``score_ci_low`` and
+        ``score_ci_high`` columns to ``features.parquet`` and an ``uncertainty``
+        block to ``report.json``.
     """
 
     v_min: float
@@ -32,8 +38,17 @@ class ModelParams(BaseModel):
     w_v: float
     w_t: float
     w_r: float
+    uncertainty_samples: int = 0  # 0 = off; >0 = Monte Carlo draws per cell
 
     model_config = ConfigDict(extra="forbid")
+
+    @field_validator("uncertainty_samples")
+    @classmethod
+    def validate_uncertainty_samples(cls, v: int) -> int:
+        """Ensure uncertainty_samples is non-negative."""
+        if v < 0:
+            raise ValueError(f"uncertainty_samples must be >= 0, got {v}")
+        return v
 
     @field_validator("v_min", "t_min", "r_min")
     @classmethod
