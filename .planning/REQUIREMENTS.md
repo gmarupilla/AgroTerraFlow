@@ -75,32 +75,32 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |---|---|---|
-| HARD-01 | — | Pending |
-| HARD-02 | — | Pending |
-| HARD-03 | — | Pending |
-| HARD-04 | — | Pending |
-| SENS-01 | — | Pending |
-| SENS-02 | — | Pending |
-| SENS-03 | — | Pending |
-| SENS-04 | — | Pending |
-| VALD-01 | — | Pending |
-| VALD-02 | — | Pending |
-| VALD-03 | — | Pending |
-| VALD-04 | — | Pending |
-| H3-01 | — | Pending |
-| H3-02 | — | Pending |
-| H3-03 | — | Pending |
-| H3-04 | — | Pending |
-| JOSS-01 | — | Pending |
-| JOSS-02 | — | Pending |
-| JOSS-03 | — | Pending |
-| JOSS-04 | — | Pending |
+| HARD-01 | Phase 1 | Pending |
+| HARD-02 | Phase 1 | Pending |
+| HARD-03 | Phase 1 | Pending |
+| HARD-04 | Phase 1 | Pending |
+| SENS-01 | Phase 2 | Pending |
+| SENS-02 | Phase 2 | Pending |
+| SENS-03 | Phase 2 | Pending |
+| SENS-04 | Phase 2 | Pending |
+| VALD-01 | Phase 3 | Pending |
+| VALD-02 | Phase 3 | Pending |
+| VALD-03 | Phase 3 | Pending |
+| VALD-04 | Phase 3 | Pending |
+| H3-01 | Phase 4 | Pending |
+| H3-02 | Phase 4 | Pending |
+| H3-03 | Phase 4 | Pending |
+| H3-04 | Phase 4 | Pending |
+| JOSS-01 | Phase 5 | Pending |
+| JOSS-02 | Phase 5 | Pending |
+| JOSS-03 | Phase 5 | Pending |
+| JOSS-04 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 20 total
-- Mapped to phases: 0
-- Unmapped: 20 ⚠️
+- Mapped to phases: 20
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-18*
-*Last updated: 2026-03-18 after initial definition*
+*Last updated: 2026-03-18 after roadmap creation — all 20 requirements mapped*
