@@ -7,10 +7,10 @@
 
 ### Foundation Hardening
 
-- [ ] **HARD-01**: Pipeline raises `pyproj.CRSError` with an informative message (including the mismatched CRS strings) when raster and climate CRS are incompatible — replacing broad `except Exception` handlers in `geo.py` and `pipeline.py`
+- [x] **HARD-01**: Pipeline raises `pyproj.CRSError` with an informative message (including the mismatched CRS strings) when raster and climate CRS are incompatible — replacing broad `except Exception` handlers in `geo.py` and `pipeline.py`
 - [ ] **HARD-02**: Test suite covers kriging fallback scenarios (fewer than MIN_KRIGING_STATIONS stations) and uncertainty propagation edge cases (zero variance, single sample)
-- [ ] **HARD-03**: `report.json` includes variogram diagnostics block with nugget, sill, range, and model name from PyKrige when kriging is used
-- [ ] **HARD-04**: `plotly` moved to optional `[viz]` extra in `pyproject.toml`; trove classifiers and `Documentation` URL added for JOSS packaging compliance
+- [x] **HARD-03**: `report.json` includes variogram diagnostics block with nugget, sill, range, and model name from PyKrige when kriging is used
+- [x] **HARD-04**: `plotly` moved to optional `[viz]` extra in `pyproject.toml`; trove classifiers and `Documentation` URL added for JOSS packaging compliance
 
 ### Sensitivity Analysis
 
@@ -75,10 +75,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |---|---|---|
-| HARD-01 | Phase 1 | Pending |
+| HARD-01 | Phase 1 | Complete |
 | HARD-02 | Phase 1 | Pending |
-| HARD-03 | Phase 1 | Pending |
-| HARD-04 | Phase 1 | Pending |
+| HARD-03 | Phase 1 | Complete |
+| HARD-04 | Phase 1 | Complete |
 | SENS-01 | Phase 2 | Pending |
 | SENS-02 | Phase 2 | Pending |
 | SENS-03 | Phase 2 | Pending |

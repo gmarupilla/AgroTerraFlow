@@ -29,7 +29,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. `report.json` includes a `kriging_diagnostics` block with `nugget`, `sill`, `range_`, and `model` fields when any climate variable uses kriging interpolation
   3. The test suite passes with >=85% branch coverage including kriging fallback (fewer than MIN_KRIGING_STATIONS), MC zero-variance, and MC single-sample edge cases
   4. `pip install terraflow` installs without pulling in `plotly`; `pip install terraflow[viz]` installs plotly; `pyproject.toml` includes PyPI trove classifiers and a `Documentation` URL
-**Plans:** 3 plans
+**Plans:** 0/3 plans executed
 
 Plans:
 - [ ] 01-01-PLAN.md — Demote plotly to optional [viz] extra; add trove classifiers and Documentation URL
@@ -88,7 +88,7 @@ Note: Phase 4 depends on Phase 1 only; it can begin after Phase 1 completes. Pha
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation Hardening | 0/3 | Planning complete | - |
+| 1. Foundation Hardening | 0/3 | Planned    |  |
 | 2. Sensitivity Analysis | 0/TBD | Not started | - |
 | 3. Model Validation | 0/TBD | Not started | - |
 | 4. H3 Export | 0/TBD | Not started | - |
