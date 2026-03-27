@@ -34,8 +34,11 @@ from pyproj import Transformer
 from rasterio.crs import CRS
 from rasterio.transform import xy
 
+from pyproj.exceptions import CRSError as _PyProjCRSError
+
 from .climate import ClimateInterpolator
 from .config import PipelineConfig, build_config, load_config_dict
+from .exceptions import CRSMismatchError
 from .core.run_identity import (
     canonicalize_config,
     compute_run_fingerprint,
@@ -406,6 +409,22 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     )
     logger.info("Loaded climate data: %s", cfg.climate_csv)
 
+    # --- CRS validation -------------------------------------------------------
+    _climate_crs = CRS.from_epsg(4326)
+    _climate_crs_str = "EPSG:4326"
+    if raster_crs is None:
+        raise CRSMismatchError(
+            f"Raster '{cfg.raster_path}' has no CRS (raster_crs=None). "
+            f"Expected a raster reprojectable to climate CRS '{_climate_crs_str}'."
+        )
+    try:
+        Transformer.from_crs(raster_crs, _climate_crs, always_xy=True)
+    except _PyProjCRSError as exc:
+        raise CRSMismatchError(
+            f"Raster CRS '{raster_crs.to_string()}' is incompatible with "
+            f"climate CRS '{_climate_crs_str}': {exc}"
+        ) from exc
+
     # --- Clip raster to ROI --------------------------------------------------
     _t_clip_start = time.perf_counter()
     clipped_data, clipped_transform = clip_raster_to_roi(
@@ -694,6 +713,10 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     # Include LOOCV cross-validation metrics when kriging was used.
     if interpolator.cv_metrics:
         report["interpolation_cv"] = interpolator.cv_metrics
+
+    # Include variogram diagnostics when kriging was used.
+    if interpolator.variogram_params:
+        report["kriging_diagnostics"] = interpolator.variogram_params
 
     # Include Monte Carlo uncertainty summary when CI columns were produced.
     if _mc_ci_cols:
