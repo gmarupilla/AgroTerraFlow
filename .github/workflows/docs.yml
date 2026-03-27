@@ -55,8 +55,7 @@ jobs:
           done
 
           # Replace everything except .git, CNAME, .nojekyll, and pr-* dirs.
-          find /tmp/gh-pages -maxdepth 1 \
-            -not -name '.'         \
+          find /tmp/gh-pages -mindepth 1 -maxdepth 1 \
             -not -name '.git'      \
             -not -name '.nojekyll' \
             -not -name 'CNAME'     \
