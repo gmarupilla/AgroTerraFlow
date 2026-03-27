@@ -81,3 +81,22 @@ def synthetic_climate_csv(tmp_path: Path) -> Path:
     df.to_csv(csv_path, index=False)
 
     return csv_path
+
+
+@pytest.fixture
+def synthetic_climate_csv_sparse(tmp_path: Path) -> Path:
+    """Climate CSV with only 2 stations — below MIN_KRIGING_STATIONS=5 threshold."""
+    data_dir = tmp_path / "data"
+    data_dir.mkdir(parents=True, exist_ok=True)
+
+    csv_path = data_dir / "synthetic_climate_sparse.csv"
+    df = pd.DataFrame(
+        {
+            "lat": [40.0, 40.01],
+            "lon": [-100.0, -99.99],
+            "mean_temp": [18.0, 20.0],
+            "total_rain": [100.0, 120.0],
+        }
+    )
+    df.to_csv(csv_path, index=False)
+    return csv_path

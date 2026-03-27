@@ -848,3 +848,29 @@ class TestPipelineKrigingIntegration:
         cv = report["interpolation_cv"]
         assert "variogram_model" in cv
         assert "per_variable" in cv
+
+
+# ---------------------------------------------------------------------------
+# Kriging fallback standalone test
+# ---------------------------------------------------------------------------
+
+
+def test_kriging_fallback_sparse_stations():
+    """With < MIN_KRIGING_STATIONS stations, kriging falls back to linear."""
+    from terraflow.climate import ClimateInterpolator, MIN_KRIGING_STATIONS
+
+    sparse_df = pd.DataFrame({
+        "lat": [40.0, 40.01],
+        "lon": [-100.0, -99.99],
+        "mean_temp": [18.0, 20.0],
+        "total_rain": [100.0, 120.0],
+    })
+    assert len(sparse_df) < MIN_KRIGING_STATIONS
+
+    interpolator = ClimateInterpolator(
+        climate_df=sparse_df,
+        strategy="spatial",
+        interpolation_method="kriging",
+    )
+    # Fallback should have changed the method to linear
+    assert interpolator.interpolation_method == "linear"
