@@ -1,0 +1,70 @@
+# TerraFlow
+
+## What This Is
+
+TerraFlow is an open-source Python library for reproducible, research-grade agricultural land suitability analysis using geospatial raster and climate data. It provides a configuration-driven pipeline that ingests GeoTIFF rasters and climate station data, runs spatial interpolation (IDW and kriging), scores suitability across a region, and produces deterministic, provenance-stamped output artifacts. TerraFlow targets anyone doing reproducible ag/land suitability work in Python — graduate researchers, government scientists, and open-source geospatial practitioners alike.
+
+## Core Value
+
+Every TerraFlow run produces a verifiable, reproducible result: same inputs always yield the same outputs, with full uncertainty quantification and provenance — making findings publishable and auditable.
+
+## Requirements
+
+### Validated
+
+- ✓ Configuration-driven pipeline with Pydantic validation — existing
+- ✓ GeoTIFF raster ingestion with ROI clipping and CRS reprojection — existing
+- ✓ Climate interpolation: IDW spatial strategy and station index matching — existing
+- ✓ Kriging interpolation with variogram fitting (PyKrige) — existing
+- ✓ Suitability scoring with weighted multi-band model — existing
+- ✓ Deterministic run fingerprinting and no-op rerun detection — existing
+- ✓ Three-artifact output: features.parquet, manifest.json, report.json — existing
+- ✓ CLI interface (`terraflow -c config.yml`) — existing
+- ✓ Monte Carlo uncertainty propagation (score_ci_low / score_ci_high per cell) — existing
+- ✓ 85%+ branch coverage test suite with determinism regression tests — existing
+
+### Active
+
+- [ ] Sensitivity analysis — quantify which input parameters drive output variance (Sobol indices or Morris method)
+- [ ] Model validation — cross-validate suitability scores against reference datasets or known outcomes
+- [ ] Spatial statistics rigor — variogram diagnostics, LOOCV for kriging, spatial autocorrelation reporting
+- [ ] CRS validation — explicit CRS mismatch detection and informative errors across pipeline stages
+- [ ] H3 index export — output suitability results indexed by H3 cell for interop with H3-native tools (DeckGL, Pandas H3)
+- [ ] JOSS paper finalization — manuscript, figures, and supplementary materials meeting reviewer standards
+
+### Out of Scope
+
+- Real-time or streaming data ingestion — TerraFlow is a batch pipeline; streaming adds complexity without research value
+- Web UI or dashboard — library-first; visualization is caller's responsibility
+- Commercial ag operations tooling — out of scope; focus is research community
+- Non-Python client SDKs — Python-first for v1
+
+## Context
+
+TerraFlow is a brownfield project with an active codebase (~3,600 lines of test code, 10 source modules). A JOSS paper submission is in progress (`paper/paper.md`, `paper/biblio.bib`). Stage 2 (Monte Carlo uncertainty) was recently merged. Key scientific concerns from prior triage:
+- The suitability model uses hard-coded weight boundaries without statistical justification — needs sensitivity analysis
+- Kriging results lack LOOCV diagnostics in output artifacts — reviewers will ask
+- No validation against real-world ag outcomes exists yet
+- CRS edge cases produce broad exception handlers instead of informative errors
+
+The library is on branch `feat/stage2-mc-uncertainty` with clean git state. Target JOSS submission window is ~2026-05-25.
+
+## Constraints
+
+- **Tech stack**: Python 3.10+, Pydantic v2, Rasterio, PyKrige, Typer — established; no major replacements
+- **Reproducibility**: All pipeline changes must preserve or extend deterministic run identity
+- **Authorship**: Commits must not include Claude co-author attribution
+- **Scientific integrity**: Methods must be grounded in established literature — no black-box additions without citations
+- **JOSS standards**: Software must be installable, documented, and testable by an independent reviewer
+
+## Key Decisions
+
+| Decision | Rationale | Outcome |
+|---|---|---|
+| Monte Carlo over analytical uncertainty | MC generalizes to any scoring function | — Pending (JOSS review) |
+| H3 as export format (not primary grid) | Interop with DeckGL/H3 tools; don't replace pixel grid | — Pending |
+| Sobol/Morris for sensitivity analysis | Established, citable methods for variance decomposition | — Pending |
+| LOOCV for kriging validation | Standard geostatistical practice; expected by reviewers | — Pending |
+
+---
+*Last updated: 2026-03-18 after initialization*
