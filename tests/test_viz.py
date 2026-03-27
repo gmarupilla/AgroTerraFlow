@@ -1,6 +1,10 @@
 from pathlib import Path
 
 import pandas as pd
+import pytest
+
+pytest.importorskip("plotly")
+
 from plotly.graph_objs import Figure
 
 from terraflow.viz import plot_suitability_scatter
