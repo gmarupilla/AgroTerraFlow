@@ -35,8 +35,11 @@ from pyproj.exceptions import CRSError as _PyProjCRSError
 from rasterio.crs import CRS
 from rasterio.transform import xy
 
+from pyproj.exceptions import CRSError as _PyProjCRSError
+
 from .climate import ClimateInterpolator
 from .config import PipelineConfig, build_config, load_config_dict
+from .exceptions import CRSMismatchError
 from .core.run_identity import (
     canonicalize_config,
     compute_run_fingerprint,
@@ -402,9 +405,9 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     _t_load = time.perf_counter() - _t_load_start
 
     logger.info(
-        "Loaded raster: %s (CRS: EPSG:%s)",
+        "Loaded raster: %s (CRS: %s)",
         cfg.raster_path,
-        raster_crs.to_epsg() or "custom",
+        (f"EPSG:{raster_crs.to_epsg()}" if raster_crs is not None and raster_crs.to_epsg() else str(raster_crs) if raster_crs else "None"),
     )
     logger.info("Loaded climate data: %s", cfg.climate_csv)
 
