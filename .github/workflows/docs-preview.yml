@@ -40,6 +40,8 @@ jobs:
       - name: Deploy preview to gh-pages/pr-${{ github.event.number }}/
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.number }}
+          REPO: ${{ github.repository }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -47,45 +49,51 @@ jobs:
           git fetch origin gh-pages
           git worktree add /tmp/gh-pages origin/gh-pages
 
-          rm -rf /tmp/gh-pages/pr-${{ github.event.number }}
-          cp -r site/ /tmp/gh-pages/pr-${{ github.event.number }}
+          rm -rf /tmp/gh-pages/pr-${PR_NUMBER}
+          cp -r site/ /tmp/gh-pages/pr-${PR_NUMBER}
 
           cd /tmp/gh-pages
           git add -A
           git diff --cached --quiet && echo "No changes." && exit 0
-          git commit -m "docs(preview): pr-${{ github.event.number }} @ ${GITHUB_SHA::8}"
-          git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" HEAD:gh-pages
+          git commit -m "docs(preview): pr-${PR_NUMBER} @ ${GITHUB_SHA::8}"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" HEAD:gh-pages
 
       - name: Post or update PR comment
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          REPO: ${{ github.repository }}
         run: |
-          PREVIEW_URL="https://terraflow.marupilla.dev/pr-${{ github.event.number }}/"
+          PREVIEW_URL="https://terraflow.marupilla.dev/pr-${PR_NUMBER}/"
           BODY="<!-- docs-preview -->
           ### 📚 Docs preview
 
-          Built from commit \`${{ github.event.pull_request.head.sha }}\`.
+          Built from commit \`${HEAD_SHA}\`.
 
           **Preview:** ${PREVIEW_URL}
 
           > Deployed to \`gh-pages\`. Allow ~30 s for CDN propagation after this comment appears."
 
-          gh pr comment ${{ github.event.number }} \
+          gh pr comment "${PR_NUMBER}" \
             --body "$BODY" \
             --edit-last \
-            --repo ${{ github.repository }} \
-          || gh pr comment ${{ github.event.number }} \
+            --repo "${REPO}" \
+          || gh pr comment "${PR_NUMBER}" \
             --body "$BODY" \
-            --repo ${{ github.repository }}
+            --repo "${REPO}"
 
       - name: Write job summary
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          PREVIEW_URL="https://terraflow.marupilla.dev/pr-${{ github.event.number }}/"
+          PREVIEW_URL="https://terraflow.marupilla.dev/pr-${PR_NUMBER}/"
           echo "### 📚 Docs Preview" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "**Live URL:** [${PREVIEW_URL}](${PREVIEW_URL})" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Deployed to \`gh-pages/pr-${{ github.event.number }}/\` from commit \`${{ github.event.pull_request.head.sha }}\`." >> "$GITHUB_STEP_SUMMARY"
+          echo "Deployed to \`gh-pages/pr-${PR_NUMBER}/\` from commit \`${HEAD_SHA}\`." >> "$GITHUB_STEP_SUMMARY"
 
   cleanup:
     if: github.event.action == 'closed'
@@ -97,6 +105,8 @@ jobs:
       - name: Delete pr-${{ github.event.number }}/ from gh-pages
         env:
           GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.number }}
+          REPO: ${{ github.repository }}
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -104,7 +114,7 @@ jobs:
           git fetch origin gh-pages
           git worktree add /tmp/gh-pages origin/gh-pages
 
-          PREVIEW_DIR="/tmp/gh-pages/pr-${{ github.event.number }}"
+          PREVIEW_DIR="/tmp/gh-pages/pr-${PR_NUMBER}"
           if [ ! -d "$PREVIEW_DIR" ]; then
             echo "No preview directory to clean up."
             exit 0
@@ -113,5 +123,5 @@ jobs:
           rm -rf "$PREVIEW_DIR"
           cd /tmp/gh-pages
           git add -A
-          git commit -m "docs(preview): remove pr-${{ github.event.number }} (PR closed)"
-          git push "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" HEAD:gh-pages
+          git commit -m "docs(preview): remove pr-${PR_NUMBER} (PR closed)"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" HEAD:gh-pages
