@@ -187,6 +187,7 @@ class ClimateInterpolator:
         self.fallback_to_mean = fallback_to_mean
         self.cv_metrics: Dict = {}
         self._krig_variogram_model: str = "spherical"  # overwritten by _init_kriging
+        self.variogram_params: dict = {}
 
         self._validate_columns()
 
@@ -349,6 +350,25 @@ class ClimateInterpolator:
             best_rmse,
             primary_var,
         )
+
+        # Extract variogram parameters from a full-data fit with the selected model.
+        from pykrige.ok import OrdinaryKriging
+
+        _ok_full = OrdinaryKriging(
+            lons, lats, vals_primary,
+            variogram_model=best_model,
+            verbose=False,
+            enable_plotting=False,
+        )
+        p = _ok_full.variogram_model_parameters  # [psill, range, nugget]
+        self.variogram_params = {
+            "model": best_model,
+            "psill": round(float(p[0]), 6),
+            "nugget": round(float(p[2]), 6),
+            "sill": round(float(p[0]) + float(p[2]), 6),
+            "range_": round(float(p[1]), 6),
+            "range_units": "degrees_geographic",
+        }
 
         # --- Full LOOCV for all variables with the selected model -------------
         cv_per_var: Dict = {}

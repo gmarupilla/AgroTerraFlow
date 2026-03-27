@@ -714,6 +714,10 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     if interpolator.cv_metrics:
         report["interpolation_cv"] = interpolator.cv_metrics
 
+    # Include variogram diagnostics when kriging was used.
+    if interpolator.variogram_params:
+        report["kriging_diagnostics"] = interpolator.variogram_params
+
     # Include Monte Carlo uncertainty summary when CI columns were produced.
     if _mc_ci_cols:
         _ci_low = df["score_ci_low"].to_numpy()
