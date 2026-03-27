@@ -34,8 +34,11 @@ from pyproj import Transformer
 from rasterio.crs import CRS
 from rasterio.transform import xy
 
+from pyproj.exceptions import CRSError as _PyProjCRSError
+
 from .climate import ClimateInterpolator
 from .config import PipelineConfig, build_config, load_config_dict
+from .exceptions import CRSMismatchError
 from .core.run_identity import (
     canonicalize_config,
     compute_run_fingerprint,
@@ -405,6 +408,22 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         raster_crs.to_epsg() or "custom",
     )
     logger.info("Loaded climate data: %s", cfg.climate_csv)
+
+    # --- CRS validation -------------------------------------------------------
+    _climate_crs = CRS.from_epsg(4326)
+    _climate_crs_str = "EPSG:4326"
+    if raster_crs is None:
+        raise CRSMismatchError(
+            f"Raster '{cfg.raster_path}' has no CRS (raster_crs=None). "
+            f"Expected a raster reprojectable to climate CRS '{_climate_crs_str}'."
+        )
+    try:
+        Transformer.from_crs(raster_crs, _climate_crs, always_xy=True)
+    except _PyProjCRSError as exc:
+        raise CRSMismatchError(
+            f"Raster CRS '{raster_crs.to_string()}' is incompatible with "
+            f"climate CRS '{_climate_crs_str}': {exc}"
+        ) from exc
 
     # --- Clip raster to ROI --------------------------------------------------
     _t_clip_start = time.perf_counter()
