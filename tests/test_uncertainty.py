@@ -15,11 +15,9 @@ import textwrap
 from pathlib import Path
 
 import numpy as np
-import pytest
 
 from terraflow.config import ModelParams
 from terraflow.model import suitability_score, suitability_score_array
-
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -31,20 +31,19 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 import pandas as pd
 from pyproj import Transformer
+from pyproj.exceptions import CRSError as _PyProjCRSError
 from rasterio.crs import CRS
 from rasterio.transform import xy
 
-from pyproj.exceptions import CRSError as _PyProjCRSError
-
 from .climate import ClimateInterpolator
 from .config import PipelineConfig, build_config, load_config_dict
-from .exceptions import CRSMismatchError
 from .core.run_identity import (
     canonicalize_config,
     compute_run_fingerprint,
     fingerprint_file,
     hash_roi_geometry,
 )
+from .exceptions import CRSMismatchError
 from .geo import clip_raster_to_roi
 from .ingest import build_data_catalog, load_climate_csv, load_raster
 from .model import suitability_label, suitability_score, suitability_score_array
