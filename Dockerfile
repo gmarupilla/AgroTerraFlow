@@ -35,4 +35,4 @@ RUN mkdir -p outputs
 
 # Default: run the demo pipeline; override --config for custom runs
 ENTRYPOINT ["python", "-m", "terraflow.cli"]
-CMD ["--config", "examples/demo_config.yml"]
+CMD ["run", "--config", "examples/demo_config.yml"]
