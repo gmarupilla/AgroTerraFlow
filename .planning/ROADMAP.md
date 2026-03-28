@@ -48,7 +48,7 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Add SALib/Typer deps, SensitivityConfig models, migrate CLI to Typer subcommands
+- [x] 02-01-PLAN.md — Add SALib/Typer deps, SensitivityConfig models, migrate CLI to Typer subcommands
 - [ ] 02-02-PLAN.md — Implement sensitivity analysis engine (Sobol/Morris via SALib) with tests
 - [ ] 02-03-PLAN.md — Wire sensitivity CLI subcommand, add CLI integration tests, human verification
 

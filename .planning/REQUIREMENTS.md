@@ -17,7 +17,7 @@
 - [ ] **SENS-01**: User can run Sobol' first-order and total-order sensitivity indices over all `ModelParams` bounds using SALib — producing citable, JOSS-recognized sensitivity results
 - [ ] **SENS-02**: User can run Morris elementary effects screening over `ModelParams` for rapid parameter importance ranking before full Sobol' analysis
 - [ ] **SENS-03**: `report.json` includes a `sensitivity` block with Sobol' indices, confidence intervals, and parameter rankings when sensitivity analysis is run
-- [ ] **SENS-04**: User can invoke sensitivity analysis via `terraflow sensitivity -c config.yml` CLI subcommand independently of the main pipeline run
+- [x] **SENS-04**: User can invoke sensitivity analysis via `terraflow sensitivity -c config.yml` CLI subcommand independently of the main pipeline run
 
 ### Model Validation
 
@@ -82,7 +82,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SENS-01 | Phase 2 | Pending |
 | SENS-02 | Phase 2 | Pending |
 | SENS-03 | Phase 2 | Pending |
-| SENS-04 | Phase 2 | Pending |
+| SENS-04 | Phase 2 | Complete |
 | VALD-01 | Phase 3 | Pending |
 | VALD-02 | Phase 3 | Pending |
 | VALD-03 | Phase 3 | Pending |
