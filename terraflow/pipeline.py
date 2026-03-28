@@ -351,7 +351,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
                 config_dict[_key] = str((config_dir / _p).resolve())
 
     cfg: PipelineConfig = build_config(config_dict)
-    logger.info("Loaded config from %s", config_path)
+    logger.info(f"Loaded config from {config_path}")
 
     config_bytes_hash = hashlib.sha256(canonicalize_config(config_dict)).hexdigest()
     roi_hash = _resolve_roi_hash(config_dict, config_dir)
@@ -359,10 +359,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     input_fps = [fingerprint_file(str(path)) for path in input_paths]
     run_fingerprint = compute_run_fingerprint(config_dict, roi_hash, input_fps)
     logger.info(
-        "Computed run fingerprint %s (config=%s, inputs=%d)",
-        run_fingerprint,
-        config_bytes_hash,
-        len(input_fps),
+        f"Computed run fingerprint {run_fingerprint} (config={config_bytes_hash}, inputs={len(input_fps)})"
     )
 
     output_dir = ensure_dir(cfg.output_dir)
@@ -374,10 +371,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         run_dir / "report.json",
     ]
     if all(p.exists() for p in _required_artifacts):
-        logger.info(
-            "Detected identical run %s — all artifacts present, returning cached result.",
-            run_fingerprint,
-        )
+        logger.info(f"Detected identical run {run_fingerprint} — all artifacts present, returning cached result.")
         df = pd.read_parquet(run_dir / "features.parquet")
         df.attrs["run_fingerprint"] = run_fingerprint
         df.attrs["run_dir"] = str(run_dir)
@@ -399,7 +393,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
 
     _crs_str = f"EPSG:{raster_crs.to_epsg()}" if raster_crs is not None and raster_crs.to_epsg() else (str(raster_crs) if raster_crs else "None")
     logger.info(f"Loaded raster: {cfg.raster_path} (CRS: {_crs_str})")
-    logger.info("Loaded climate data: %s", cfg.climate_csv)
+    logger.info(f"Loaded climate data: {cfg.climate_csv}")
 
     _climate_crs = CRS.from_epsg(4326)
     _climate_crs_str = "EPSG:4326"
@@ -450,9 +444,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         fallback_to_mean=cfg.climate.fallback_to_mean,
     )
     logger.info(
-        "Initialized climate interpolator with strategy='%s', method='%s'",
-        cfg.climate.strategy,
-        interpolator.interpolation_method,  # may differ from config if fallback triggered
+        f"Initialized climate interpolator with strategy='{cfg.climate.strategy}', method='{interpolator.interpolation_method}'"
     )
 
     # Derive a deterministic seed from the run fingerprint so that cell
@@ -465,9 +457,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     max_cells = min(cfg.max_cells, n_valid_cells)
     _sample_idx = rng.choice(n_valid_cells, size=max_cells, replace=False)
     sampled_indices = [valid_indices[i] for i in _sample_idx]
-    logger.info(
-        "Sampled %d cells from %d valid cells in ROI", max_cells, n_valid_cells
-    )
+    logger.info(f"Sampled {max_cells} cells from {n_valid_cells} valid cells in ROI")
 
     # Pre-compute cell centre coordinates in native raster CRS.
     _native_xs: List[float] = []
@@ -491,11 +481,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     _t_interp_start = time.perf_counter()
     cell_climate_df = interpolator.interpolate(np.array(cell_lats), np.array(cell_lons))
     _t_interp = time.perf_counter() - _t_interp_start
-    logger.info(
-        "Interpolated climate for %d cells using strategy='%s'",
-        len(sampled_indices),
-        cfg.climate.strategy,
-    )
+    logger.info(f"Interpolated climate for {len(sampled_indices)} cells using strategy='{cfg.climate.strategy}'")
 
     _t_score_start = time.perf_counter()
     records: List[Dict[str, Any]] = []
@@ -572,15 +558,11 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
 
             df["score_ci_low"] = np.percentile(_scores_mc, 5, axis=1)
             df["score_ci_high"] = np.percentile(_scores_mc, 95, axis=1)
-            logger.info(
-                "Monte Carlo uncertainty propagation complete: %d samples per cell",
-                _n_mc,
-            )
+            logger.info(f"Monte Carlo uncertainty propagation complete: {_n_mc} samples per cell")
         else:
             logger.warning(
-                "uncertainty_samples=%d but no kriging std columns available; "
-                "skipping Monte Carlo. Set interpolation_method='kriging' to enable.",
-                _n_mc,
+                f"uncertainty_samples={_n_mc} but no kriging std columns available; "
+                "skipping Monte Carlo. Set interpolation_method='kriging' to enable."
             )
 
     # Enforce stable base column order, then append kriging std and CI columns.
@@ -719,11 +701,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     )
 
     logger.info(
-        "Artifacts written to %s (fingerprint=%s, cells=%d, total=%.2fs)",
-        run_dir,
-        run_fingerprint,
-        len(records),
-        _t_total,
+        f"Artifacts written to {run_dir} (fingerprint={run_fingerprint}, cells={len(records)}, total={_t_total:.2f}s)"
     )
 
     df.attrs["run_fingerprint"] = run_fingerprint

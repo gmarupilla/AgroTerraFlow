@@ -70,14 +70,8 @@ def clip_raster_to_roi(
         xs, ys = transformer.transform(corners_x, corners_y)
         xmin, ymin, xmax, ymax = min(xs), min(ys), max(xs), max(ys)
         logger.info(
-            "Reprojected ROI from %s to raster CRS %s: "
-            "xmin=%.2f ymin=%.2f xmax=%.2f ymax=%.2f",
-            roi_crs,
-            raster_crs.to_epsg() or "custom",
-            xmin,
-            ymin,
-            xmax,
-            ymax,
+            f"Reprojected ROI from {roi_crs} to raster CRS {raster_crs.to_epsg() or 'custom'}: "
+            f"xmin={xmin:.2f} ymin={ymin:.2f} xmax={xmax:.2f} ymax={ymax:.2f}"
         )
 
     # Compute rasterio window from the (reprojected) bounds.

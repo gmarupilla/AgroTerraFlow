@@ -26,19 +26,19 @@ def run_cmd(
     ],
 ) -> None:
     """Run the geospatial modeling pipeline."""
-    logger.info("TerraFlow run starting with config: %s", config)
+    logger.info(f"TerraFlow run starting with config: {config}")
     try:
         run_pipeline(config)
     except FileNotFoundError as e:
-        logger.error("File not found: %s", e)
+        logger.error(f"File not found: {e}")
         print(f"ERROR: {e}", file=sys.stderr)
         raise SystemExit(1)
     except ValueError as e:
-        logger.error("Configuration error: %s", e)
+        logger.error(f"Configuration error: {e}")
         print(f"ERROR: {e}", file=sys.stderr)
         raise SystemExit(1)
     except Exception as e:
-        logger.error("Pipeline failed: %s", e, exc_info=True)
+        logger.error(f"Pipeline failed: {e}", exc_info=True)
         print(f"ERROR: Pipeline failed - {e}", file=sys.stderr)
         raise SystemExit(1)
     logger.info("TerraFlow run completed successfully")
@@ -56,13 +56,13 @@ def sensitivity_cmd(
     from .sensitivity import run_sensitivity
     try:
         report_path = run_sensitivity(config)
-        logger.info("Sensitivity analysis complete. Report: %s", report_path)
+        logger.info(f"Sensitivity analysis complete. Report: {report_path}")
     except ValueError as e:
-        logger.error("Sensitivity analysis configuration error: %s", e)
+        logger.error(f"Sensitivity analysis configuration error: {e}")
         print(f"ERROR: {e}", file=sys.stderr)
         raise SystemExit(1)
     except Exception as e:
-        logger.error("Sensitivity analysis failed: %s", e, exc_info=True)
+        logger.error(f"Sensitivity analysis failed: {e}", exc_info=True)
         print(f"ERROR: Sensitivity analysis failed - {e}", file=sys.stderr)
         raise SystemExit(1)
 
