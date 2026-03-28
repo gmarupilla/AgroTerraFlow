@@ -3,7 +3,6 @@
 from pathlib import Path
 
 import pandas as pd
-import plotly.express as px
 
 
 def plot_suitability_scatter(
@@ -52,6 +51,13 @@ def plot_suitability_scatter(
     ... })
     >>> fig = plot_suitability_scatter(df, output_html='map.html')
     """
+    try:
+        import plotly.express as px
+    except ImportError as e:
+        raise ImportError(
+            "plotly is required for visualization. "
+            "Install with: pip install terraflow[viz]"
+        ) from e
     if lat_col not in df.columns or lon_col not in df.columns:
         raise ValueError(f"DataFrame must contain '{lat_col}' and '{lon_col}' columns.")
     if score_col not in df.columns:

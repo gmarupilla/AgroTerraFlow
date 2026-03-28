@@ -12,21 +12,20 @@ from terraflow.cli import main
 
 def test_cli_missing_config_arg(capsys):
     """Test that CLI errors when config argument is missing."""
-    with patch.object(sys, "argv", ["terraflow"]):
-        with pytest.raises(SystemExit):
+    with patch.object(sys, "argv", ["terraflow", "run"]):
+        with pytest.raises(SystemExit) as exc_info:
             main()
-    captured = capsys.readouterr()
-    assert "required" in captured.err.lower() or "arguments" in captured.err.lower()
+        assert exc_info.value.code == 2
 
 
 def test_cli_config_file_not_found(tmp_path: Path, capsys):
     """Test that CLI provides helpful error when config file doesn't exist."""
     nonexistent_path = tmp_path / "nonexistent.yml"
 
-    with patch.object(sys, "argv", ["terraflow", "-c", str(nonexistent_path)]):
+    with patch.object(sys, "argv", ["terraflow", "run", "-c", str(nonexistent_path)]):
         with pytest.raises(SystemExit) as exc_info:
             main()
-        assert exc_info.value.code != 0
+        assert exc_info.value.code == 2  # Typer exits with 2 for invalid path option
 
 
 def test_cli_valid_config_runs_pipeline(tmp_path: Path):
@@ -96,9 +95,11 @@ max_cells: 10
     )
     climate_df.to_csv(data_dir / "climate.csv", index=False)
 
-    # Run CLI
-    with patch.object(sys, "argv", ["terraflow", "-c", str(cfg_file)]):
-        main()
+    # Run CLI — Typer calls sys.exit(0) on success in standalone mode
+    with patch.object(sys, "argv", ["terraflow", "run", "-c", str(cfg_file)]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+        assert exc_info.value.code == 0
 
     # Artifacts live under outputs/runs/<run_fingerprint>/
     outputs_dir = tmp_path / "outputs"
@@ -146,7 +147,7 @@ def test_cli_raster_file_not_found(tmp_path: Path, capsys):
     cfg_file = tmp_path / "test_config.yml"
     cfg_file.write_text(cfg_content, encoding="utf-8")
 
-    with patch.object(sys, "argv", ["terraflow", "-c", str(cfg_file)]):
+    with patch.object(sys, "argv", ["terraflow", "run", "-c", str(cfg_file)]):
         with pytest.raises(SystemExit) as exc_info:
             main()
         assert exc_info.value.code == 1
@@ -208,7 +209,7 @@ def test_cli_climate_file_not_found(tmp_path: Path, capsys):
     ) as dst:
         dst.write(arr, 1)
 
-    with patch.object(sys, "argv", ["terraflow", "-c", str(cfg_file)]):
+    with patch.object(sys, "argv", ["terraflow", "run", "-c", str(cfg_file)]):
         with pytest.raises(SystemExit) as exc_info:
             main()
         assert exc_info.value.code == 1
@@ -225,15 +226,15 @@ def test_cli_help_message(capsys):
         assert exc_info.value.code == 0
 
     captured = capsys.readouterr()
-    assert "terraflow" in captured.out.lower()
-    assert "config" in captured.out.lower()
+    assert "run" in captured.out.lower()
+    assert "sensitivity" in captured.out.lower()
 
 
 def test_cli_value_error_from_pipeline(tmp_path: Path, capsys):
     cfg_file = tmp_path / "cfg.yml"
     cfg_file.write_text('raster_path: "data.tif"', encoding="utf-8")
 
-    with patch.object(sys, "argv", ["terraflow", "-c", str(cfg_file)]):
+    with patch.object(sys, "argv", ["terraflow", "run", "-c", str(cfg_file)]):
         with patch("terraflow.cli.run_pipeline", side_effect=ValueError("bad config")):
             with pytest.raises(SystemExit) as exc_info:
                 main()
@@ -247,7 +248,7 @@ def test_cli_unexpected_exception_from_pipeline(tmp_path: Path, capsys):
     cfg_file = tmp_path / "cfg.yml"
     cfg_file.write_text('raster_path: "data.tif"', encoding="utf-8")
 
-    with patch.object(sys, "argv", ["terraflow", "-c", str(cfg_file)]):
+    with patch.object(sys, "argv", ["terraflow", "run", "-c", str(cfg_file)]):
         with patch("terraflow.cli.run_pipeline", side_effect=RuntimeError("boom")):
             with pytest.raises(SystemExit) as exc_info:
                 main()
@@ -255,3 +256,129 @@ def test_cli_unexpected_exception_from_pipeline(tmp_path: Path, capsys):
 
     captured = capsys.readouterr()
     assert "pipeline failed" in captured.err.lower()
+
+
+def test_cli_old_flat_command_fails(tmp_path: Path):
+    """Test that old flat 'terraflow -c' no longer works (D-02)."""
+    cfg_file = tmp_path / "test_config.yml"
+    cfg_file.write_text("raster_path: x\n", encoding="utf-8")
+    with patch.object(sys, "argv", ["terraflow", "-c", str(cfg_file)]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+        assert exc_info.value.code == 2  # Typer: no such option at top level
+
+
+def test_sensitivity_cmd_success(tmp_path: Path):
+    cfg = tmp_path / "config.yml"
+    cfg.write_text(f"""
+raster_path: "{tmp_path}/fake.tif"
+climate_csv: "{tmp_path}/fake.csv"
+output_dir: "{tmp_path}/outputs"
+roi:
+  type: bbox
+  xmin: -100.0
+  ymin: 39.9
+  xmax: -99.9
+  ymax: 40.1
+model_params:
+  v_min: 0.0
+  v_max: 25.0
+  t_min: 0.0
+  t_max: 40.0
+  r_min: 0.0
+  r_max: 300.0
+  w_v: 0.4
+  w_t: 0.3
+  w_r: 0.3
+sensitivity:
+  w_v:
+    low: 0.2
+    high: 0.5
+  w_t:
+    low: 0.2
+    high: 0.5
+  w_r:
+    low: 0.1
+    high: 0.4
+  n_samples: 64
+  method: both
+""", encoding="utf-8")
+    with patch.object(sys, "argv", ["terraflow", "sensitivity", "-c", str(cfg)]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+        assert exc_info.value.code == 0
+    assert (tmp_path / "outputs" / "sensitivity_report.json").exists()
+
+
+def test_sensitivity_nonpower_of_two(tmp_path: Path, capsys):
+    cfg = tmp_path / "config.yml"
+    cfg.write_text(f"""
+raster_path: "{tmp_path}/fake.tif"
+climate_csv: "{tmp_path}/fake.csv"
+output_dir: "{tmp_path}/outputs"
+roi:
+  type: bbox
+  xmin: -100.0
+  ymin: 39.9
+  xmax: -99.9
+  ymax: 40.1
+model_params:
+  v_min: 0.0
+  v_max: 25.0
+  t_min: 0.0
+  t_max: 40.0
+  r_min: 0.0
+  r_max: 300.0
+  w_v: 0.4
+  w_t: 0.3
+  w_r: 0.3
+sensitivity:
+  w_v:
+    low: 0.2
+    high: 0.5
+  w_t:
+    low: 0.2
+    high: 0.5
+  w_r:
+    low: 0.1
+    high: 0.4
+  n_samples: 100
+  method: sobol
+""", encoding="utf-8")
+    with patch.object(sys, "argv", ["terraflow", "sensitivity", "-c", str(cfg)]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+        assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "power of 2" in captured.err.lower()
+
+
+def test_sensitivity_missing_section(tmp_path: Path, capsys):
+    cfg = tmp_path / "config.yml"
+    cfg.write_text(f"""
+raster_path: "{tmp_path}/fake.tif"
+climate_csv: "{tmp_path}/fake.csv"
+output_dir: "{tmp_path}/outputs"
+roi:
+  type: bbox
+  xmin: -100.0
+  ymin: 39.9
+  xmax: -99.9
+  ymax: 40.1
+model_params:
+  v_min: 0.0
+  v_max: 25.0
+  t_min: 0.0
+  t_max: 40.0
+  r_min: 0.0
+  r_max: 300.0
+  w_v: 0.4
+  w_t: 0.3
+  w_r: 0.3
+""", encoding="utf-8")
+    with patch.object(sys, "argv", ["terraflow", "sensitivity", "-c", str(cfg)]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+        assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "sensitivity" in captured.err.lower()

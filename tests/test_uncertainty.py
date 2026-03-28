@@ -15,11 +15,9 @@ import textwrap
 from pathlib import Path
 
 import numpy as np
-import pytest
 
 from terraflow.config import ModelParams
 from terraflow.model import suitability_score, suitability_score_array
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -396,3 +394,66 @@ class TestMCDeterminism:
 
         np.testing.assert_array_equal(ci_low_1, ci_low_2)
         np.testing.assert_array_equal(ci_high_1, ci_high_2)
+
+
+# ---------------------------------------------------------------------------
+# MC edge case tests
+# ---------------------------------------------------------------------------
+
+
+class TestMCEdgeCases:
+    def test_mc_zero_variance_ci_collapsed(
+        self,
+        tmp_path: Path,
+        synthetic_raster: Path,
+        synthetic_climate_csv_dense: Path,
+        monkeypatch,
+    ):
+        """When kriging std is zero everywhere, MC CI width must collapse to zero."""
+        from terraflow.climate import ClimateInterpolator
+        from terraflow.pipeline import run_pipeline
+
+        _orig_interpolate = ClimateInterpolator.interpolate
+
+        def _zero_std_interpolate(self, lats, lons):
+            result = _orig_interpolate(self, lats, lons)
+            for col in result.columns:
+                if col.endswith("_krig_std"):
+                    result[col] = 0.0
+            return result
+
+        monkeypatch.setattr(ClimateInterpolator, "interpolate", _zero_std_interpolate)
+
+        cfg_path = _write_kriging_config(
+            tmp_path / "cfg.yml", synthetic_raster, synthetic_climate_csv_dense,
+            tmp_path / "out", uncertainty_samples=50,
+        )
+        df = run_pipeline(cfg_path)
+
+        assert "score_ci_low" in df.columns
+        assert "score_ci_high" in df.columns
+        np.testing.assert_array_almost_equal(
+            df["score_ci_low"].to_numpy(), df["score_ci_high"].to_numpy(), decimal=9
+        )
+
+    def test_mc_single_sample_ci_width_zero(
+        self,
+        tmp_path: Path,
+        synthetic_raster: Path,
+        synthetic_climate_csv_dense: Path,
+    ):
+        """uncertainty_samples=1 produces CI width of zero (single draw = point estimate)."""
+        from terraflow.pipeline import run_pipeline
+
+        cfg_path = _write_kriging_config(
+            tmp_path / "cfg.yml", synthetic_raster, synthetic_climate_csv_dense,
+            tmp_path / "out", uncertainty_samples=1,
+        )
+        df = run_pipeline(cfg_path)
+
+        assert "score_ci_low" in df.columns
+        assert "score_ci_high" in df.columns
+        ci_width = (df["score_ci_high"] - df["score_ci_low"]).abs()
+        assert ci_width.max() < 1e-9, (
+            f"CI width should be ~0 with 1 MC sample, got max={ci_width.max()}"
+        )

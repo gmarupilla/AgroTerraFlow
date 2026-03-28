@@ -1,54 +1,75 @@
-import argparse
+"""TerraFlow CLI — Typer-based subcommand interface."""
+from __future__ import annotations
+
 import sys
 from pathlib import Path
+from typing import Annotated, Optional
+
+import typer
 
 from .pipeline import run_pipeline
 from .utils import logger
 
+app = typer.Typer(
+    name="terraflow",
+    help="TerraFlow: reproducible geospatial agricultural modeling.",
+    add_completion=False,
+)
 
-def main() -> None:
-    """Main entry point for the TerraFlow CLI."""
-    parser = argparse.ArgumentParser(
-        description="TerraFlow: run geospatial agricultural modeling pipeline",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Example:
-  terraflow -c config.yml
 
-Config file should be a YAML with keys: raster_path, climate_csv, roi, model_params, output_dir
-        """,
-    )
-    parser.add_argument(
-        "-c",
-        "--config",
-        required=True,
-        type=Path,
-        help="Path to YAML config file",
-    )
-
+@app.command("run")
+def run_cmd(
+    config: Annotated[
+        Path,
+        typer.Option(..., "--config", "-c", exists=True, file_okay=True,
+                     dir_okay=False, readable=True, help="Path to YAML config file"),
+    ],
+) -> None:
+    """Run the geospatial modeling pipeline."""
+    logger.info(f"TerraFlow run starting with config: {config}")
     try:
-        args = parser.parse_args()
-
-        if not args.config.exists():
-            parser.error(f"Config file not found: {args.config}")
-            sys.exit(1)
-
-        logger.info(f"TerraFlow starting with config: {args.config}")
-        run_pipeline(args.config)
-        logger.info("TerraFlow completed successfully")
-
+        run_pipeline(config)
     except FileNotFoundError as e:
         logger.error(f"File not found: {e}")
         print(f"ERROR: {e}", file=sys.stderr)
-        sys.exit(1)
+        raise SystemExit(1)
     except ValueError as e:
         logger.error(f"Configuration error: {e}")
         print(f"ERROR: {e}", file=sys.stderr)
-        sys.exit(1)
+        raise SystemExit(1)
     except Exception as e:
         logger.error(f"Pipeline failed: {e}", exc_info=True)
         print(f"ERROR: Pipeline failed - {e}", file=sys.stderr)
-        sys.exit(1)
+        raise SystemExit(1)
+    logger.info("TerraFlow run completed successfully")
+
+
+@app.command("sensitivity")
+def sensitivity_cmd(
+    config: Annotated[
+        Path,
+        typer.Option(..., "--config", "-c", exists=True, file_okay=True,
+                     dir_okay=False, readable=True, help="Path to YAML config file"),
+    ],
+) -> None:
+    """Run Sobol' and/or Morris sensitivity analysis."""
+    from .sensitivity import run_sensitivity
+    try:
+        report_path = run_sensitivity(config)
+        logger.info(f"Sensitivity analysis complete. Report: {report_path}")
+    except ValueError as e:
+        logger.error(f"Sensitivity analysis configuration error: {e}")
+        print(f"ERROR: {e}", file=sys.stderr)
+        raise SystemExit(1)
+    except Exception as e:
+        logger.error(f"Sensitivity analysis failed: {e}", exc_info=True)
+        print(f"ERROR: Sensitivity analysis failed - {e}", file=sys.stderr)
+        raise SystemExit(1)
+
+
+def main() -> None:
+    """Entry point for the terraflow CLI."""
+    app()
 
 
 if __name__ == "__main__":

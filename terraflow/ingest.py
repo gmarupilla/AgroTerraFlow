@@ -197,13 +197,8 @@ def build_data_catalog(
     )
 
     logger.info(
-        "DataCatalog built: raster=%s (CRS %s, shape %s), climate=%s (%d rows, vars=%s)",
-        raster_path.name,
-        crs_str,
-        shape,
-        climate_csv_path.name,
-        n_rows,
-        climate_vars,
+        f"DataCatalog built: raster={raster_path.name} (CRS {crs_str}, shape {shape}), "
+        f"climate={climate_csv_path.name} ({n_rows} rows, vars={climate_vars})"
     )
 
     return DataCatalog(

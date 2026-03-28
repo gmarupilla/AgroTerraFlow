@@ -76,7 +76,7 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}/docker-out:/app/outputs \
             terraflow:ci \
-            --config examples/demo_config.yml
+            run --config examples/demo_config.yml
 
       - name: Verify pipeline outputs exist
         run: |

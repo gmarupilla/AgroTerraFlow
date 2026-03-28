@@ -21,14 +21,16 @@ Every TerraFlow run produces a verifiable, reproducible result: same inputs alwa
 - ✓ Three-artifact output: features.parquet, manifest.json, report.json — existing
 - ✓ CLI interface (`terraflow -c config.yml`) — existing
 - ✓ Monte Carlo uncertainty propagation (score_ci_low / score_ci_high per cell) — existing
-- ✓ 85%+ branch coverage test suite with determinism regression tests — existing
+- ✓ 87%+ branch coverage test suite including MC/kriging edge cases — Validated in Phase 1: Foundation Hardening
+- ✓ CRS validation: CRSMismatchError with informative messages — Validated in Phase 1: Foundation Hardening
+- ✓ Kriging variogram diagnostics in report.json (nugget, sill, range_, model) — Validated in Phase 1: Foundation Hardening
+- ✓ Optional plotly [viz] extra; trove classifiers and Documentation URL in pyproject.toml — Validated in Phase 1: Foundation Hardening
 
 ### Active
 
-- [ ] Sensitivity analysis — quantify which input parameters drive output variance (Sobol indices or Morris method)
+- ✓ Sensitivity analysis — Sobol' and Morris methods via SALib, CLI-invocable, sensitivity_report.json output — Validated in Phase 2: Sensitivity Analysis
 - [ ] Model validation — cross-validate suitability scores against reference datasets or known outcomes
-- [ ] Spatial statistics rigor — variogram diagnostics, LOOCV for kriging, spatial autocorrelation reporting
-- [ ] CRS validation — explicit CRS mismatch detection and informative errors across pipeline stages
+- [ ] Spatial statistics rigor — LOOCV for kriging, spatial autocorrelation reporting
 - [ ] H3 index export — output suitability results indexed by H3 cell for interop with H3-native tools (DeckGL, Pandas H3)
 - [ ] JOSS paper finalization — manuscript, figures, and supplementary materials meeting reviewer standards
 
@@ -47,7 +49,7 @@ TerraFlow is a brownfield project with an active codebase (~3,600 lines of test 
 - No validation against real-world ag outcomes exists yet
 - CRS edge cases produce broad exception handlers instead of informative errors
 
-The library is on branch `feat/stage2-mc-uncertainty` with clean git state. Target JOSS submission window is ~2026-05-25.
+The library is on branch `feat/stage2-mc-uncertainty`. Phase 1 (foundation hardening) and Phase 2 (sensitivity analysis) complete. Target JOSS submission window is ~2026-05-25.
 
 ## Constraints
 
@@ -67,4 +69,4 @@ The library is on branch `feat/stage2-mc-uncertainty` with clean git state. Targ
 | LOOCV for kriging validation | Standard geostatistical practice; expected by reviewers | — Pending |
 
 ---
-*Last updated: 2026-03-18 after initialization*
+*Last updated: 2026-03-27 — Phase 1 (Foundation Hardening) complete*

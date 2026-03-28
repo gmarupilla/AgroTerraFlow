@@ -187,6 +187,7 @@ class ClimateInterpolator:
         self.fallback_to_mean = fallback_to_mean
         self.cv_metrics: Dict = {}
         self._krig_variogram_model: str = "spherical"  # overwritten by _init_kriging
+        self.variogram_params: dict = {}
 
         self._validate_columns()
 
@@ -199,12 +200,8 @@ class ClimateInterpolator:
             self._init_kriging()
 
         logger.info(
-            "ClimateInterpolator initialised: strategy='%s', "
-            "interpolation_method='%s', records=%d, variables=%s",
-            strategy,
-            interpolation_method,
-            len(self.climate_df),
-            self.climate_columns,
+            f"ClimateInterpolator initialised: strategy='{strategy}', "
+            f"interpolation_method='{interpolation_method}', records={len(self.climate_df)}, variables={self.climate_columns}"
         )
 
     # ------------------------------------------------------------------
@@ -243,11 +240,7 @@ class ClimateInterpolator:
 
         nan_count = lats.isna().sum() + lons.isna().sum()
         if nan_count > 0:
-            logger.warning(
-                "Found %d NaN values in lat/lon coordinates. "
-                "Removing rows with missing coordinates.",
-                nan_count,
-            )
+            logger.warning(f"Found {nan_count} NaN values in lat/lon coordinates. Removing rows with missing coordinates.")
             self.climate_df = self.climate_df.dropna(subset=["lat", "lon"])
 
         lat_min, lat_max = lats.min(), lats.max()
@@ -272,11 +265,7 @@ class ClimateInterpolator:
 
         duplicates = self.climate_df.duplicated(subset=["lat", "lon"], keep=False).sum()
         if duplicates > 0:
-            logger.warning(
-                "Found %d duplicate lat/lon coordinates in climate data. "
-                "Interpolation may produce ambiguous results.",
-                duplicates,
-            )
+            logger.warning(f"Found {duplicates} duplicate lat/lon coordinates in climate data. Interpolation may produce ambiguous results.")
 
     def _compute_mean_climate(self) -> dict:
         """Cache mean values of each climate variable for fallback use."""
@@ -307,10 +296,8 @@ class ClimateInterpolator:
         n = len(self.climate_df)
         if n < MIN_KRIGING_STATIONS:
             logger.warning(
-                "Only %d climate stations available; kriging requires ≥%d. "
-                "Falling back to linear interpolation.",
-                n,
-                MIN_KRIGING_STATIONS,
+                f"Only {n} climate stations available; kriging requires ≥{MIN_KRIGING_STATIONS}. "
+                "Falling back to linear interpolation."
             )
             self.interpolation_method = "linear"
             return
@@ -328,12 +315,12 @@ class ClimateInterpolator:
         for model in _VARIOGRAM_MODELS:
             try:
                 rmse, _ = self._loocv(lons, lats, vals_primary, model)
-                logger.debug("Variogram '%s': LOOCV RMSE=%.4f (%s)", model, rmse, primary_var)
+                logger.debug(f"Variogram '{model}': LOOCV RMSE={rmse:.4f} ({primary_var})")
                 if rmse < best_rmse:
                     best_rmse = rmse
                     best_model = model
             except (ValueError, RuntimeError, np.linalg.LinAlgError) as exc:
-                logger.debug("Variogram model '%s' failed during selection: %s", model, exc)
+                logger.debug(f"Variogram model '{model}' failed during selection: {exc}")
 
         if best_model is None:
             logger.warning(
@@ -343,12 +330,26 @@ class ClimateInterpolator:
             return
 
         self._krig_variogram_model = best_model
-        logger.info(
-            "Kriging variogram selected: '%s' (LOOCV RMSE=%.4f for '%s')",
-            best_model,
-            best_rmse,
-            primary_var,
+        logger.info(f"Kriging variogram selected: '{best_model}' (LOOCV RMSE={best_rmse:.4f} for '{primary_var}')")
+
+        # Extract variogram parameters from a full-data fit with the selected model.
+        from pykrige.ok import OrdinaryKriging
+
+        _ok_full = OrdinaryKriging(
+            lons, lats, vals_primary,
+            variogram_model=best_model,
+            verbose=False,
+            enable_plotting=False,
         )
+        p = _ok_full.variogram_model_parameters  # [psill, range, nugget]
+        self.variogram_params = {
+            "model": best_model,
+            "psill": round(float(p[0]), 6),
+            "nugget": round(float(p[2]), 6),
+            "sill": round(float(p[0]) + float(p[2]), 6),
+            "range_": round(float(p[1]), 6),
+            "range_units": "degrees_geographic",
+        }
 
         # --- Full LOOCV for all variables with the selected model -------------
         cv_per_var: Dict = {}
@@ -362,7 +363,7 @@ class ClimateInterpolator:
                     "n_stations": int(n),
                 }
             except (ValueError, RuntimeError, np.linalg.LinAlgError) as exc:
-                logger.warning("LOOCV failed for variable '%s': %s", var, exc)
+                logger.warning(f"LOOCV failed for variable '{var}': {exc}")
                 cv_per_var[var] = {"rmse": None, "mae": None, "n_stations": int(n)}
 
         self.cv_metrics = {
@@ -472,10 +473,7 @@ class ClimateInterpolator:
                     fill_value=np.nan,
                 )
             except (ValueError, RuntimeError) as exc:
-                logger.info(
-                    "Linear interpolation failed (%s), falling back to nearest-neighbor",
-                    exc,
-                )
+                logger.info(f"Linear interpolation failed ({exc}), falling back to nearest-neighbor")
                 interp_values = griddata(
                     climate_points,
                     values,
@@ -488,12 +486,7 @@ class ClimateInterpolator:
                 nan_mask = np.isnan(interp_values)
                 if nan_mask.any():
                     interp_values[nan_mask] = self._climate_mean[col]
-                    logger.info(
-                        "Filled %d cells with mean %s (%.3f) due to extrapolation",
-                        nan_mask.sum(),
-                        col,
-                        self._climate_mean[col],
-                    )
+                    logger.info(f"Filled {nan_mask.sum()} cells with mean {col} ({self._climate_mean[col]:.3f}) due to extrapolation")
             result[col] = interp_values
 
         return pd.DataFrame(result)
@@ -536,11 +529,7 @@ class ClimateInterpolator:
                 nan_mask = np.isnan(z_pred_arr)
                 if nan_mask.any():
                     z_pred_arr[nan_mask] = self._climate_mean[var]
-                    logger.info(
-                        "Filled %d NaN kriging predictions with mean %s",
-                        nan_mask.sum(),
-                        var,
-                    )
+                    logger.info(f"Filled {nan_mask.sum()} NaN kriging predictions with mean {var}")
 
             result[var] = z_pred_arr
             result[f"{var}_krig_std"] = krig_std
@@ -599,10 +588,8 @@ class ClimateInterpolator:
             if n_climate < n_cells:
                 if self.fallback_to_mean:
                     logger.warning(
-                        "Climate records (%d) < cells (%d). "
-                        "Using global mean for unmatched cells.",
-                        n_climate,
-                        n_cells,
+                        f"Climate records ({n_climate}) < cells ({n_cells}). "
+                        "Using global mean for unmatched cells."
                     )
                     result_dict = {}
                     for col in self.climate_columns:
@@ -618,12 +605,7 @@ class ClimateInterpolator:
                         f"ensure climate CSV has at least {n_cells} rows."
                     )
             elif n_climate > n_cells:
-                logger.info(
-                    "Climate records (%d) > cells (%d). Using first %d records.",
-                    n_climate,
-                    n_cells,
-                    n_cells,
-                )
+                logger.info(f"Climate records ({n_climate}) > cells ({n_cells}). Using first {n_cells} records.")
                 return self.climate_df[self.climate_columns].head(n_cells).copy()
             else:
                 return self.climate_df[self.climate_columns].copy()
@@ -633,7 +615,5 @@ class ClimateInterpolator:
                     f"cell_id_column '{self.cell_id_column}' not found in climate_df. "
                     f"Available columns: {list(self.climate_df.columns)}"
                 )
-            logger.info(
-                "Index-based matching using cell_id_column='%s'", self.cell_id_column
-            )
+            logger.info(f"Index-based matching using cell_id_column='{self.cell_id_column}'")
             return self.climate_df[self.climate_columns].copy()

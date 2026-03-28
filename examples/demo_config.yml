@@ -31,3 +31,18 @@ model_params:
   w_v: 0.4
   w_t: 0.3
   w_r: 0.3
+
+# Sensitivity analysis configuration (Phase 2)
+# Run with: terraflow sensitivity -c examples/demo_config.yml
+sensitivity:
+  w_v:
+    low: 0.2
+    high: 0.5
+  w_t:
+    low: 0.2
+    high: 0.5
+  w_r:
+    low: 0.1
+    high: 0.4
+  n_samples: 1024
+  method: both  # sobol | morris | both

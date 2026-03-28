@@ -1,7 +1,9 @@
+import json
 import textwrap
 from pathlib import Path
 
 import numpy as np
+import pytest
 import rasterio
 from pyproj import Transformer
 from rasterio.crs import CRS
@@ -215,9 +217,112 @@ def test_aggregate_climate_means():
 
 def test_aggregate_climate_missing_columns():
     import pandas as pd
-    import pytest
 
     df = pd.DataFrame({"mean_temp": [10.0, 12.0]})
 
     with pytest.raises(ValueError, match="total_rain"):
         _aggregate_climate(df)
+
+
+# ---------------------------------------------------------------------------
+# Helpers for kriging / CRS mismatch tests
+# ---------------------------------------------------------------------------
+
+
+def _write_kriging_config(
+    cfg_file: Path,
+    raster_path: Path,
+    climate_csv: Path,
+    output_dir: Path,
+    uncertainty_samples: int = 0,
+) -> Path:
+    """Write a pipeline config YAML file with kriging interpolation enabled."""
+    cfg = textwrap.dedent(f"""
+        raster_path: "{raster_path}"
+        climate_csv: "{climate_csv}"
+        output_dir: "{output_dir}"
+
+        roi:
+          type: "bbox"
+          xmin: -100.05
+          ymin: 39.95
+          xmax: -99.95
+          ymax: 40.05
+
+        model_params:
+          v_min: 0.0
+          v_max: 25.0
+          t_min: 0.0
+          t_max: 40.0
+          r_min: 0.0
+          r_max: 300.0
+          w_v: 0.4
+          w_t: 0.3
+          w_r: 0.3
+          uncertainty_samples: {uncertainty_samples}
+
+        climate:
+          strategy: "spatial"
+          interpolation_method: "kriging"
+
+        max_cells: 5
+    """)
+    cfg_file.write_text(cfg, encoding="utf-8")
+    return cfg_file
+
+
+def _write_no_crs_raster(path: Path) -> Path:
+    """Create a GeoTIFF with no CRS for testing CRSMismatchError."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    arr = np.arange(25, dtype="float32").reshape(5, 5)
+    transform = from_origin(west=-100.0, north=40.0, xsize=0.01, ysize=0.01)
+    with rasterio.open(
+        path, "w", driver="GTiff",
+        height=5, width=5, count=1, dtype=arr.dtype,
+        crs=None, transform=transform,
+    ) as dst:
+        dst.write(arr, 1)
+    return path
+
+
+# ---------------------------------------------------------------------------
+# CRS mismatch test
+# ---------------------------------------------------------------------------
+
+
+def test_crs_mismatch_error_none_crs(tmp_path, synthetic_climate_csv_dense):
+    """Pipeline raises CRSMismatchError when raster has no CRS."""
+    from terraflow.exceptions import CRSMismatchError
+
+    raster_path = _write_no_crs_raster(tmp_path / "data" / "no_crs.tif")
+    cfg_path = _write_kriging_config(
+        tmp_path / "cfg.yml", raster_path, synthetic_climate_csv_dense,
+        tmp_path / "out",
+    )
+    with pytest.raises(CRSMismatchError, match="has no CRS"):
+        run_pipeline(cfg_path)
+
+
+# ---------------------------------------------------------------------------
+# Kriging diagnostics in report.json test
+# ---------------------------------------------------------------------------
+
+
+def test_kriging_diagnostics_in_report(
+    tmp_path, synthetic_raster, synthetic_climate_csv_dense
+):
+    """report.json includes kriging_diagnostics when kriging is used."""
+    cfg_path = _write_kriging_config(
+        tmp_path / "cfg.yml", synthetic_raster, synthetic_climate_csv_dense,
+        tmp_path / "out",
+    )
+    df = run_pipeline(cfg_path)
+    run_dir = Path(df.attrs["run_dir"])
+    report = json.loads((run_dir / "report.json").read_text())
+
+    assert "kriging_diagnostics" in report
+    diag = report["kriging_diagnostics"]
+    for key in ("model", "psill", "nugget", "sill", "range_", "range_units"):
+        assert key in diag, f"Missing key '{key}' in kriging_diagnostics"
+    assert diag["range_units"] == "degrees_geographic"
+    assert diag["sill"] == pytest.approx(diag["psill"] + diag["nugget"], rel=1e-4)
