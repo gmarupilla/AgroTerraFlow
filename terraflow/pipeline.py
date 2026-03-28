@@ -35,8 +35,6 @@ from pyproj.exceptions import CRSError as _PyProjCRSError
 from rasterio.crs import CRS
 from rasterio.transform import xy
 
-from pyproj.exceptions import CRSError as _PyProjCRSError
-
 from .climate import ClimateInterpolator
 from .config import PipelineConfig, build_config, load_config_dict
 from .exceptions import CRSMismatchError
@@ -46,7 +44,6 @@ from .core.run_identity import (
     fingerprint_file,
     hash_roi_geometry,
 )
-from .exceptions import CRSMismatchError
 from .geo import clip_raster_to_roi
 from .ingest import build_data_catalog, load_climate_csv, load_raster
 from .model import suitability_label, suitability_score, suitability_score_array
@@ -356,7 +353,6 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     cfg: PipelineConfig = build_config(config_dict)
     logger.info("Loaded config from %s", config_path)
 
-    # --- Run identity -------------------------------------------------------
     config_bytes_hash = hashlib.sha256(canonicalize_config(config_dict)).hexdigest()
     roi_hash = _resolve_roi_hash(config_dict, config_dir)
     input_paths = _collect_input_paths(config_dict, config_dir)
@@ -369,7 +365,6 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         len(input_fps),
     )
 
-    # --- Run directory -------------------------------------------------------
     output_dir = ensure_dir(cfg.output_dir)
     run_dir = ensure_dir(output_dir / "runs" / run_fingerprint)
 
@@ -388,12 +383,10 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         df.attrs["run_dir"] = str(run_dir)
         return df
 
-    # --- DataCatalog (metadata only, no pixel reads) -------------------------
     _t_catalog_start = time.perf_counter()
     catalog = build_data_catalog(cfg.raster_path, cfg.climate_csv)
     _t_catalog = time.perf_counter() - _t_catalog_start
 
-    # --- Load inputs ---------------------------------------------------------
     _t_load_start = time.perf_counter()
     raster = load_raster(cfg.raster_path)
     raster_crs = raster.crs
@@ -404,14 +397,10 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         raise
     _t_load = time.perf_counter() - _t_load_start
 
-    logger.info(
-        "Loaded raster: %s (CRS: %s)",
-        cfg.raster_path,
-        (f"EPSG:{raster_crs.to_epsg()}" if raster_crs is not None and raster_crs.to_epsg() else str(raster_crs) if raster_crs else "None"),
-    )
+    _crs_str = f"EPSG:{raster_crs.to_epsg()}" if raster_crs is not None and raster_crs.to_epsg() else (str(raster_crs) if raster_crs else "None")
+    logger.info(f"Loaded raster: {cfg.raster_path} (CRS: {_crs_str})")
     logger.info("Loaded climate data: %s", cfg.climate_csv)
 
-    # --- CRS validation -------------------------------------------------------
     _climate_crs = CRS.from_epsg(4326)
     _climate_crs_str = "EPSG:4326"
     if raster_crs is None:
@@ -427,7 +416,6 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
             f"climate CRS '{_climate_crs_str}': {exc}"
         ) from exc
 
-    # --- Clip raster to ROI --------------------------------------------------
     _t_clip_start = time.perf_counter()
     clipped_data, clipped_transform = clip_raster_to_roi(
         raster,
@@ -437,7 +425,6 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     _t_clip = time.perf_counter() - _t_clip_start
     logger.info("Clipped raster to ROI")
 
-    # Coverage metrics --------------------------------------------------------
     rows: int
     cols: int
     rows, cols = clipped_data.shape
@@ -455,7 +442,6 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     if not valid_indices:
         raise ValueError("No valid raster cells found in the specified ROI")
 
-    # --- Climate interpolator ------------------------------------------------
     interpolator = ClimateInterpolator(
         climate_df=climate_df,
         strategy=cfg.climate.strategy,
@@ -469,7 +455,6 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         interpolator.interpolation_method,  # may differ from config if fallback triggered
     )
 
-    # --- Sample cells --------------------------------------------------------
     # Derive a deterministic seed from the run fingerprint so that cell
     # selection is bit-reproducible across independent executions with
     # identical inputs — closing the reproducibility gap from v0.2.1.
@@ -503,7 +488,6 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         cell_lons = _native_xs
         cell_lats = _native_ys
 
-    # --- Climate interpolation -----------------------------------------------
     _t_interp_start = time.perf_counter()
     cell_climate_df = interpolator.interpolate(np.array(cell_lats), np.array(cell_lons))
     _t_interp = time.perf_counter() - _t_interp_start
@@ -513,7 +497,6 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         cfg.climate.strategy,
     )
 
-    # --- Score cells ---------------------------------------------------------
     _t_score_start = time.perf_counter()
     records: List[Dict[str, Any]] = []
 
@@ -607,20 +590,16 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     raster.close()
     logger.info("Closed raster dataset")
 
-    # --- Write artifacts atomically ------------------------------------------
     _t_write_start = time.perf_counter()
 
-    # 1. features.parquet (canonical output)
     _atomic_write_parquet(
         run_dir / "features.parquet",
         df,
         schema_meta={"run_fingerprint": run_fingerprint},
     )
 
-    # 2. results.csv (backward-compat; same data, same directory)
     _atomic_write_text(run_dir / "results.csv", df.to_csv(index=False))
 
-    # 3. manifest.json
     git_sha = _get_git_sha()
     input_fp_records = [
         {
@@ -653,7 +632,6 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         json.dumps(manifest, indent=2, default=str),
     )
 
-    # 4. report.json
     raster_data_for_report = clipped_data.compressed().astype("float64")
     climate_var_cols = [c for c in climate_df.columns if c not in ("lat", "lon")]
     climate_var_stats: Dict[str, Any] = {}

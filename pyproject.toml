@@ -67,7 +67,7 @@ terraflow = "terraflow.cli:main"
 [project.urls]
 Homepage = "https://github.com/gmarupilla/AgroTerraFlow"
 "Bug Tracker" = "https://github.com/gmarupilla/AgroTerraFlow/issues"
-Documentation = "https://gmarupilla.github.io/AgroTerraFlow/"
+Documentation = "https://terraflow.marupilla.dev"
 
 [tool.setuptools]
 packages = ["terraflow", "terraflow.core"]

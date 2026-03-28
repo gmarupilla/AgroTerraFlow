@@ -21,7 +21,7 @@ app = typer.Typer(
 def run_cmd(
     config: Annotated[
         Path,
-        typer.Option("--config", "-c", exists=True, file_okay=True,
+        typer.Option(..., "--config", "-c", exists=True, file_okay=True,
                      dir_okay=False, readable=True, help="Path to YAML config file"),
     ],
 ) -> None:
@@ -48,7 +48,7 @@ def run_cmd(
 def sensitivity_cmd(
     config: Annotated[
         Path,
-        typer.Option("--config", "-c", exists=True, file_okay=True,
+        typer.Option(..., "--config", "-c", exists=True, file_okay=True,
                      dir_okay=False, readable=True, help="Path to YAML config file"),
     ],
 ) -> None:

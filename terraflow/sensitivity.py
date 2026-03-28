@@ -8,6 +8,10 @@ from pathlib import Path
 from typing import Any, Dict
 
 import numpy as np
+from SALib.analyze.morris import analyze as morris_analyze
+from SALib.analyze.sobol import analyze as sobol_analyze
+from SALib.sample.morris import sample as morris_sample
+from SALib.sample.sobol import sample as sobol_sample
 
 from .config import PipelineConfig, SensitivityConfig, load_config_dict, build_config
 from .utils import ensure_dir, logger
@@ -81,9 +85,6 @@ def _run_sobol(
     dict:
         Sobol' result dict with S1, S1_conf, ST, ST_conf, ranking keys.
     """
-    from SALib.sample.sobol import sample as sobol_sample
-    from SALib.analyze.sobol import analyze as sobol_analyze
-
     logger.info(
         "Running Sobol' analysis with N=%d (total evaluations: %d)",
         n_samples,
@@ -122,9 +123,6 @@ def _run_morris(
     dict:
         Morris result dict with mu_star, mu_star_conf, mu, sigma, ranking keys.
     """
-    from SALib.sample.morris import sample as morris_sample
-    from SALib.analyze.morris import analyze as morris_analyze
-
     # Morris N = number of trajectories; derive from n_samples capped at 50
     n_trajectories = max(4, min(n_samples // 10, 50))
     total_evals = (problem["num_vars"] + 1) * n_trajectories
@@ -213,7 +211,7 @@ def _atomic_write_json(path: Path, data: Dict[str, Any]) -> None:
         json.dump(data, tmp_fd, indent=2)
         tmp_fd.close()
         Path(tmp_fd.name).replace(path)
-    except BaseException:
+    except Exception:
         Path(tmp_fd.name).unlink(missing_ok=True)
         raise
 

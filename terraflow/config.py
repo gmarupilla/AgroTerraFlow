@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Literal, Optional
 
 import yaml
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 
 class ModelParams(BaseModel):
@@ -214,16 +214,22 @@ class SensitivityConfig(BaseModel):
 
     @field_validator("n_samples")
     @classmethod
-    def validate_power_of_two(cls, v: int) -> int:
+    def validate_n_samples_positive(cls, v: int) -> int:
         if v <= 0:
             raise ValueError(f"n_samples must be positive, got {v}")
-        if (v & (v - 1)) != 0:
-            nearest = 2 ** round(math.log2(v))
-            raise ValueError(
-                f"n_samples must be a power of 2 for Sobol' sampling, got {v}. "
-                f"Nearest power of 2: {nearest}"
-            )
         return v
+
+    @model_validator(mode="after")
+    def validate_power_of_two(self) -> "SensitivityConfig":
+        if self.method in ("sobol", "both"):
+            v = self.n_samples
+            if (v & (v - 1)) != 0:
+                nearest = 2 ** round(math.log2(v))
+                raise ValueError(
+                    f"n_samples must be a power of 2 for Sobol' sampling, got {v}. "
+                    f"Nearest power of 2: {nearest}"
+                )
+        return self
 
 
 class PipelineConfig(BaseModel):
