@@ -1,5 +1,6 @@
+import math
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 
 import yaml
 from pydantic import BaseModel, ConfigDict, field_validator
@@ -185,6 +186,46 @@ class ClimateConfig(BaseModel):
         pass
 
 
+class WeightBounds(BaseModel):
+    """Bounds for a single weight parameter in sensitivity analysis."""
+
+    low: float
+    high: float
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("high")
+    @classmethod
+    def high_gt_low(cls, v: float, info) -> float:
+        low = info.data.get("low")
+        if low is not None and v <= low:
+            raise ValueError(f"high ({v}) must be greater than low ({low})")
+        return v
+
+
+class SensitivityConfig(BaseModel):
+    """Configuration for sensitivity analysis (per D-04)."""
+
+    w_v: WeightBounds
+    w_t: WeightBounds
+    w_r: WeightBounds
+    n_samples: int = 1024
+    method: Literal["sobol", "morris", "both"] = "both"
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("n_samples")
+    @classmethod
+    def validate_power_of_two(cls, v: int) -> int:
+        if v <= 0:
+            raise ValueError(f"n_samples must be positive, got {v}")
+        if (v & (v - 1)) != 0:
+            nearest = 2 ** round(math.log2(v))
+            raise ValueError(
+                f"n_samples must be a power of 2 for Sobol' sampling, got {v}. "
+                f"Nearest power of 2: {nearest}"
+            )
+        return v
+
+
 class PipelineConfig(BaseModel):
     """Top-level pipeline configuration.
 
@@ -213,6 +254,7 @@ class PipelineConfig(BaseModel):
     model_params: ModelParams
     climate: ClimateConfig = ClimateConfig()  # Default: spatial strategy with fallback
     max_cells: int = 500  # maximum number of cells to sample from the ROI
+    sensitivity: Optional[SensitivityConfig] = None  # Optional sensitivity analysis config
 
     model_config = ConfigDict(extra="forbid")
 
