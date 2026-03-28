@@ -52,7 +52,7 @@ def plot_suitability_scatter(
     >>> fig = plot_suitability_scatter(df, output_html='map.html')
     """
     try:
-        import plotly.express as px  # type: ignore[import-untyped]
+        import plotly.express as px
     except ImportError as e:
         raise ImportError(
             "plotly is required for visualization. "
