@@ -13,7 +13,7 @@ TerraFlow is a brownfield research library with a solid pipeline core. The work 
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [ ] **Phase 1: Foundation Hardening** - Close the CRS error and kriging diagnostic gaps that block JOSS reviewer acceptance
-- [ ] **Phase 2: Sensitivity Analysis** - Add Sobol'/Morris sensitivity analysis via SALib; justify model weights quantitatively
+- [x] **Phase 2: Sensitivity Analysis** - Add Sobol'/Morris sensitivity analysis via SALib; justify model weights quantitatively (completed 2026-03-28)
 - [ ] **Phase 3: Model Validation** - Add spatially-blocked cross-validation and Cohen's kappa against reference data
 - [ ] **Phase 4: H3 Export** - Add optional H3-indexed output for interop with H3-native toolchains
 - [ ] **Phase 5: Paper and JOSS Submission** - Populate paper with quantitative results; harden packaging; ship
@@ -45,12 +45,12 @@ Plans:
   2. User can run Morris elementary effects screening over `ModelParams` bounds as a faster pre-screening step before full Sobol' analysis
   3. `report.json` includes a `sensitivity` block containing Sobol' S1/ST indices, confidence intervals, and parameter rankings when sensitivity analysis is run
   4. Running `terraflow sensitivity -c config.yml` with a non-power-of-2 sample size (`n_samples`) produces a clear CLI validation error before any computation starts
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 02-01-PLAN.md — Add SALib/Typer deps, SensitivityConfig models, migrate CLI to Typer subcommands
-- [ ] 02-02-PLAN.md — Implement sensitivity analysis engine (Sobol/Morris via SALib) with tests
-- [ ] 02-03-PLAN.md — Wire sensitivity CLI subcommand, add CLI integration tests, human verification
+- [x] 02-02-PLAN.md — Implement sensitivity analysis engine (Sobol/Morris via SALib) with tests
+- [x] 02-03-PLAN.md — Wire sensitivity CLI subcommand, add CLI integration tests, human verification
 
 ### Phase 3: Model Validation
 **Goal**: Users can validate suitability scores against reference data using spatially-blocked cross-validation that correctly accounts for spatial autocorrelation, with metrics in report.json
@@ -94,7 +94,7 @@ Note: Phase 4 depends on Phase 1 only; it can begin after Phase 1 completes. Pha
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation Hardening | 0/3 | Planned    |  |
-| 2. Sensitivity Analysis | 0/3 | Planned | - |
+| 2. Sensitivity Analysis | 3/3 | Complete   | 2026-03-28 |
 | 3. Model Validation | 0/TBD | Not started | - |
 | 4. H3 Export | 0/TBD | Not started | - |
 | 5. Paper and JOSS Submission | 0/TBD | Not started | - |

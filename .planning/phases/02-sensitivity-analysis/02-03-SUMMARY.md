@@ -90,14 +90,27 @@ None. `sensitivity_cmd` calls `run_sensitivity()` which is fully implemented. Al
 
 ## Human Verification Checkpoint (Task 2)
 
-Task 2 is a blocking `checkpoint:human-verify`. Human must verify:
+**Status: APPROVED by human (2026-03-27)**
+
+Human verified end-to-end functionality:
 1. `terraflow --help` shows run and sensitivity subcommands
-2. `terraflow sensitivity -c examples/demo_config.yml` runs (or similar config with real data)
+2. `terraflow sensitivity -c examples/demo_config.yml` runs successfully
 3. Ranked table appears in stdout with S1/ST columns (Sobol') and mu* columns (Morris)
 4. `sensitivity_report.json` is written to the configured output_dir
 5. Non-power-of-2 n_samples produces clear "power of 2" error with exit 1
-6. Full test suite passes: `pytest --cov=terraflow --cov-report=term-missing --cov-fail-under=85`
+6. Full test suite passes with >=85% coverage threshold
 
 ---
 *Phase: 02-sensitivity-analysis*
 *Completed: 2026-03-28*
+
+## Self-Check: PASSED
+
+- FOUND: terraflow/cli.py (sensitivity_cmd with error handling)
+- FOUND: tests/test_cli.py (3 new test functions)
+- FOUND: examples/demo_config.yml (sensitivity: section)
+- FOUND: 02-03-SUMMARY.md at .planning/phases/02-sensitivity-analysis/
+- FOUND: commit 965d93f (feat: wire sensitivity CLI) — on feat/stage2-mc-uncertainty branch
+- FOUND: commit 7363618 (docs: plan completion) — merged to main
+- Task 2 (human-verify): APPROVED by human (2026-03-27)
+- Phase 02 ROADMAP.md: 3/3 plans complete, status=Complete
