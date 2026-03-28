@@ -28,7 +28,7 @@ Every TerraFlow run produces a verifiable, reproducible result: same inputs alwa
 
 ### Active
 
-- [ ] Sensitivity analysis — quantify which input parameters drive output variance (Sobol indices or Morris method)
+- ✓ Sensitivity analysis — Sobol' and Morris methods via SALib, CLI-invocable, sensitivity_report.json output — Validated in Phase 2: Sensitivity Analysis
 - [ ] Model validation — cross-validate suitability scores against reference datasets or known outcomes
 - [ ] Spatial statistics rigor — LOOCV for kriging, spatial autocorrelation reporting
 - [ ] H3 index export — output suitability results indexed by H3 cell for interop with H3-native tools (DeckGL, Pandas H3)
@@ -49,7 +49,7 @@ TerraFlow is a brownfield project with an active codebase (~3,600 lines of test 
 - No validation against real-world ag outcomes exists yet
 - CRS edge cases produce broad exception handlers instead of informative errors
 
-The library is on branch `feat/stage2-mc-uncertainty` with clean git state. Target JOSS submission window is ~2026-05-25.
+The library is on branch `feat/stage2-mc-uncertainty`. Phase 1 (foundation hardening) and Phase 2 (sensitivity analysis) complete. Target JOSS submission window is ~2026-05-25.
 
 ## Constraints
 
