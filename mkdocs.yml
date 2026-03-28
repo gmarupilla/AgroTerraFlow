@@ -105,7 +105,6 @@ plugins:
   - search:
       separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
   - tags
-  - mermaid2
   - mkdocs-jupyter:
       execute: false
       include_source: true
