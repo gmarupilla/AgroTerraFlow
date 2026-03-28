@@ -53,9 +53,18 @@ def sensitivity_cmd(
     ],
 ) -> None:
     """Run Sobol' and/or Morris sensitivity analysis."""
-    # Import here to avoid circular imports and allow Plan 02 to create sensitivity.py
     from .sensitivity import run_sensitivity
-    run_sensitivity(config)
+    try:
+        report_path = run_sensitivity(config)
+        logger.info("Sensitivity analysis complete. Report: %s", report_path)
+    except ValueError as e:
+        logger.error("Sensitivity analysis configuration error: %s", e)
+        print(f"ERROR: {e}", file=sys.stderr)
+        raise SystemExit(1)
+    except Exception as e:
+        logger.error("Sensitivity analysis failed: %s", e, exc_info=True)
+        print(f"ERROR: Sensitivity analysis failed - {e}", file=sys.stderr)
+        raise SystemExit(1)
 
 
 def main() -> None:

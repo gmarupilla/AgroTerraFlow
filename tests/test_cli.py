@@ -266,3 +266,119 @@ def test_cli_old_flat_command_fails(tmp_path: Path):
         with pytest.raises(SystemExit) as exc_info:
             main()
         assert exc_info.value.code == 2  # Typer: no such option at top level
+
+
+def test_sensitivity_cmd_success(tmp_path: Path):
+    cfg = tmp_path / "config.yml"
+    cfg.write_text(f"""
+raster_path: "{tmp_path}/fake.tif"
+climate_csv: "{tmp_path}/fake.csv"
+output_dir: "{tmp_path}/outputs"
+roi:
+  type: bbox
+  xmin: -100.0
+  ymin: 39.9
+  xmax: -99.9
+  ymax: 40.1
+model_params:
+  v_min: 0.0
+  v_max: 25.0
+  t_min: 0.0
+  t_max: 40.0
+  r_min: 0.0
+  r_max: 300.0
+  w_v: 0.4
+  w_t: 0.3
+  w_r: 0.3
+sensitivity:
+  w_v:
+    low: 0.2
+    high: 0.5
+  w_t:
+    low: 0.2
+    high: 0.5
+  w_r:
+    low: 0.1
+    high: 0.4
+  n_samples: 64
+  method: both
+""", encoding="utf-8")
+    with patch.object(sys, "argv", ["terraflow", "sensitivity", "-c", str(cfg)]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+        assert exc_info.value.code == 0
+    assert (tmp_path / "outputs" / "sensitivity_report.json").exists()
+
+
+def test_sensitivity_nonpower_of_two(tmp_path: Path, capsys):
+    cfg = tmp_path / "config.yml"
+    cfg.write_text(f"""
+raster_path: "{tmp_path}/fake.tif"
+climate_csv: "{tmp_path}/fake.csv"
+output_dir: "{tmp_path}/outputs"
+roi:
+  type: bbox
+  xmin: -100.0
+  ymin: 39.9
+  xmax: -99.9
+  ymax: 40.1
+model_params:
+  v_min: 0.0
+  v_max: 25.0
+  t_min: 0.0
+  t_max: 40.0
+  r_min: 0.0
+  r_max: 300.0
+  w_v: 0.4
+  w_t: 0.3
+  w_r: 0.3
+sensitivity:
+  w_v:
+    low: 0.2
+    high: 0.5
+  w_t:
+    low: 0.2
+    high: 0.5
+  w_r:
+    low: 0.1
+    high: 0.4
+  n_samples: 100
+  method: sobol
+""", encoding="utf-8")
+    with patch.object(sys, "argv", ["terraflow", "sensitivity", "-c", str(cfg)]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+        assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "power of 2" in captured.err.lower()
+
+
+def test_sensitivity_missing_section(tmp_path: Path, capsys):
+    cfg = tmp_path / "config.yml"
+    cfg.write_text(f"""
+raster_path: "{tmp_path}/fake.tif"
+climate_csv: "{tmp_path}/fake.csv"
+output_dir: "{tmp_path}/outputs"
+roi:
+  type: bbox
+  xmin: -100.0
+  ymin: 39.9
+  xmax: -99.9
+  ymax: 40.1
+model_params:
+  v_min: 0.0
+  v_max: 25.0
+  t_min: 0.0
+  t_max: 40.0
+  r_min: 0.0
+  r_max: 300.0
+  w_v: 0.4
+  w_t: 0.3
+  w_r: 0.3
+""", encoding="utf-8")
+    with patch.object(sys, "argv", ["terraflow", "sensitivity", "-c", str(cfg)]):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+        assert exc_info.value.code == 1
+    captured = capsys.readouterr()
+    assert "sensitivity" in captured.err.lower()
