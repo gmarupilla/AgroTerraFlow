@@ -45,12 +45,15 @@ Reproducible geospatial tool for agricultural suitability modeling. Give it a la
 
 ---
 
-## v0.2.0 highlights
+## What's available
 
 <div class="grid" markdown>
 
 :material-thermometer: **Per-cell climate values**
-:   Spatial interpolation via `scipy.griddata` — not a single global mean.
+:   Spatial interpolation via linear, kriging, or IDW — not a single global mean.
+
+:material-chart-bell-curve: **Kriging + uncertainty**
+:   `interpolation_method: kriging` adds per-cell `{var}_krig_std` columns. Pair with `uncertainty_samples` for Monte Carlo score confidence intervals.
 
 :material-earth: **CRS-aware ROI clipping**
 :   Supply your bounding box in WGS 84 degrees regardless of the raster's native projection.

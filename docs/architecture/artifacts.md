@@ -37,6 +37,8 @@ feature.  This matches the output convention of `rasterstats`,
 climate variables in future releases appends columns and remains
 backward-compatible via nullable new columns.
 
+**Always present:**
+
 | Column | Type | Description |
 |---|---|---|
 | `run_id` | `string` | `run_fingerprint` — join key to `manifest.json` |
@@ -48,6 +50,20 @@ backward-compatible via nullable new columns.
 | `total_rain` | `float64` | Interpolated total rainfall (mm) |
 | `score` | `float64` | Composite suitability score in `[0.0, 1.0]` |
 | `label` | `string` | Categorical label: `low` / `medium` / `high` |
+
+**Present when `interpolation_method: kriging`:**
+
+| Column | Type | Description |
+|---|---|---|
+| `mean_temp_krig_std` | `float64` | Kriging std dev for temperature at this cell |
+| `total_rain_krig_std` | `float64` | Kriging std dev for rainfall at this cell |
+
+**Present when `interpolation_method: kriging` and `uncertainty_samples > 0`:**
+
+| Column | Type | Description |
+|---|---|---|
+| `score_ci_low` | `float64` | 5th-percentile score from Monte Carlo draws |
+| `score_ci_high` | `float64` | 95th-percentile score from Monte Carlo draws |
 
 **CRS guarantee:** `lat` and `lon` are always WGS84 geographic degrees
 (EPSG:4326), regardless of the native CRS of the input raster.  The pipeline
@@ -138,6 +154,17 @@ Contains QA summaries, per-layer coverage metrics, and step timings.
     "score_cells": 0.005,
     "write_outputs": 0.03,
     "total": 0.125
+  },
+  // Present when interpolation_method="kriging":
+  "interpolation_cv": {
+    "mean_temp": { "rmse": 1.2, "mae": 0.9, "r2": 0.94, "variogram_model": "spherical" },
+    "total_rain": { "rmse": 18.5, "mae": 14.1, "r2": 0.89, "variogram_model": "spherical" }
+  },
+  // Present when uncertainty_samples > 0:
+  "uncertainty": {
+    "n_samples": 500,
+    "score_ci_low_mean": 0.41,
+    "score_ci_high_mean": 0.63
   }
 }
 ```

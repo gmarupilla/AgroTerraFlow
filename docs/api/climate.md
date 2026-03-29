@@ -13,10 +13,12 @@ The climate module provides spatial interpolation and index-based matching for a
 
 ## Overview
 
-**New in v0.2.0**: Replaces global mean climate approach with per-cell interpolation using:
+Per-cell climate interpolation via configurable spatial algorithms:
 
-- **Spatial interpolation**: `scipy.interpolate.griddata` with linear and nearest-neighbor methods
-- **Index-based matching**: Row order or explicit cell ID matching
+- **`"linear"`** (default): `scipy.interpolate.griddata` — fast, no extra dependencies
+- **`"kriging"`**: Ordinary Kriging via `pykrige` — geostatistically optimal; also produces per-cell uncertainty (`{var}_krig_std` columns)
+- **`"idw"`**: Inverse Distance Weighting (power=2) — faster than kriging, no uncertainty output
+- **Index-based matching**: Row order or explicit cell ID matching for pre-aligned data
 - **Graceful fallbacks**: Global mean values for cells outside interpolation range or with sparse data
 
 ## Quick Example
@@ -28,16 +30,19 @@ from terraflow.climate import ClimateInterpolator
 # Load climate data
 climate_df = pd.read_csv("weather_stations.csv")
 
-# Create spatial interpolator
+# Create spatial interpolator with kriging (produces uncertainty columns)
 interpolator = ClimateInterpolator(
-    climate_data=climate_df,
+    climate_df=climate_df,
     strategy="spatial",
+    interpolation_method="kriging",
     fallback_to_mean=True
 )
 
 # Interpolate values for raster cell locations
-cell_coords = [(39.14, -100.82), (38.55, -99.20)]
-interpolated = interpolator.interpolate(cell_coords)
+import numpy as np
+cell_lats = np.array([39.14, 38.55])
+cell_lons = np.array([-100.82, -99.20])
+interpolated = interpolator.interpolate(cell_lats, cell_lons)
 ```
 
 !!! example "Use Cases"
