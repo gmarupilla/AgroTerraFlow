@@ -304,6 +304,7 @@ pyrightconfig.json
 ### Editor / AI tool configs (machine-local, not project state) ###
 .vscode/
 .claude/
+!.claude/settings.json
 .cursor/
 .aider*
 .history/
