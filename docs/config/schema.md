@@ -9,7 +9,7 @@ tags:
 
 # Configuration Schema
 
-TerraFlow v0.2.0 uses a single YAML configuration file that maps to the `PipelineConfig` model.
+TerraFlow v0.2.1 uses a single YAML configuration file that maps to the `PipelineConfig` model.
 It is validated with Pydantic v2 and rejects unknown fields. Geographic coordinates are validated with custom pydantic field validators.
 
 ## Top-level fields
@@ -84,6 +84,14 @@ It is validated with Pydantic v2 and rejects unknown fields. Geographic coordina
 
 ## Model parameters
 
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `v_min` / `v_max` | float | — | Vegetation index suitability range |
+| `t_min` / `t_max` | float | — | Temperature (°C) suitability range |
+| `r_min` / `r_max` | float | — | Rainfall (mm) suitability range |
+| `w_v` / `w_t` / `w_r` | float | — | Weights (must sum to 1.0) |
+| `uncertainty_samples` | int | `0` | Monte Carlo draws per cell for score confidence intervals. Requires `interpolation_method: kriging`. `0` disables. |
+
 ```yaml
 model_params:
   v_min: 0.0
@@ -95,47 +103,78 @@ model_params:
   w_v: 0.4
   w_t: 0.3
   w_r: 0.3
+  uncertainty_samples: 0  # set >0 with kriging to get score_ci_low/score_ci_high
 ```
 
-## Climate configuration (v0.2.0 — New feature)
+## Climate configuration
 
-Climate data is now applied ==per-cell== using configurable interpolation strategies. This replaces the global mean approach from v0.1.
+Climate data is applied ==per-cell== using configurable interpolation strategies and algorithms.
 
-=== "Spatial Interpolation (Recommended)"
+### `climate` fields
 
-    Use `scipy.interpolate.griddata` for linear interpolation with nearest-neighbor fallback. Best for scattered weather station data.
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `strategy` | string | `"spatial"` | `"spatial"` or `"index"` — how cells are matched to climate observations |
+| `interpolation_method` | string | `"linear"` | `"linear"`, `"kriging"`, or `"idw"` — spatial algorithm (ignored when `strategy: index`) |
+| `fallback_to_mean` | bool | `true` | Use global mean for cells outside interpolation range |
+| `cell_id_column` | string | `null` | Column for explicit cell ID matching (index strategy only) |
+
+### Interpolation methods
+
+=== "linear (default)"
+
+    Fast triangular interpolation via `scipy.interpolate.griddata`. No extra dependencies.
 
     ```yaml title="config.yml"
     climate:
-      strategy: spatial        # Linear interpolation
-      fallback_to_mean: true  # Use global mean for outliers
+      strategy: spatial
+      interpolation_method: linear
+      fallback_to_mean: true
     ```
 
-    !!! tip "Best For"
-        - Weather station networks
-        - Satellite-derived gridded data
-        - Arbitrary point observations
-        - Requires ≥3 observation points
+=== "kriging"
 
-=== "Index-Based Matching"
+    Ordinary Kriging via `pykrige`. Geostatistically optimal; selects variogram model automatically via LOOCV.
+    Adds `{var}_krig_std` columns to output. Combine with `uncertainty_samples` for score confidence intervals.
 
-    Match climate records to cells by row order or explicit cell ID. Best for pre-aligned data.
+    ```yaml title="config.yml"
+    climate:
+      strategy: spatial
+      interpolation_method: kriging
+      fallback_to_mean: true
+    model_params:
+      # ... other params ...
+      uncertainty_samples: 500  # produces score_ci_low / score_ci_high
+    ```
+
+    !!! note "Requires pykrige"
+        Install with `pip install terraflow-agro[kriging]` or `pip install pykrige`.
+
+=== "idw"
+
+    Inverse Distance Weighting (power=2). Faster than kriging, no uncertainty output.
+
+    ```yaml title="config.yml"
+    climate:
+      strategy: spatial
+      interpolation_method: idw
+      fallback_to_mean: true
+    ```
+
+=== "index"
+
+    Match climate CSV rows to cells by row order or explicit cell ID. No interpolation.
 
     ```yaml title="config.yml"
     climate:
       strategy: index
-      cell_id_column: null    # Optional: column for explicit ID matching
-      fallback_to_mean: true  # Pad with mean if data < cells
+      cell_id_column: null    # optional: column for explicit ID matching
+      fallback_to_mean: true
     ```
 
-    !!! tip "Best For"
-        - Pre-processed climate data aligned to your raster
-        - Deterministic matching without interpolation
-        - Large datasets where speed matters
+### Climate CSV format
 
-### Climate CSV Format (Required)
-
-Must include `lat` and `lon` columns with valid coordinates [-90°, 90°] and [-180°, 180°]:
+Must include `lat` and `lon` columns with valid coordinates:
 
 ```csv
 lat,lon,mean_temp,total_rain
@@ -144,33 +183,8 @@ lat,lon,mean_temp,total_rain
 40.025,-99.985,21.8,620
 ```
 
-### Climate CSV Format
-
-Your `climate_csv` must contain:
 - **`lat`**: Latitude in [-90, 90]
 - **`lon`**: Longitude in [-180, 180]
-- **Climate variables**: One or more columns like `mean_temp`, `total_rain`
+- **Climate variables**: One or more numeric columns (`mean_temp`, `total_rain`, etc.)
 
-**Example:**
-```csv
-lat,lon,mean_temp,total_rain,wind_speed
-34.05,-118.24,22.5,250.0,3.2
-34.10,-118.19,23.1,260.0,3.1
-34.15,-118.14,21.8,240.0,3.4
-```
-
-### Strategy Details
-
-**Spatial Interpolation** (`strategy: spatial`)
-- Uses `scipy.interpolate.griddata` to interpolate climate values to each raster cell
-- Best for: Weather station networks, satellite-derived gridded data, arbitrary point observations
-- Requires: ≥3 observation points for linear interpolation
-- Fallback: Uses global mean for cells outside interpolation range (if `fallback_to_mean: true`)
-
-**Index-Based Matching** (`strategy: index`)
-- Matches climate CSV rows directly to raster cells by index order
-- Best for: Pre-processed climate data already aligned to your specific raster
-- Requires: Exact or flexible row count matching
-- Fallback: Pads with mean or raises error (if `fallback_to_mean: false`)
-
-All fields except `climate` are required. If `climate` is omitted, defaults to spatial interpolation with fallback enabled.
+If `climate` is omitted entirely, defaults to `strategy: spatial`, `interpolation_method: linear`, `fallback_to_mean: true`.

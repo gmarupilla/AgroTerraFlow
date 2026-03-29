@@ -142,9 +142,10 @@ To map the results:
 
 The output folder contains:
 - `results.csv` — the main results table (share this)
-- `results.html` — an interactive map (if your team ran with `--visualize`)
+- `manifest.json` — a provenance record showing exactly what config and data produced these results
+- `report.json` — QA statistics and run timings for your technical team
 
-Both files are self-contained and can be emailed or uploaded to a shared drive without any special software on the recipient's end.
+The `results.csv` file is self-contained and can be emailed or uploaded to a shared drive without any special software on the recipient's end.
 
 ---
 

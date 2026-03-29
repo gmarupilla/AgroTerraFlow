@@ -14,14 +14,14 @@ The core modules define the configuration schema and the end-to-end pipeline.
 ## Quick Start
 
 ```python
-from terraflow.pipeline import main
+from terraflow.pipeline import run_pipeline
 from terraflow.config import load_config
 
 # Load and validate configuration
 config = load_config("config.yml")
 
 # Run the complete pipeline
-main("config.yml")
+results_df = run_pipeline("config.yml")
 ```
 
 !!! tip "Module Organization"

@@ -23,10 +23,11 @@ climate_df = load_climate_csv("weather_stations.csv")
 print(f"Loaded {len(climate_df)} weather stations")
 
 # Load and clip raster to region of interest
+roi = {"xmin": -101.0, "ymin": 38.0, "xmax": -94.0, "ymax": 40.0}
 with rasterio.open("land_cover.tif") as src:
-    clipped_data = clip_raster_to_roi(
+    clipped_data, transform = clip_raster_to_roi(
         src,
-        bbox=(-101.0, 38.0, -94.0, 40.0),
+        roi=roi,
         roi_crs="EPSG:4326"
     )
 ```
