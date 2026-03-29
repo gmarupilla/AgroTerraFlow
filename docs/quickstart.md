@@ -64,16 +64,13 @@ flowchart TD
     C --> D[Load climate CSV]
     D --> E[Interpolate climate to each pixel]
     E --> F[Calculate scores]
-    F --> G[Apply weighted formula]
+    F --> |vegetation x w_v| G[Apply weighted formula]
+    F --> |temperature x w_t| G
+    F --> |rainfall x w_r| G
     G --> H[Generate labels]
     H --> I[Write results.csv]
-    
-    F --> |vegetation × w_v| G
-    F --> |temperature × w_t| G
-    F --> |rainfall × w_r| G
-    
-    I --> J[cell_id | lat | lon | score | label]
-    
+    I --> J["cell_id, lat, lon, score, label"]
+
     style A fill:#2d8a55,stroke:#1e5c3a,color:#fff
     style I fill:#2d8a55,stroke:#1e5c3a,color:#fff
     style G fill:#40a86e,stroke:#2d6a4f,color:#fff
