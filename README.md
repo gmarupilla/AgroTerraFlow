@@ -108,9 +108,38 @@ Core modules: `cli`, `config`, `climate`, `geo`, `ingest`, `model`, `pipeline`, 
 
 Key design decisions are documented in Architecture Decision Records under `docs/architecture/`.
 
+## Project Scope
+
+TerraFlow is a reproducible pipeline for geospatial agricultural modeling. It
+handles raster ingestion, ROI clipping, climate interpolation, suitability
+scoring, and deterministic artifact generation.
+
+**In scope:**
+- Configuration-driven pipeline execution (YAML → Parquet + provenance artifacts)
+- Spatial interpolation of point climate observations (linear, kriging, IDW)
+- Per-cell suitability scoring with uncertainty quantification (Monte Carlo)
+- Deterministic run fingerprinting and artifact caching
+
+**Out of scope:**
+- Real-time data ingestion or streaming workflows
+- General-purpose raster analysis (use `rioxarray` or `rasterstats` instead)
+- Cloud-scale distributed processing (no Dask/Spark integration planned)
+- Web application or GUI layer
+
+## Maintenance & Support
+
+TerraFlow is actively maintained. Bug fixes are prioritized; the test suite and
+CI pipeline are kept green on every commit.
+
+Feature requests are evaluated against project scope — open an issue to discuss
+before building. Not all requests will be accepted.
+
+Support is provided on a best-effort basis via [GitHub Issues](https://github.com/gmarupilla/AgroTerraFlow/issues).
+Response time is typically within a week. There is no paid support tier.
+
 ## Contributing
 
-See [docs/contributing.md](docs/contributing.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Citation
 
