@@ -45,8 +45,14 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git fetch origin gh-pages
-          git worktree add /tmp/gh-pages origin/gh-pages
+          # Create gh-pages as an orphan branch if it doesn't exist yet.
+          if git fetch origin gh-pages 2>/dev/null; then
+            git worktree add /tmp/gh-pages origin/gh-pages
+          else
+            echo "gh-pages branch not found — creating orphan branch."
+            git worktree add --orphan -b gh-pages /tmp/gh-pages
+            touch /tmp/gh-pages/.nojekyll
+          fi
 
           # Save any existing pr-* preview subdirectories.
           mkdir -p /tmp/pr-previews
