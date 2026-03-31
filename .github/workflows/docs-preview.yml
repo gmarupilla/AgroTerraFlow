@@ -30,7 +30,7 @@ jobs:
     if: github.event_name == 'pull_request' && (github.event.inputs.prune_only != 'true')
     runs-on: ubuntu-latest
     environment:
-      name: Documentation Preview
+      name: Pages Preview
       url: https://terraflow.marupilla.dev/runs/${{ github.run_id }}/
     steps:
       - name: Checkout
