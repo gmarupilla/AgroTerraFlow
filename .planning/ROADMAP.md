@@ -61,7 +61,12 @@ Plans:
   2. User can compute Cohen's kappa comparing TerraFlow's suitability classification against a reference classification (FAO GAEZ or the bundled synthetic reference dataset in `examples/`)
   3. `report.json` includes a `kriging_loocv` field with LOOCV RMSE for each climate variable that used kriging — surfaced from the existing PyKrige computation, not newly computed
   4. `report.json` includes a `validation` block with Cohen's kappa, Moran's I on residuals, mean per-fold accuracy, and LOOCV RMSE when validation is run
-**Plans**: TBD
+**Plans:** 3 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Surface kriging_loocv in report.json, add ValidationConfig, create synthetic reference CSV, scaffold tests
+- [ ] 03-02-PLAN.md — Implement validation module (spatial block CV, Cohen's kappa, Moran's I, run_validation)
+- [ ] 03-03-PLAN.md — Wire validate CLI subcommand, demo config, notebook, human verification
 
 ### Phase 4: H3 Export
 **Goal**: Users can export pipeline output to an H3-indexed DataFrame at a configurable resolution using an optional library function and CLI subcommand, without h3-py being a core dependency
@@ -95,6 +100,6 @@ Note: Phase 4 depends on Phase 1 only; it can begin after Phase 1 completes. Pha
 |-------|----------------|--------|-----------|
 | 1. Foundation Hardening | 0/3 | Planned    |  |
 | 2. Sensitivity Analysis | 3/3 | Complete   | 2026-03-28 |
-| 3. Model Validation | 0/TBD | Not started | - |
+| 3. Model Validation | 0/3 | Planned | - |
 | 4. H3 Export | 0/TBD | Not started | - |
 | 5. Paper and JOSS Submission | 0/TBD | Not started | - |
