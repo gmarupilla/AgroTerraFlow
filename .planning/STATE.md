@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Executing Phase 03
-stopped_at: "Completed 02-03-PLAN.md: sensitivity CLI integration, error handling, 3 tests, demo config — human approved"
-last_updated: "2026-03-31T13:59:28.989Z"
+stopped_at: "Completed 03-01-PLAN.md: kriging_loocv in report.json, ValidationConfig, synthetic CSV, 9-test scaffold"
+last_updated: "2026-03-31T14:05:39.737Z"
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 9
-  completed_plans: 6
+  completed_plans: 7
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 03 (model-validation) — EXECUTING
-Plan: 1 of 3
+Plan: 01 complete — resume at Plan 02
 
 ## Performance Metrics
 
@@ -50,6 +50,8 @@ Plan: 1 of 3
 | Phase 01 P02 | 8 | 2 tasks | 3 files |
 | Phase 02-sensitivity-analysis P01 | 5min | 2 tasks | 5 files |
 | Phase 02-sensitivity-analysis P03 | 5min | 2 tasks | 3 files |
+| Phase 03-model-validation P01 | 525611min | 2 tasks | 4 files |
+| Phase 03-model-validation P01 | 10min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -67,6 +69,8 @@ Recent decisions affecting current work:
 - [Phase 01]: variogram_params extracted from full-data OrdinaryKriging fit; range_units field set to degrees_geographic to document coordinate-system limitation
 - [Phase 02-sensitivity-analysis]: Typer add_completion=False to suppress shell completion prompts; sensitivity_cmd uses late import for safe import before Plan 02; test_cli_valid_config_runs_pipeline wraps main() in raises(SystemExit) for Typer standalone mode
 - [Phase 02-sensitivity-analysis]: sensitivity_cmd catches ValueError and Exception with exit 1; human verified complete Sobol/Morris CLI end-to-end
+- [Phase 03-model-validation]: kriging_loocv is a flat dict {var: rmse_float} alongside interpolation_cv for backward compat
+- [Phase 03-model-validation]: ValidationConfig follows SensitivityConfig pattern: ConfigDict(extra='forbid'), Optional field in PipelineConfig
 
 ### Pending Todos
 
@@ -80,6 +84,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T02:35:18.851Z
-Stopped at: Completed 02-03-PLAN.md: sensitivity CLI integration, error handling, 3 tests, demo config — human approved
+Last session: 2026-03-31T14:05:39.733Z
+Stopped at: Completed 03-01-PLAN.md: kriging_loocv in report.json, ValidationConfig, synthetic CSV, 9-test scaffold
 Resume file: None
