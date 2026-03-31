@@ -674,7 +674,13 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     }
     # Include LOOCV cross-validation metrics when kriging was used.
     if interpolator.cv_metrics:
-        report["interpolation_cv"] = interpolator.cv_metrics
+        # VALD-03: expose per-variable LOOCV RMSE under 'kriging_loocv'
+        report["kriging_loocv"] = {
+            var: round(stats["rmse"], 6)
+            for var, stats in interpolator.cv_metrics.get("per_variable", {}).items()
+            if stats.get("rmse") is not None
+        }
+        report["interpolation_cv"] = interpolator.cv_metrics  # retain for compat
 
     # Include variogram diagnostics when kriging was used.
     if interpolator.variogram_params:
