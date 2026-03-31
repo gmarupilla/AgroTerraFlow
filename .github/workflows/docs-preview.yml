@@ -6,22 +6,32 @@ on:
     paths:
       - "docs/**"
       - "mkdocs.yml"
+  schedule:
+    # Prune runs/ dirs older than 7 days every Monday at 02:00 UTC
+    - cron: "0 2 * * 1"
+  workflow_dispatch:
+    inputs:
+      prune_only:
+        description: "Run pruning only (skip preview build)"
+        required: false
+        default: "false"
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
   deployments: write
 
 concurrency:
-  group: docs-preview-${{ github.event.number }}
+  group: docs-preview-${{ github.event.number || 'prune' }}
   cancel-in-progress: true
 
 jobs:
   preview:
+    if: github.event_name == 'pull_request' && (github.event.inputs.prune_only != 'true')
     runs-on: ubuntu-latest
     environment:
       name: Documentation Preview
-      url: ${{ steps.upload.outputs.artifact-url }}
+      url: https://terraflow.marupilla.dev/runs/${{ github.run_id }}/
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -40,18 +50,90 @@ jobs:
       - name: Build docs
         run: make docs-build
 
-      - name: Upload docs artifact
-        id: upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: docs-preview-${{ github.run_id }}
-          path: site/
-          retention-days: 1
+      - name: Deploy preview to gh-pages/runs/${{ github.run_id }}/
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          git config --global user.name  "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          if git ls-remote --exit-code origin gh-pages > /dev/null 2>&1; then
+            git fetch origin gh-pages
+            git worktree add /tmp/gh-pages origin/gh-pages
+          else
+            git -C /tmp/gh-pages init
+            git -C /tmp/gh-pages checkout --orphan gh-pages
+            touch /tmp/gh-pages/.nojekyll
+          fi
+
+          mkdir -p /tmp/gh-pages/runs
+          cp -r site/ /tmp/gh-pages/runs/${RUN_ID}
+
+          cd /tmp/gh-pages
+          git add -A
+          git diff --cached --quiet && echo "No changes." && exit 0
+          git commit -m "docs(preview): run-${RUN_ID} @ ${GITHUB_SHA::8}"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" HEAD:gh-pages
 
       - name: Write job summary
         run: |
+          URL="https://terraflow.marupilla.dev/runs/${{ github.run_id }}/"
           echo "### 📚 Docs Preview" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Artifact:** [docs-preview-${{ github.run_id }}](${{ steps.upload.outputs.artifact-url }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Live URL:** [${URL}](${URL})" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Built from commit \`${{ github.event.pull_request.head.sha }}\`. Expires in 1 day — re-run this job to refresh." >> "$GITHUB_STEP_SUMMARY"
+          echo "Built from \`${{ github.event.pull_request.head.sha }}\`. Pruned automatically after 7 days." >> "$GITHUB_STEP_SUMMARY"
+
+  prune:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prune runs/ dirs older than 7 days from gh-pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          git config --global user.name  "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          if ! git ls-remote --exit-code origin gh-pages > /dev/null 2>&1; then
+            echo "No gh-pages branch — nothing to prune."
+            exit 0
+          fi
+
+          git fetch origin gh-pages
+          git worktree add /tmp/gh-pages origin/gh-pages
+
+          CUTOFF=$(date -d "7 days ago" +%s 2>/dev/null || date -v-7d +%s)
+          PRUNED=0
+
+          for dir in /tmp/gh-pages/runs/*/; do
+            [ -d "$dir" ] || continue
+            RUN_ID=$(basename "$dir")
+            # Use GitHub API to check when the run was created
+            CREATED=$(gh api repos/${REPO}/actions/runs/${RUN_ID} --jq '.created_at' 2>/dev/null || echo "")
+            if [ -z "$CREATED" ]; then
+              # Run not found (deleted) — safe to prune
+              rm -rf "$dir"
+              PRUNED=$((PRUNED + 1))
+              continue
+            fi
+            RUN_TS=$(date -d "$CREATED" +%s 2>/dev/null || date -jf "%Y-%m-%dT%H:%M:%SZ" "$CREATED" +%s 2>/dev/null || echo "0")
+            if [ "$RUN_TS" -lt "$CUTOFF" ]; then
+              rm -rf "$dir"
+              PRUNED=$((PRUNED + 1))
+            fi
+          done
+
+          echo "Pruned ${PRUNED} run director(ies)."
+
+          cd /tmp/gh-pages
+          git add -A
+          git diff --cached --quiet && echo "Nothing to commit." && exit 0
+          git commit -m "docs(preview): prune runs older than 7 days"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" HEAD:gh-pages
