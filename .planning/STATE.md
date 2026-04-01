@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to plan
-stopped_at: "Completed 02-03-PLAN.md: sensitivity CLI integration, error handling, 3 tests, demo config — human approved"
-last_updated: "2026-03-31T04:02:20.694Z"
+stopped_at: "Completed 03-02-PLAN.md: validation.py with spatial block CV, kappa, Moran's I, 9/9 tests green"
+last_updated: "2026-04-01T02:10:56.594Z"
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
+  total_plans: 9
+  completed_plans: 7
 ---
 
 # Project State
@@ -50,6 +50,7 @@ Plan: Not started
 | Phase 01 P02 | 8 | 2 tasks | 3 files |
 | Phase 02-sensitivity-analysis P01 | 5min | 2 tasks | 5 files |
 | Phase 02-sensitivity-analysis P03 | 5min | 2 tasks | 3 files |
+| Phase 03 P02 | 25min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,8 @@ Recent decisions affecting current work:
 - [Phase 01]: variogram_params extracted from full-data OrdinaryKriging fit; range_units field set to degrees_geographic to document coordinate-system limitation
 - [Phase 02-sensitivity-analysis]: Typer add_completion=False to suppress shell completion prompts; sensitivity_cmd uses late import for safe import before Plan 02; test_cli_valid_config_runs_pipeline wraps main() in raises(SystemExit) for Typer standalone mode
 - [Phase 02-sensitivity-analysis]: sensitivity_cmd catches ValueError and Exception with exit 1; human verified complete Sobol/Morris CLI end-to-end
+- [Phase 03]: Fold prediction: majority label of buffered training set used as spatial baseline (no free params in TerraFlow model)
+- [Phase 03]: Moran's I: row-standardized inverse-distance weights via np.exp(-D); returns None on degeneracy
 
 ### Pending Todos
 
@@ -80,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T02:35:18.851Z
-Stopped at: Completed 02-03-PLAN.md: sensitivity CLI integration, error handling, 3 tests, demo config — human approved
+Last session: 2026-04-01T02:10:56.590Z
+Stopped at: Completed 03-02-PLAN.md: validation.py with spatial block CV, kappa, Moran's I, 9/9 tests green
 Resume file: None
