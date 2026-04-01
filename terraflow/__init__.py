@@ -10,6 +10,7 @@ This package provides utilities to:
 
 from .config import PipelineConfig, load_config
 from .pipeline import run_pipeline
+from .validation import run_validation
 from .stats import (
     ClimateSummary,
     RasterSummary,
@@ -24,6 +25,7 @@ __all__ = [
     "PipelineConfig",
     "load_config",
     "run_pipeline",
+    "run_validation",
     "RasterSummary",
     "ClimateSummary",
     "RunReport",
