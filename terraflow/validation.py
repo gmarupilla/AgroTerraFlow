@@ -273,7 +273,8 @@ def run_validation(config_path: Path) -> Path:
         )
 
     val_cfg = cfg.validation
-    output_dir = Path(cfg.output_dir)
+    config_dir = Path(config_path).resolve().parent
+    output_dir = (config_dir / cfg.output_dir).resolve()
 
     # Find the most recent run directory containing features.parquet
     run_dirs = sorted(
@@ -314,7 +315,7 @@ def run_validation(config_path: Path) -> Path:
     kappa: Optional[float] = None
     n_ref: Optional[int] = None
     if val_cfg.reference_csv is not None:
-        ref_path = Path(val_cfg.reference_csv)
+        ref_path = (config_dir / val_cfg.reference_csv).resolve()
         reference_df = pd.read_csv(ref_path)
         n_ref = len(reference_df)
         kappa = _compute_kappa(df, reference_df)
