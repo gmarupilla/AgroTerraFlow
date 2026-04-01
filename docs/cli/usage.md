@@ -54,8 +54,81 @@ TerraFlow exposes a lightweight CLI for running the pipeline.
 
 ```bash
 # From the project root — paths in examples/demo_config.yml use ../data/
-terraflow --config examples/demo_config.yml
+terraflow run --config examples/demo_config.yml
 
 # Alternative: python -m fallback (no install required)
-python -m terraflow.cli --config examples/demo_config.yml
+python -m terraflow.cli run --config examples/demo_config.yml
 ```
+
+## Sensitivity analysis
+
+Run Sobol' and Morris sensitivity analysis over `ModelParams` weights to understand which parameters drive score variance most:
+
+```bash
+terraflow sensitivity -c config.yml
+```
+
+Requires a `sensitivity:` block in your config:
+
+```yaml
+sensitivity:
+  method: sobol          # sobol | morris | both (default: both)
+  n_samples: 512         # Sobol' sample count (must be power of 2)
+  morris_trajectories: 10
+```
+
+Output is written to `outputs/runs/<fingerprint>/sensitivity_report.json`.
+
+```json
+{
+  "sobol": {
+    "w_v": {"S1": 0.42, "ST": 0.51},
+    "w_t": {"S1": 0.31, "ST": 0.38},
+    "w_r": {"S1": 0.27, "ST": 0.35}
+  },
+  "morris": {
+    "w_v": {"mu_star": 0.19, "sigma": 0.04},
+    ...
+  }
+}
+```
+
+See [`notebooks/02_sensitivity_analysis.ipynb`](../notebooks/02_sensitivity_analysis.ipynb) for a worked example.
+
+## Model validation
+
+Validate the pipeline output against spatial structure and an optional reference dataset:
+
+```bash
+terraflow validate -c config.yml
+```
+
+Requires a `validation:` block in your config:
+
+```yaml
+validation:
+  n_blocks_side: 4        # splits bounding box into n×n spatial blocks
+  buffer_deg: 0.1         # degrees of buffer excluded between train/test folds
+  reference_csv: data/reference_labels.csv   # optional; columns: lat, lon, label
+```
+
+Results are appended to the existing `report.json` under the `"validation"` key:
+
+```json
+{
+  "validation": {
+    "method": "spatial_block_cv",
+    "citation": "Roberts et al. 2017, Ecography",
+    "n_folds": 12,
+    "mean_fold_accuracy": 0.74,
+    "cohen_kappa": 0.61,
+    "morans_i_residuals": 0.08,
+    "kriging_loocv_rmse": {"mean_temp": 0.42, "total_rain": 12.1}
+  }
+}
+```
+
+!!! note "What fold accuracy means here"
+    TerraFlow's suitability model has no free parameters — scores are deterministic given the config. Fold accuracy reflects how spatially consistent the label distribution is across your study area, not model generalization.
+
+See [`notebooks/03_model_validation.ipynb`](../notebooks/03_model_validation.ipynb) for a worked example.

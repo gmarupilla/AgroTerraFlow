@@ -69,6 +69,16 @@ manifest.json      — full provenance record
 report.json        — QA stats and timings
 ```
 
+## CLI subcommands
+
+| Subcommand | Purpose |
+|---|---|
+| `terraflow run -c config.yml` | Run the full pipeline |
+| `terraflow sensitivity -c config.yml` | Sobol' / Morris sensitivity indices for model weights |
+| `terraflow validate -c config.yml` | Spatial block CV, Cohen's kappa, Moran's I on residuals |
+
+See [CLI docs](https://terraflow.marupilla.dev/cli/usage/) for full reference.
+
 ## Climate interpolation
 
 Three spatial algorithms are available via `interpolation_method`:

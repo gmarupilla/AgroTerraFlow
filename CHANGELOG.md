@@ -8,6 +8,20 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ## [Unreleased]
 
 ### Added
+- **Sensitivity analysis** (`terraflow sensitivity -c config.yml`): Sobol' first-order / total-order indices and Morris elementary effects for all `ModelParams` weights via SALib. Results written to `sensitivity_report.json` in the run directory. New `sensitivity:` config block; `SensitivityConfig` in `terraflow.config`.
+- **Model validation** (`terraflow validate -c config.yml`): spatial block cross-validation (Roberts et al. 2017), Cohen's kappa against an optional reference CSV, and Moran's I on score residuals. Results appended to `report.json` under `"validation"` key. New `validation:` config block; `ValidationConfig` in `terraflow.config`.
+- `terraflow/sensitivity.py` — `run_sensitivity()` public API.
+- `terraflow/validation.py` — `run_validation()`, `_spatial_block_cv()`, `_morans_i()`, `_compute_kappa()` public/internal API.
+- `pipeline.resolve_run_dir(config_path)` — deterministic run-directory lookup without re-running the pipeline.
+- `scikit-learn>=1.0` runtime dependency (BSD-3-Clause); used for `cohen_kappa_score` and `GroupKFold`.
+- `SALib>=1.5` runtime dependency (MIT); used for Sobol' and Morris sampling/analysis.
+- Notebooks: `02_sensitivity_analysis.ipynb`, `03_model_validation.ipynb` (also rendered in docs).
+- **CRS error handling**: `CRSMismatchError` raised with both CRS strings when raster and ROI CRS disagree.
+- **Variogram diagnostics block** in `report.json` (`kriging_diagnostics`) when kriging is used: model name, psill, nugget, sill, range, range units.
+- **Kriging LOOCV RMSE** in `report.json` (`kriging_loocv`) per climate variable when kriging is configured.
+- **Monte Carlo uncertainty coverage** in `report.json` when `uncertainty_samples` is set.
+- `plotly` moved to optional `[viz]` extra (`pip install terraflow-agro[viz]`).
+
 - **Ordinary Kriging interpolation** (`interpolation_method: "kriging"` in climate
   config): uses `pykrige.ok.OrdinaryKriging` with automatic variogram model selection
   (spherical / exponential / Gaussian) via Leave-One-Out Cross-Validation.  Requires
