@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import os
 import tempfile
 import warnings
 from pathlib import Path
@@ -15,7 +14,8 @@ from scipy.spatial.distance import cdist
 from sklearn.metrics import accuracy_score, cohen_kappa_score
 from sklearn.model_selection import GroupKFold
 
-from .config import PipelineConfig, build_config, load_config_dict
+from .config import build_config, load_config_dict
+from .pipeline import resolve_run_dir
 from .utils import logger
 
 
@@ -274,22 +274,14 @@ def run_validation(config_path: Path) -> Path:
 
     val_cfg = cfg.validation
     config_dir = Path(config_path).resolve().parent
-    output_dir = (config_dir / cfg.output_dir).resolve()
 
-    # Find the most recent run directory containing features.parquet
-    run_dirs = sorted(
-        output_dir.glob("runs/*/features.parquet"),
-        key=lambda p: p.stat().st_mtime,
-        reverse=True,
-    )
-    if not run_dirs:
+    run_dir = resolve_run_dir(config_path)
+    features_path = run_dir / "features.parquet"
+    if not features_path.exists():
         raise FileNotFoundError(
-            f"No pipeline run found in {output_dir / 'runs'}. "
-            "Run `terraflow -c config.yml` before running validation."
+            f"No pipeline run found at {run_dir}. "
+            "Run `terraflow run -c config.yml` before running validation."
         )
-
-    features_path = run_dirs[0]
-    run_dir = features_path.parent
 
     logger.info(f"Running validation on {run_dir}")
 

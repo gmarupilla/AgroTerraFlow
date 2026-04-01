@@ -84,8 +84,9 @@ class TestCohensKappa:
         ref_df = pd.DataFrame({
             'lat': [50.0], 'lon': [50.0], 'label': ['low'],
         })
-        from terraflow.validation import _compute_kappa
         import warnings
+
+        from terraflow.validation import _compute_kappa
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
             _compute_kappa(cells_df, ref_df)
@@ -101,9 +102,9 @@ class TestMoransI:
         lons = np.array([0.0, 0.1, 0.2, 3.0, 3.1, 3.2])
         residuals = np.array([1.0, 1.1, 0.9, -1.0, -0.9, -1.1])
         from terraflow.validation import _morans_i
-        I = _morans_i(lats, lons, residuals)
-        assert I is not None
-        assert I > 0.0
+        moran_stat = _morans_i(lats, lons, residuals)
+        assert moran_stat is not None
+        assert moran_stat > 0.0
 
     def test_morans_i_degenerate_uniform(self):
         """All-equal residuals return None."""
@@ -111,8 +112,8 @@ class TestMoransI:
         lons = np.array([0.0, 1.0, 2.0])
         residuals = np.array([5.0, 5.0, 5.0])
         from terraflow.validation import _morans_i
-        I = _morans_i(lats, lons, residuals)
-        assert I is None
+        moran_stat = _morans_i(lats, lons, residuals)
+        assert moran_stat is None
 
 
 class TestReportValidationBlock:
