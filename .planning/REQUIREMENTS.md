@@ -23,7 +23,7 @@
 
 - [x] **VALD-01**: User can run spatial block cross-validation with buffer-zone excluded folds (Roberts et al. 2017 method) to correctly account for spatial autocorrelation in suitability scores
 - [x] **VALD-02**: User can compute Cohen's kappa comparing TerraFlow suitability classification against a reference classification (FAO GAEZ or synthetic reference dataset)
-- [ ] **VALD-03**: Kriging LOOCV RMSE diagnostics are explicitly exposed in `report.json` (already computed in pipeline — surfaced as named output field)
+- [x] **VALD-03**: Kriging LOOCV RMSE diagnostics are explicitly exposed in `report.json` (already computed in pipeline — surfaced as named output field)
 - [x] **VALD-04**: `report.json` includes a `validation` block with Cohen's kappa, spatial CV metrics (mean accuracy per fold), and LOOCV RMSE
 
 ### H3 Export
@@ -85,7 +85,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SENS-04 | Phase 2 | Complete |
 | VALD-01 | Phase 3 | Complete |
 | VALD-02 | Phase 3 | Complete |
-| VALD-03 | Phase 3 | Pending |
+| VALD-03 | Phase 3 | Complete |
 | VALD-04 | Phase 3 | Complete |
 | H3-01 | Phase 4 | Pending |
 | H3-02 | Phase 4 | Pending |

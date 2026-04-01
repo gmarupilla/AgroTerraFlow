@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to plan
-stopped_at: "Completed 03-02-PLAN.md: validation.py with spatial block CV, kappa, Moran's I, 9/9 tests green"
-last_updated: "2026-04-01T02:10:56.594Z"
+stopped_at: "Completed 03-03-PLAN.md: validate CLI subcommand, demo notebook, human verification — all VALD requirements satisfied"
+last_updated: "2026-03-31T00:00:00Z"
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 9
-  completed_plans: 7
+  completed_plans: 8
 ---
 
 # Project State
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 
 ## Current Position
 
-Phase: 02
-Plan: Not started
+Phase: 03
+Plan: 03 complete (all plans complete)
 
 ## Performance Metrics
 
@@ -51,6 +51,7 @@ Plan: Not started
 | Phase 02-sensitivity-analysis P01 | 5min | 2 tasks | 5 files |
 | Phase 02-sensitivity-analysis P03 | 5min | 2 tasks | 3 files |
 | Phase 03 P02 | 25min | 1 tasks | 1 files |
+| Phase 03 P03 | 45min | 3 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -70,6 +71,8 @@ Recent decisions affecting current work:
 - [Phase 02-sensitivity-analysis]: sensitivity_cmd catches ValueError and Exception with exit 1; human verified complete Sobol/Morris CLI end-to-end
 - [Phase 03]: Fold prediction: majority label of buffered training set used as spatial baseline (no free params in TerraFlow model)
 - [Phase 03]: Moran's I: row-standardized inverse-distance weights via np.exp(-D); returns None on degeneracy
+- [Phase 03]: validate_cmd uses late import (from .validation import run_validation) inside function body, matching sensitivity_cmd pattern
+- [Phase 03]: Config path resolution canonical pattern — always use config_dir = config_path.parent, then config_dir / cfg.relative_path (applies to validation.py, pipeline.py)
 
 ### Pending Todos
 
@@ -83,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-01T02:10:56.590Z
-Stopped at: Completed 03-02-PLAN.md: validation.py with spatial block CV, kappa, Moran's I, 9/9 tests green
+Last session: 2026-03-31T00:00:00Z
+Stopped at: Completed 03-03-PLAN.md: validate CLI subcommand, demo notebook, human verification — all VALD requirements satisfied
 Resume file: None
