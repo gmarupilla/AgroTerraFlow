@@ -2,9 +2,9 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Executing Phase 03
-stopped_at: "Completed 03-01-PLAN.md: kriging_loocv in report.json, ValidationConfig, synthetic CSV, 9-test scaffold"
-last_updated: "2026-03-31T14:05:39.737Z"
+status: Ready to plan
+stopped_at: "Completed 03-02-PLAN.md: validation.py with spatial block CV, kappa, Moran's I, 9/9 tests green"
+last_updated: "2026-04-01T02:10:56.594Z"
 progress:
   total_phases: 5
   completed_phases: 2
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** Every TerraFlow run produces a verifiable, reproducible result — same inputs always yield the same outputs, with full uncertainty quantification and provenance — making findings publishable and auditable.
-**Current focus:** Phase 03 — model-validation
+**Current focus:** Phase 02 — sensitivity-analysis
 
 ## Current Position
 
-Phase: 03 (model-validation) — EXECUTING
-Plan: 01 complete — resume at Plan 02
+Phase: 02
+Plan: Not started
 
 ## Performance Metrics
 
@@ -50,8 +50,7 @@ Plan: 01 complete — resume at Plan 02
 | Phase 01 P02 | 8 | 2 tasks | 3 files |
 | Phase 02-sensitivity-analysis P01 | 5min | 2 tasks | 5 files |
 | Phase 02-sensitivity-analysis P03 | 5min | 2 tasks | 3 files |
-| Phase 03-model-validation P01 | 525611min | 2 tasks | 4 files |
-| Phase 03-model-validation P01 | 10min | 2 tasks | 4 files |
+| Phase 03 P02 | 25min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -69,8 +68,8 @@ Recent decisions affecting current work:
 - [Phase 01]: variogram_params extracted from full-data OrdinaryKriging fit; range_units field set to degrees_geographic to document coordinate-system limitation
 - [Phase 02-sensitivity-analysis]: Typer add_completion=False to suppress shell completion prompts; sensitivity_cmd uses late import for safe import before Plan 02; test_cli_valid_config_runs_pipeline wraps main() in raises(SystemExit) for Typer standalone mode
 - [Phase 02-sensitivity-analysis]: sensitivity_cmd catches ValueError and Exception with exit 1; human verified complete Sobol/Morris CLI end-to-end
-- [Phase 03-model-validation]: kriging_loocv is a flat dict {var: rmse_float} alongside interpolation_cv for backward compat
-- [Phase 03-model-validation]: ValidationConfig follows SensitivityConfig pattern: ConfigDict(extra='forbid'), Optional field in PipelineConfig
+- [Phase 03]: Fold prediction: majority label of buffered training set used as spatial baseline (no free params in TerraFlow model)
+- [Phase 03]: Moran's I: row-standardized inverse-distance weights via np.exp(-D); returns None on degeneracy
 
 ### Pending Todos
 
@@ -84,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T14:05:39.733Z
-Stopped at: Completed 03-01-PLAN.md: kriging_loocv in report.json, ValidationConfig, synthetic CSV, 9-test scaffold
+Last session: 2026-04-01T02:10:56.590Z
+Stopped at: Completed 03-02-PLAN.md: validation.py with spatial block CV, kappa, Moran's I, 9/9 tests green
 Resume file: None

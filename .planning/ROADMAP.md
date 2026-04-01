@@ -64,8 +64,8 @@ Plans:
 **Plans:** 1/3 plans executed
 
 Plans:
-- [x] 03-01-PLAN.md — Surface kriging_loocv in report.json, add ValidationConfig, create synthetic reference CSV, scaffold tests
-- [ ] 03-02-PLAN.md — Implement validation module (spatial block CV, Cohen's kappa, Moran's I, run_validation)
+- [ ] 03-01-PLAN.md — Surface kriging_loocv in report.json, add ValidationConfig, create synthetic reference CSV, scaffold tests
+- [x] 03-02-PLAN.md — Implement validation module (spatial block CV, Cohen's kappa, Moran's I, run_validation)
 - [ ] 03-03-PLAN.md — Wire validate CLI subcommand, demo config, notebook, human verification
 
 ### Phase 4: H3 Export
