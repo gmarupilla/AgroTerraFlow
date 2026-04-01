@@ -41,6 +41,7 @@ dependencies = [
   "shapely>=2.0.0",
   "pyproj>=3.0",
   "SALib>=1.5",
+  "scikit-learn>=1.0",
   "typer>=0.12.5"
 ]
 
