@@ -326,3 +326,41 @@ def test_kriging_diagnostics_in_report(
         assert key in diag, f"Missing key '{key}' in kriging_diagnostics"
     assert diag["range_units"] == "degrees_geographic"
     assert diag["sill"] == pytest.approx(diag["psill"] + diag["nugget"], rel=1e-4)
+
+
+def test_resolve_run_dir_returns_deterministic_path(
+    tmp_path, synthetic_raster, synthetic_climate_csv
+):
+    """resolve_run_dir returns the same fingerprinted path as run_pipeline."""
+    from terraflow.pipeline import resolve_run_dir
+
+    cfg_path = tmp_path / "cfg.yml"
+    out_dir = tmp_path / "out"
+    cfg_path.write_text(textwrap.dedent(f"""
+        raster_path: "{synthetic_raster}"
+        climate_csv: "{synthetic_climate_csv}"
+        output_dir: "{out_dir}"
+        roi:
+          type: bbox
+          xmin: -101.0
+          ymin: 39.0
+          xmax: -99.0
+          ymax: 41.0
+        model_params:
+          v_min: 0.0
+          v_max: 25.0
+          t_min: 0.0
+          t_max: 40.0
+          r_min: 0.0
+          r_max: 300.0
+          w_v: 0.4
+          w_t: 0.3
+          w_r: 0.3
+    """))
+
+    run_dir = resolve_run_dir(cfg_path)
+    assert run_dir.name  # fingerprint is non-empty
+    assert "runs" in run_dir.parts
+
+    # Calling twice returns the same path (deterministic)
+    assert resolve_run_dir(cfg_path) == run_dir

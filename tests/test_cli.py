@@ -382,3 +382,26 @@ model_params:
         assert exc_info.value.code == 1
     captured = capsys.readouterr()
     assert "sensitivity" in captured.err.lower()
+
+
+class TestValidateCLI:
+    """CLI tests for the validate subcommand."""
+
+    def test_validate_missing_config_section(self, tmp_path):
+        """validate command exits 1 when config has no validation section."""
+        cfg = tmp_path / "no_val.yml"
+        cfg.write_text("raster_path: fake.tif\nclimate_csv: fake.csv\noutput_dir: out\n")
+        from terraflow.cli import app
+        from typer.testing import CliRunner
+        runner = CliRunner()
+        result = runner.invoke(app, ["validate", "-c", str(cfg)])
+        assert result.exit_code != 0
+
+    def test_validate_help(self):
+        """validate --help shows usage."""
+        from terraflow.cli import app
+        from typer.testing import CliRunner
+        runner = CliRunner()
+        result = runner.invoke(app, ["validate", "--help"])
+        assert result.exit_code == 0
+        assert "validation" in result.output.lower() or "config" in result.output.lower()

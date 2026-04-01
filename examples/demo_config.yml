@@ -46,3 +46,10 @@ sensitivity:
     high: 0.4
   n_samples: 1024
   method: both  # sobol | morris | both
+
+# Model validation configuration (Phase 3)
+# Run with: terraflow validate -c examples/demo_config.yml
+validation:
+  n_blocks_side: 4
+  buffer_deg: 0.5
+  reference_csv: "synthetic_reference.csv"

@@ -232,6 +232,16 @@ class SensitivityConfig(BaseModel):
         return self
 
 
+class ValidationConfig(BaseModel):
+    """Configuration for model validation (Phase 3)."""
+
+    n_blocks_side: int = 4
+    buffer_deg: float = 0.5
+    reference_csv: Optional[str] = None
+
+    model_config = ConfigDict(extra="forbid")
+
+
 class PipelineConfig(BaseModel):
     """Top-level pipeline configuration.
 
@@ -261,6 +271,7 @@ class PipelineConfig(BaseModel):
     climate: ClimateConfig = ClimateConfig()  # Default: spatial strategy with fallback
     max_cells: int = 500  # maximum number of cells to sample from the ROI
     sensitivity: Optional[SensitivityConfig] = None  # Optional sensitivity analysis config
+    validation: Optional[ValidationConfig] = None  # Optional validation config
 
     model_config = ConfigDict(extra="forbid")
 

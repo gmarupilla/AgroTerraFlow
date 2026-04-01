@@ -37,13 +37,13 @@ from rasterio.transform import xy
 
 from .climate import ClimateInterpolator
 from .config import PipelineConfig, build_config, load_config_dict
-from .exceptions import CRSMismatchError
 from .core.run_identity import (
     canonicalize_config,
     compute_run_fingerprint,
     fingerprint_file,
     hash_roi_geometry,
 )
+from .exceptions import CRSMismatchError
 from .geo import clip_raster_to_roi
 from .ingest import build_data_catalog, load_climate_csv, load_raster
 from .model import suitability_label, suitability_score, suitability_score_array
@@ -191,6 +191,49 @@ def _resolve_roi_hash(config_dict: dict, config_dir: Path) -> str:
         return hash_roi_geometry(str(roi_file))
 
     raise ValueError("ROI configuration missing or unsupported")
+
+
+# ---------------------------------------------------------------------------
+# Public helper — locate a run directory by fingerprint
+# ---------------------------------------------------------------------------
+
+
+def resolve_run_dir(config_path: Path | str) -> Path:
+    """Return the run directory for a given config without running the pipeline.
+
+    Uses the same fingerprint computation as ``run_pipeline()`` so that
+    ``terraflow validate`` always targets the correct run, not the most
+    recently modified one.
+
+    Parameters
+    ----------
+    config_path:
+        Path to a TerraFlow YAML config file.
+
+    Returns
+    -------
+    Path:
+        ``output_dir/runs/<fingerprint>`` — may not exist if the pipeline
+        has not been run yet.
+    """
+    config_path = Path(config_path)
+    config_dict = load_config_dict(config_path)
+    config_dir = config_path.resolve().parent
+
+    for _key in ("raster_path", "climate_csv", "output_dir"):
+        if _key in config_dict and config_dict[_key] is not None:
+            _p = Path(str(config_dict[_key]))
+            if not _p.is_absolute():
+                config_dict[_key] = str((config_dir / _p).resolve())
+
+    cfg: PipelineConfig = build_config(config_dict)
+    roi_hash = _resolve_roi_hash(config_dict, config_dir)
+    input_paths = _collect_input_paths(config_dict, config_dir)
+    input_fps = [fingerprint_file(str(p)) for p in input_paths]
+    run_fingerprint = compute_run_fingerprint(config_dict, roi_hash, input_fps)
+
+    output_dir = Path(cfg.output_dir)
+    return output_dir / "runs" / run_fingerprint
 
 
 # ---------------------------------------------------------------------------
@@ -674,7 +717,13 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     }
     # Include LOOCV cross-validation metrics when kriging was used.
     if interpolator.cv_metrics:
-        report["interpolation_cv"] = interpolator.cv_metrics
+        # VALD-03: expose per-variable LOOCV RMSE under 'kriging_loocv'
+        report["kriging_loocv"] = {
+            var: round(stats["rmse"], 6)
+            for var, stats in interpolator.cv_metrics.get("per_variable", {}).items()
+            if stats.get("rmse") is not None
+        }
+        report["interpolation_cv"] = interpolator.cv_metrics  # retain for compat
 
     # Include variogram diagnostics when kriging was used.
     if interpolator.variogram_params:

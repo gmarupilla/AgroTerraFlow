@@ -67,6 +67,30 @@ def sensitivity_cmd(
         raise SystemExit(1)
 
 
+@app.command("validate")
+def validate_cmd(
+    config: Annotated[
+        Path,
+        typer.Option(..., "--config", "-c", exists=True, file_okay=True,
+                     dir_okay=False, readable=True, help="Path to YAML config file"),
+    ],
+) -> None:
+    """Run model validation (spatial CV, Cohen's kappa, Moran's I)."""
+    logger.info(f"TerraFlow validation starting with config: {config}")
+    try:
+        from .validation import run_validation
+        run_validation(config)
+    except ValueError as e:
+        logger.error(f"Configuration error: {e}")
+        print(f"ERROR: {e}", file=sys.stderr)
+        raise SystemExit(1)
+    except Exception as e:
+        logger.error(f"Validation failed: {e}", exc_info=True)
+        print(f"ERROR: Validation failed - {e}", file=sys.stderr)
+        raise SystemExit(1)
+    logger.info("TerraFlow validation completed successfully")
+
+
 def main() -> None:
     """Entry point for the terraflow CLI."""
     app()
