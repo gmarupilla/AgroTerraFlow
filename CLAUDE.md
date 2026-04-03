@@ -39,7 +39,7 @@ TerraFlow is a config-driven geospatial agricultural suitability pipeline. Given
 4. `geo.py` — Clips raster to ROI bbox; reprojects to EPSG:4326 (WGS84 is the invariant CRS)
 5. `climate.py` — `ClimateInterpolator` spatially interpolates station CSV to cell centroids (methods: `linear`, `kriging`, `idw`)
 6. `model.py` — `suitability_score()` computes normalized weighted combination of vegetation index, temperature, rainfall
-7. `pipeline.py` — Orchestrates steps 2–6; writes artifacts to `outputs/<run_id>/`
+7. `pipeline.py` — Orchestrates steps 2–6; writes artifacts to `<output_dir>/runs/<run_fingerprint>/`
 8. `sensitivity.py` — Sobol'/Morris analysis via SALib (triggered by `terraflow sensitivity`)
 9. `validation.py` — Spatial block CV + Cohen's kappa + Moran's I (triggered by `terraflow validate`)
 
@@ -48,6 +48,8 @@ TerraFlow is a config-driven geospatial agricultural suitability pipeline. Given
 - `manifest.json` — config snapshot + input fingerprints (provenance)
 - `report.json` — QA stats, coverage ratios, timings
 - `results.csv` — backward-compatible export
+
+All artifacts land under `<output_dir>/runs/<run_fingerprint>/` (where `output_dir` is set in the YAML config).
 
 **Key invariants:**
 - CRS is always EPSG:4326; `geo.py` reprojects any input that isn't
