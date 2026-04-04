@@ -384,6 +384,77 @@ model_params:
     assert "sensitivity" in captured.err.lower()
 
 
+class TestExportCLI:
+    """CLI tests for the export subcommand."""
+
+    def _minimal_export_config(self, tmp_path: Path) -> Path:
+        cfg_content = f"""raster_path: "{tmp_path}/fake.tif"
+climate_csv: "{tmp_path}/fake.csv"
+output_dir: "{tmp_path}/outputs"
+roi:
+  type: bbox
+  xmin: -100.0
+  ymin: 39.9
+  xmax: -99.9
+  ymax: 40.1
+model_params:
+  v_min: 0.0
+  v_max: 25.0
+  t_min: 0.0
+  t_max: 40.0
+  r_min: 0.0
+  r_max: 300.0
+  w_v: 0.4
+  w_t: 0.3
+  w_r: 0.3
+export:
+  h3_resolution: 8
+"""
+        cfg = tmp_path / "export_config.yml"
+        cfg.write_text(cfg_content, encoding="utf-8")
+        return cfg
+
+    def test_cli_export_missing_format(self, tmp_path: Path):
+        """export command exits 2 when --format is missing (required option)."""
+        cfg = self._minimal_export_config(tmp_path)
+        with patch.object(sys, "argv", ["terraflow", "export", "-c", str(cfg)]):
+            with pytest.raises(SystemExit) as exc_info:
+                main()
+            assert exc_info.value.code == 2
+
+    def test_cli_export_unsupported_format(self, tmp_path: Path, capsys):
+        """export command exits 1 when format is unsupported."""
+        cfg = self._minimal_export_config(tmp_path)
+        with patch.object(sys, "argv", ["terraflow", "export", "--format", "geojson", "-c", str(cfg)]):
+            with patch("terraflow.export.run_export", side_effect=ValueError("Unsupported export format: 'geojson'")):
+                with pytest.raises(SystemExit) as exc_info:
+                    main()
+                assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        assert "error" in captured.err.lower()
+
+    def test_cli_export_h3_success(self, tmp_path: Path):
+        """export command exits 0 on successful H3 export."""
+        cfg = self._minimal_export_config(tmp_path)
+        fake_output = tmp_path / "outputs" / "runs" / "abc123" / "h3_resolution_8.parquet"
+        with patch.object(sys, "argv", ["terraflow", "export", "--format", "h3", "-c", str(cfg)]):
+            with patch("terraflow.export.run_export", return_value=fake_output):
+                with pytest.raises(SystemExit) as exc_info:
+                    main()
+                assert exc_info.value.code == 0
+
+    def test_cli_export_missing_h3(self, tmp_path: Path, capsys):
+        """export command exits 1 when h3 package is not installed."""
+        cfg = self._minimal_export_config(tmp_path)
+        with patch.object(sys, "argv", ["terraflow", "export", "--format", "h3", "-c", str(cfg)]):
+            with patch("terraflow.export.run_export", side_effect=ImportError("h3 is required...")):
+                with pytest.raises(SystemExit) as exc_info:
+                    main()
+                assert exc_info.value.code == 1
+        captured = capsys.readouterr()
+        assert "error" in captured.err.lower()
+
+
 class TestValidateCLI:
     """CLI tests for the validate subcommand."""
 
@@ -391,16 +462,18 @@ class TestValidateCLI:
         """validate command exits 1 when config has no validation section."""
         cfg = tmp_path / "no_val.yml"
         cfg.write_text("raster_path: fake.tif\nclimate_csv: fake.csv\noutput_dir: out\n")
-        from terraflow.cli import app
         from typer.testing import CliRunner
+
+        from terraflow.cli import app
         runner = CliRunner()
         result = runner.invoke(app, ["validate", "-c", str(cfg)])
         assert result.exit_code != 0
 
     def test_validate_help(self):
         """validate --help shows usage."""
-        from terraflow.cli import app
         from typer.testing import CliRunner
+
+        from terraflow.cli import app
         runner = CliRunner()
         result = runner.invoke(app, ["validate", "--help"])
         assert result.exit_code == 0
