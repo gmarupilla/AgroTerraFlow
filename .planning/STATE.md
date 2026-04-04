@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Ready to plan
-stopped_at: "Completed 03-03-PLAN.md: validate CLI subcommand, demo notebook, human verification — all VALD requirements satisfied"
-last_updated: "2026-04-01T03:21:35.899Z"
+status: Ready to execute
+stopped_at: "Completed 04-01-PLAN.md: ExportConfig model, to_h3() export function, public API wiring"
+last_updated: "2026-04-04T02:02:30.565Z"
 progress:
   total_phases: 5
   completed_phases: 3
-  total_plans: 9
-  completed_plans: 9
+  total_plans: 12
+  completed_plans: 10
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-18)
 
 **Core value:** Every TerraFlow run produces a verifiable, reproducible result — same inputs always yield the same outputs, with full uncertainty quantification and provenance — making findings publishable and auditable.
-**Current focus:** Phase 02 — sensitivity-analysis
+**Current focus:** Phase 04 — h3-export
 
 ## Current Position
 
-Phase: 4
-Plan: Not started
+Phase: 04 (h3-export) — EXECUTING
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -52,6 +52,7 @@ Plan: Not started
 | Phase 02-sensitivity-analysis P03 | 5min | 2 tasks | 3 files |
 | Phase 03 P02 | 25min | 1 tasks | 1 files |
 | Phase 03 P03 | 45min | 3 tasks | 7 files |
+| Phase 04-h3-export P01 | 49min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,8 @@ Recent decisions affecting current work:
 - [Phase 03]: Moran's I: row-standardized inverse-distance weights via np.exp(-D); returns None on degeneracy
 - [Phase 03]: validate_cmd uses late import (from .validation import run_validation) inside function body, matching sensitivity_cmd pattern
 - [Phase 03]: Config path resolution canonical pattern — always use config_dir = config_path.parent, then config_dir / cfg.relative_path (applies to validation.py, pipeline.py)
+- [Phase 04-h3-export]: h3 guard at call-site: export.py always importable; ImportError deferred to to_h3() call
+- [Phase 04-h3-export]: h3 v4 API (latlng_to_cell) used; v3 geo_to_h3 avoided per D-09
 
 ### Pending Todos
 
@@ -86,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T00:00:00Z
-Stopped at: Completed 03-03-PLAN.md: validate CLI subcommand, demo notebook, human verification — all VALD requirements satisfied
+Last session: 2026-04-04T02:02:30.560Z
+Stopped at: Completed 04-01-PLAN.md: ExportConfig model, to_h3() export function, public API wiring
 Resume file: None
