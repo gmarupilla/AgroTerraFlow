@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 1: Foundation Hardening** - Close the CRS error and kriging diagnostic gaps that block JOSS reviewer acceptance
 - [x] **Phase 2: Sensitivity Analysis** - Add Sobol'/Morris sensitivity analysis via SALib; justify model weights quantitatively (completed 2026-03-28)
 - [ ] **Phase 3: Model Validation** - Add spatially-blocked cross-validation and Cohen's kappa against reference data
-- [ ] **Phase 4: H3 Export** - Add optional H3-indexed output for interop with H3-native toolchains
+- [x] **Phase 4: H3 Export** - Add optional H3-indexed output for interop with H3-native toolchains (completed 2026-04-04)
 - [ ] **Phase 5: Paper and JOSS Submission** - Populate paper with quantitative results; harden packaging; ship
 
 ## Phase Details
@@ -77,12 +77,12 @@ Plans:
   2. Calling `to_h3()` without `h3-py` installed raises `ImportError` with a message that includes the `pip install terraflow[h3]` install command
   3. User can run `terraflow export --format h3 -c config.yml` from the CLI and produce the H3-indexed output artifact
   4. Two pipeline runs with identical config except different H3 resolutions produce distinct run fingerprints (no silent cache collision)
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [x] 04-01-PLAN.md — ExportConfig model, to_h3() core function, optional h3 dep wiring, unit tests
 - [x] 04-02-PLAN.md — run_export() orchestrator, artifact writing, fingerprint distinctness tests
-- [ ] 04-03-PLAN.md — CLI export subcommand, notebook, docs, PR checklist artifacts
+- [x] 04-03-PLAN.md — CLI export subcommand, notebook, docs, PR checklist artifacts
 
 ### Phase 5: Paper and JOSS Submission
 **Goal**: The JOSS paper contains quantitative results drawn from prior phases, packaging meets JOSS reviewer requirements, and the repository passes an end-to-end smoke test without network access
@@ -106,5 +106,5 @@ Note: Phase 4 depends on Phase 1 only; it can begin after Phase 1 completes. Pha
 | 1. Foundation Hardening | 0/3 | Planned    |  |
 | 2. Sensitivity Analysis | 3/3 | Complete   | 2026-03-28 |
 | 3. Model Validation | 3/3 | Complete   | 2026-03-31 |
-| 4. H3 Export | 2/3 | In Progress|  |
+| 4. H3 Export | 3/3 | Complete   | 2026-04-04 |
 | 5. Paper and JOSS Submission | 0/TBD | Not started | - |
