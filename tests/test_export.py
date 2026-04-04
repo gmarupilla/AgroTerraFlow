@@ -153,6 +153,7 @@ def test_to_h3_aggregation_mode():
 
 def test_to_h3_invalid_resolution():
     """to_h3 raises ValueError for resolution outside 0-15."""
+    pytest.importorskip("h3")
     from terraflow.export import to_h3
 
     with pytest.raises(ValueError):
@@ -161,6 +162,7 @@ def test_to_h3_invalid_resolution():
 
 def test_to_h3_missing_columns():
     """to_h3 raises ValueError when required columns are missing."""
+    pytest.importorskip("h3")
     from terraflow.export import to_h3
 
     df = pd.DataFrame({"score": [1.0], "lon": [-122.0]})  # missing lat and others
