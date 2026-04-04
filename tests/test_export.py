@@ -168,3 +168,179 @@ def test_to_h3_missing_columns():
     df = pd.DataFrame({"score": [1.0], "lon": [-122.0]})  # missing lat and others
     with pytest.raises(ValueError, match="Missing required columns"):
         to_h3(df)
+
+
+# ── run_export tests ────────────────────────────────────────────────────────────
+
+_EXPORT_CONFIG = """\
+raster_path: raster.tif
+climate_csv: climate.csv
+output_dir: {out_dir}
+roi:
+  xmin: -123.0
+  ymin: 36.0
+  xmax: -121.0
+  ymax: 38.0
+model_params:
+  v_min: 0.0
+  v_max: 25.0
+  t_min: 0.0
+  t_max: 40.0
+  r_min: 0.0
+  r_max: 300.0
+  w_v: 0.4
+  w_t: 0.3
+  w_r: 0.3
+export:
+  h3_resolution: 8
+"""
+
+_NO_EXPORT_CONFIG = """\
+raster_path: raster.tif
+climate_csv: climate.csv
+output_dir: {out_dir}
+roi:
+  xmin: -123.0
+  ymin: 36.0
+  xmax: -121.0
+  ymax: 38.0
+model_params:
+  v_min: 0.0
+  v_max: 25.0
+  t_min: 0.0
+  t_max: 40.0
+  r_min: 0.0
+  r_max: 300.0
+  w_v: 0.4
+  w_t: 0.3
+  w_r: 0.3
+"""
+
+
+def _make_features_parquet(run_dir: "Path", n: int = 5) -> None:
+    """Write a minimal features.parquet to run_dir."""
+    run_dir.mkdir(parents=True, exist_ok=True)
+    df = pd.DataFrame(
+        {
+            "run_id": ["r"] * n,
+            "cell_id": list(range(n)),
+            "lat": [37.0] * n,
+            "lon": [-122.0] * n,
+            "v_index": [0.5] * n,
+            "mean_temp": [20.0] * n,
+            "total_rain": [100.0] * n,
+            "score": [float(i) for i in range(n)],
+            "label": ["high"] * n,
+        }
+    )
+    df.to_parquet(run_dir / "features.parquet", index=False)
+
+
+class TestRunExport:
+    """Tests for run_export() orchestrator."""
+
+    def test_run_export_writes_artifact(self, tmp_path):
+        """run_export writes h3_resolution_8.parquet to the run directory."""
+        pytest.importorskip("h3")
+        from pathlib import Path
+        from unittest.mock import patch
+        from terraflow.export import run_export
+
+        run_dir = tmp_path / "runs" / "abc123"
+        _make_features_parquet(run_dir)
+
+        cfg_path = tmp_path / "config.yml"
+        cfg_path.write_text(_EXPORT_CONFIG.format(out_dir=tmp_path))
+
+        with patch("terraflow.export.resolve_run_dir", return_value=run_dir):
+            result = run_export(cfg_path)
+
+        assert (run_dir / "h3_resolution_8.parquet").exists()
+        assert result == run_dir / "h3_resolution_8.parquet"
+
+    def test_run_export_resolution_override_filename(self, tmp_path):
+        """resolution_override changes the output filename but not the run directory."""
+        pytest.importorskip("h3")
+        from unittest.mock import patch
+        from terraflow.export import run_export
+
+        run_dir = tmp_path / "runs" / "abc123"
+        _make_features_parquet(run_dir)
+
+        cfg_path = tmp_path / "config.yml"
+        cfg_path.write_text(_EXPORT_CONFIG.format(out_dir=tmp_path))
+
+        with patch("terraflow.export.resolve_run_dir", return_value=run_dir):
+            result = run_export(cfg_path, resolution_override=4)
+
+        assert (run_dir / "h3_resolution_4.parquet").exists()
+        assert not (run_dir / "h3_resolution_8.parquet").exists()
+        assert result == run_dir / "h3_resolution_4.parquet"
+
+    def test_run_export_no_export_section(self, tmp_path):
+        """run_export raises ValueError when config has no 'export:' section."""
+        from unittest.mock import patch
+        from terraflow.export import run_export
+
+        run_dir = tmp_path / "runs" / "abc123"
+        run_dir.mkdir(parents=True, exist_ok=True)
+
+        cfg_path = tmp_path / "config.yml"
+        cfg_path.write_text(_NO_EXPORT_CONFIG.format(out_dir=tmp_path))
+
+        with patch("terraflow.export.resolve_run_dir", return_value=run_dir):
+            with pytest.raises(ValueError, match="no 'export:' section"):
+                run_export(cfg_path)
+
+    def test_run_export_unsupported_format(self, tmp_path):
+        """run_export raises ValueError for unsupported export formats."""
+        from unittest.mock import patch
+        from terraflow.export import run_export
+
+        run_dir = tmp_path / "runs" / "abc123"
+        run_dir.mkdir(parents=True, exist_ok=True)
+
+        cfg_path = tmp_path / "config.yml"
+        cfg_path.write_text(_EXPORT_CONFIG.format(out_dir=tmp_path))
+
+        with patch("terraflow.export.resolve_run_dir", return_value=run_dir):
+            with pytest.raises(ValueError, match="Unsupported export format"):
+                run_export(cfg_path, format="geojson")
+
+    def test_run_export_missing_features_raises(self, tmp_path):
+        """run_export raises FileNotFoundError when features.parquet is absent."""
+        from unittest.mock import patch
+        from terraflow.export import run_export
+
+        run_dir = tmp_path / "runs" / "missing"
+        # Do NOT create features.parquet
+
+        cfg_path = tmp_path / "config.yml"
+        cfg_path.write_text(_EXPORT_CONFIG.format(out_dir=tmp_path))
+
+        with patch("terraflow.export.resolve_run_dir", return_value=run_dir):
+            with pytest.raises(FileNotFoundError):
+                run_export(cfg_path)
+
+
+def test_resolution_changes_fingerprint():
+    """Two configs differing only in h3_resolution produce distinct fingerprints (H3-03)."""
+    from terraflow.core.run_identity import compute_run_fingerprint
+
+    config_res8 = {
+        "raster_path": "/data/raster.tif",
+        "climate_csv": "/data/climate.csv",
+        "output_dir": "/data/outputs",
+        "roi": {"xmin": -123.0, "ymin": 36.0, "xmax": -121.0, "ymax": 38.0},
+        "export": {"h3_resolution": 8},
+    }
+    config_res4 = {
+        **config_res8,
+        "export": {"h3_resolution": 4},
+    }
+
+    roi_hash = "deadbeef" * 8  # arbitrary stable hash
+    fp8 = compute_run_fingerprint(config_res8, roi_hash, [])
+    fp4 = compute_run_fingerprint(config_res4, roi_hash, [])
+
+    assert fp8 != fp4, "Different h3_resolution values must produce distinct fingerprints"
