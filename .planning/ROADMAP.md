@@ -77,11 +77,11 @@ Plans:
   2. Calling `to_h3()` without `h3-py` installed raises `ImportError` with a message that includes the `pip install terraflow[h3]` install command
   3. User can run `terraflow export --format h3 -c config.yml` from the CLI and produce the H3-indexed output artifact
   4. Two pipeline runs with identical config except different H3 resolutions produce distinct run fingerprints (no silent cache collision)
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 
 Plans:
 - [x] 04-01-PLAN.md — ExportConfig model, to_h3() core function, optional h3 dep wiring, unit tests
-- [ ] 04-02-PLAN.md — run_export() orchestrator, artifact writing, fingerprint distinctness tests
+- [x] 04-02-PLAN.md — run_export() orchestrator, artifact writing, fingerprint distinctness tests
 - [ ] 04-03-PLAN.md — CLI export subcommand, notebook, docs, PR checklist artifacts
 
 ### Phase 5: Paper and JOSS Submission
@@ -106,5 +106,5 @@ Note: Phase 4 depends on Phase 1 only; it can begin after Phase 1 completes. Pha
 | 1. Foundation Hardening | 0/3 | Planned    |  |
 | 2. Sensitivity Analysis | 3/3 | Complete   | 2026-03-28 |
 | 3. Model Validation | 3/3 | Complete   | 2026-03-31 |
-| 4. H3 Export | 1/3 | In Progress|  |
+| 4. H3 Export | 2/3 | In Progress|  |
 | 5. Paper and JOSS Submission | 0/TBD | Not started | - |

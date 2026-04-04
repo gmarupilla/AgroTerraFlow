@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: "Completed 04-01-PLAN.md: ExportConfig model, to_h3() export function, public API wiring"
-last_updated: "2026-04-04T02:02:30.565Z"
+stopped_at: "Completed 04-02-PLAN.md: run_export() orchestrator and fingerprint tests"
+last_updated: "2026-04-04T02:10:34.265Z"
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 12
-  completed_plans: 10
+  completed_plans: 11
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-18)
 ## Current Position
 
 Phase: 04 (h3-export) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 
 ## Performance Metrics
 
@@ -53,6 +53,7 @@ Plan: 2 of 3
 | Phase 03 P02 | 25min | 1 tasks | 1 files |
 | Phase 03 P03 | 45min | 3 tasks | 7 files |
 | Phase 04-h3-export P01 | 49min | 2 tasks | 5 files |
+| Phase 04-h3-export P02 | 12min | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,7 @@ Recent decisions affecting current work:
 - [Phase 03]: Config path resolution canonical pattern — always use config_dir = config_path.parent, then config_dir / cfg.relative_path (applies to validation.py, pipeline.py)
 - [Phase 04-h3-export]: h3 guard at call-site: export.py always importable; ImportError deferred to to_h3() call
 - [Phase 04-h3-export]: h3 v4 API (latlng_to_cell) used; v3 geo_to_h3 avoided per D-09
+- [Phase 04-h3-export]: resolution_override affects only output filename, not run_dir; run_dir always determined by on-disk config fingerprint
 
 ### Pending Todos
 
@@ -89,6 +91,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-04-04T02:02:30.560Z
-Stopped at: Completed 04-01-PLAN.md: ExportConfig model, to_h3() export function, public API wiring
+Last session: 2026-04-04T02:10:34.260Z
+Stopped at: Completed 04-02-PLAN.md: run_export() orchestrator and fingerprint tests
 Resume file: None

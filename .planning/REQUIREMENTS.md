@@ -30,7 +30,7 @@
 
 - [x] **H3-01**: User can export `features` DataFrame to an H3-indexed structure at a configurable resolution using `terraflow.export.to_h3()` function
 - [x] **H3-02**: `h3-py` is an optional dependency (in `[project.optional-dependencies]`); calling H3 export without it raises `ImportError` with install instructions
-- [ ] **H3-03**: H3 resolution parameter is included in the run fingerprint computation so different resolutions produce distinct cached artifacts
+- [x] **H3-03**: H3 resolution parameter is included in the run fingerprint computation so different resolutions produce distinct cached artifacts
 - [ ] **H3-04**: User can export results in H3 format via `terraflow export --format h3 -c config.yml` CLI subcommand
 
 ### Paper & JOSS Submission
@@ -89,7 +89,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | VALD-04 | Phase 3 | Complete |
 | H3-01 | Phase 4 | Complete |
 | H3-02 | Phase 4 | Complete |
-| H3-03 | Phase 4 | Pending |
+| H3-03 | Phase 4 | Complete |
 | H3-04 | Phase 4 | Pending |
 | JOSS-01 | Phase 5 | Pending |
 | JOSS-02 | Phase 5 | Pending |
