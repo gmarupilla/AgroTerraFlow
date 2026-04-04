@@ -145,6 +145,8 @@ nav:
       - Examples: config/examples.md
   - CLI:
       - Usage: cli/usage.md
+  - Guides:
+      - H3 Export: h3-export.md
   - API Reference:
       - terraflow.core: api/core.md
       - terraflow.ingest: api/ingest.md
@@ -154,6 +156,7 @@ nav:
       - Kriging and Uncertainty: notebooks/kriging_uncertainty_demo.ipynb
       - Sensitivity Analysis: notebooks/02_sensitivity_analysis.ipynb
       - Model Validation: notebooks/03_model_validation.ipynb
+      - H3 Export: notebooks/04_h3_export.ipynb
   - Development: DEVELOPMENT.md
   - Roadmap: ROADMAP.md
   - Contributing: contributing.md
