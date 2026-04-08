@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 import importlib
+from pathlib import Path
+from unittest.mock import patch
 
 import pandas as pd
 import pytest
-from unittest.mock import patch
 
 _H3_INSTALLED = importlib.util.find_spec("h3") is not None
 
@@ -35,16 +36,18 @@ def test_export_config_valid_resolution_fifteen():
 
 
 def test_export_config_invalid_resolution_negative():
-    from terraflow.config import ExportConfig
     from pydantic import ValidationError
+
+    from terraflow.config import ExportConfig
 
     with pytest.raises(ValidationError):
         ExportConfig(h3_resolution=-1)
 
 
 def test_export_config_invalid_resolution_sixteen():
-    from terraflow.config import ExportConfig
     from pydantic import ValidationError
+
+    from terraflow.config import ExportConfig
 
     with pytest.raises(ValidationError):
         ExportConfig(h3_resolution=16)
@@ -90,7 +93,7 @@ def test_to_h3_importerror():
     from terraflow.export import to_h3
 
     with patch.object(export_mod, "_H3_AVAILABLE", False):
-        with pytest.raises(ImportError, match="pip install terraflow\\[h3\\]"):
+        with pytest.raises(ImportError, match="pip install terraflow-agro\\[h3\\]"):
             to_h3(_make_df())
 
 
@@ -108,23 +111,25 @@ def test_to_h3_basic():
     assert len(result) > 0
 
 
+_SAME_CELL_DF = pd.DataFrame(
+    {
+        "lat": [37.0, 37.0, 37.0],
+        "lon": [-122.0, -122.0, -122.0],
+        "score": [1.0, 2.0, 3.0],
+        "v_index": [0.5, 0.5, 0.5],
+        "mean_temp": [20.0, 20.0, 20.0],
+        "total_rain": [100.0, 100.0, 100.0],
+        "label": ["high", "high", "low"],
+    }
+)
+
+
 def test_to_h3_aggregation_mean():
     """Rows mapping to same H3 cell are aggregated by mean for numeric columns."""
     pytest.importorskip("h3")
     from terraflow.export import to_h3
 
-    df = pd.DataFrame(
-        {
-            "lat": [37.0, 37.0, 37.0],
-            "lon": [-122.0, -122.0, -122.0],
-            "score": [1.0, 2.0, 3.0],
-            "v_index": [0.5, 0.5, 0.5],
-            "mean_temp": [20.0, 20.0, 20.0],
-            "total_rain": [100.0, 100.0, 100.0],
-            "label": ["high", "high", "low"],
-        }
-    )
-    result = to_h3(df, resolution=4)
+    result = to_h3(_SAME_CELL_DF.copy(), resolution=4)
 
     assert len(result) == 1
     assert result["score"].iloc[0] == pytest.approx(2.0)
@@ -135,18 +140,7 @@ def test_to_h3_aggregation_mode():
     pytest.importorskip("h3")
     from terraflow.export import to_h3
 
-    df = pd.DataFrame(
-        {
-            "lat": [37.0, 37.0, 37.0],
-            "lon": [-122.0, -122.0, -122.0],
-            "score": [1.0, 2.0, 3.0],
-            "v_index": [0.5, 0.5, 0.5],
-            "mean_temp": [20.0, 20.0, 20.0],
-            "total_rain": [100.0, 100.0, 100.0],
-            "label": ["high", "high", "low"],
-        }
-    )
-    result = to_h3(df, resolution=4)
+    result = to_h3(_SAME_CELL_DF.copy(), resolution=4)
 
     assert result["label"].iloc[0] == "high"
 
@@ -172,7 +166,7 @@ def test_to_h3_missing_columns():
 
 # ── run_export tests ────────────────────────────────────────────────────────────
 
-_EXPORT_CONFIG = """\
+_BASE_CONFIG = """\
 raster_path: raster.tif
 climate_csv: climate.csv
 output_dir: {out_dir}
@@ -191,30 +185,10 @@ model_params:
   w_v: 0.4
   w_t: 0.3
   w_r: 0.3
-export:
-  h3_resolution: 8
 """
 
-_NO_EXPORT_CONFIG = """\
-raster_path: raster.tif
-climate_csv: climate.csv
-output_dir: {out_dir}
-roi:
-  xmin: -123.0
-  ymin: 36.0
-  xmax: -121.0
-  ymax: 38.0
-model_params:
-  v_min: 0.0
-  v_max: 25.0
-  t_min: 0.0
-  t_max: 40.0
-  r_min: 0.0
-  r_max: 300.0
-  w_v: 0.4
-  w_t: 0.3
-  w_r: 0.3
-"""
+_EXPORT_CONFIG = _BASE_CONFIG + "export:\n  h3_resolution: 8\n"
+_NO_EXPORT_CONFIG = _BASE_CONFIG
 
 
 def _make_features_parquet(run_dir: "Path", n: int = 5) -> None:
@@ -242,8 +216,8 @@ class TestRunExport:
     def test_run_export_writes_artifact(self, tmp_path):
         """run_export writes h3_resolution_8.parquet to the run directory."""
         pytest.importorskip("h3")
-        from pathlib import Path
         from unittest.mock import patch
+
         from terraflow.export import run_export
 
         run_dir = tmp_path / "runs" / "abc123"
@@ -262,6 +236,7 @@ class TestRunExport:
         """resolution_override changes the output filename but not the run directory."""
         pytest.importorskip("h3")
         from unittest.mock import patch
+
         from terraflow.export import run_export
 
         run_dir = tmp_path / "runs" / "abc123"
@@ -280,6 +255,7 @@ class TestRunExport:
     def test_run_export_no_export_section(self, tmp_path):
         """run_export raises ValueError when config has no 'export:' section."""
         from unittest.mock import patch
+
         from terraflow.export import run_export
 
         run_dir = tmp_path / "runs" / "abc123"
@@ -295,6 +271,7 @@ class TestRunExport:
     def test_run_export_unsupported_format(self, tmp_path):
         """run_export raises ValueError for unsupported export formats."""
         from unittest.mock import patch
+
         from terraflow.export import run_export
 
         run_dir = tmp_path / "runs" / "abc123"
@@ -310,6 +287,7 @@ class TestRunExport:
     def test_run_export_missing_features_raises(self, tmp_path):
         """run_export raises FileNotFoundError when features.parquet is absent."""
         from unittest.mock import patch
+
         from terraflow.export import run_export
 
         run_dir = tmp_path / "runs" / "missing"

@@ -41,7 +41,7 @@ def to_h3(features: pd.DataFrame, resolution: int = 8) -> pd.DataFrame:
         If resolution is outside 0-15 or required columns are missing.
     """
     if not _H3_AVAILABLE:
-        raise ImportError("h3 is required for H3 export. Install it with: pip install terraflow[h3]")
+        raise ImportError("h3 is required for H3 export. Install it with: pip install terraflow-agro[h3]")
 
     if not (0 <= resolution <= 15):
         raise ValueError(f"H3 resolution must be 0-15, got {resolution}")
