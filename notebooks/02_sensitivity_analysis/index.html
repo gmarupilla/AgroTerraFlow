@@ -354,6 +354,26 @@
     
     
       <li class="md-tabs__item">
+        <a href="../../h3-export/" class="md-tabs__link">
+          
+  
+  
+  Guides
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
         <a href="../../api/core/" class="md-tabs__link">
           
   
@@ -1119,7 +1139,7 @@
   <span class="md-ellipsis">
     
   
-    API Reference
+    Guides
   
 
     
@@ -1132,6 +1152,93 @@
         
         <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../h3-export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    H3 Export
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1263,10 +1370,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
         
           
-          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
             
   
   
@@ -1284,8 +1391,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_8">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_9">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1487,6 +1594,34 @@
     
   
     Model Validation Demo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04_h3_export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    H3 Export Demo
   
 
     
@@ -2425,13 +2560,13 @@ suitability scores most?</em></p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=sens-imports">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=sens-imports">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-1">
@@ -2445,14 +2580,106 @@ suitability scores most?</em></p>
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">terraflow.sensitivity</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_sensitivity</span>
+
+<span class="c1"># ── Self-contained synthetic config (no real data files needed) ──────────</span>
+<span class="n">tmp</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">())</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">/</span> <span class="s2">"config.yml"</span>
+<span class="n">config_path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="sa">f</span><span class="s2">"""</span><span class="se">\</span>
+<span class="s2">    raster_path: /nonexistent/raster.tif</span>
+<span class="s2">    climate_csv: /nonexistent/climate.csv</span>
+<span class="s2">    output_dir: </span><span class="si">{</span><span class="n">tmp</span><span class="si">}</span><span class="s2">/outputs</span>
+<span class="s2">    roi:</span>
+<span class="s2">      xmin: -100.1</span>
+<span class="s2">      ymin: 39.9</span>
+<span class="s2">      xmax: -99.9</span>
+<span class="s2">      ymax: 40.1</span>
+<span class="s2">    model_params:</span>
+<span class="s2">      v_min: 0.0</span>
+<span class="s2">      v_max: 25.0</span>
+<span class="s2">      t_min: 0.0</span>
+<span class="s2">      t_max: 40.0</span>
+<span class="s2">      r_min: 0.0</span>
+<span class="s2">      r_max: 300.0</span>
+<span class="s2">      w_v: 0.4</span>
+<span class="s2">      w_t: 0.3</span>
+<span class="s2">      w_r: 0.3</span>
+<span class="s2">    sensitivity:</span>
+<span class="s2">      w_v:</span>
+<span class="s2">        low: 0.2</span>
+<span class="s2">        high: 0.5</span>
+<span class="s2">      w_t:</span>
+<span class="s2">        low: 0.2</span>
+<span class="s2">        high: 0.5</span>
+<span class="s2">      w_r:</span>
+<span class="s2">        low: 0.1</span>
+<span class="s2">        high: 0.4</span>
+<span class="s2">      n_samples: 64</span>
+<span class="s2">      method: both</span>
+<span class="s2">"""</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Temp config: </span><span class="si">{</span><span class="n">config_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-1">import json
+import tempfile
+import textwrap
 from pathlib import Path
 
-from terraflow.sensitivity import run_sensitivity</div>
+from terraflow.sensitivity import run_sensitivity
+
+# ── Self-contained synthetic config (no real data files needed) ──────────
+tmp = Path(tempfile.mkdtemp())
+config_path = tmp / "config.yml"
+config_path.write_text(textwrap.dedent(f"""\
+    raster_path: /nonexistent/raster.tif
+    climate_csv: /nonexistent/climate.csv
+    output_dir: {tmp}/outputs
+    roi:
+      xmin: -100.1
+      ymin: 39.9
+      xmax: -99.9
+      ymax: 40.1
+    model_params:
+      v_min: 0.0
+      v_max: 25.0
+      t_min: 0.0
+      t_max: 40.0
+      r_min: 0.0
+      r_max: 300.0
+      w_v: 0.4
+      w_t: 0.3
+      w_r: 0.3
+    sensitivity:
+      w_v:
+        low: 0.2
+        high: 0.5
+      w_t:
+        low: 0.2
+        high: 0.5
+      w_r:
+        low: 0.1
+        high: 0.4
+      n_samples: 64
+      method: both
+"""))
+print(f"Temp config: {config_path}")
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Temp config: /var/folders/h_/_bjpnb894kgf18frynwf6bww0000gn/T/tmp1w7f44qa/config.yml
+</pre>
 </div>
 </div>
 </div>
@@ -2470,13 +2697,13 @@ has one — point to it here, or pass any config that includes a <code>sensitivi
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=sens-run">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=sens-run">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
@@ -2489,13 +2716,74 @@ has one — point to it here, or pass any config that includes a <code>sensitivi
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">config_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">"../examples/demo_config.yml"</span><span class="p">)</span>
-<span class="n">report_path</span> <span class="o">=</span> <span class="n">run_sensitivity</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">report_path</span> <span class="o">=</span> <span class="n">run_sensitivity</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sensitivity report written to: </span><span class="si">{</span><span class="n">report_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">config_path = Path("../examples/demo_config.yml")
-report_path = run_sensitivity(config_path)
-print(f"Sensitivity report written to: {report_path}")</div>
+<div class="clipboard-copy-txt" id="cell-2">report_path = run_sensitivity(config_path)
+print(f"Sensitivity report written to: {report_path}")
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>INFO:terraflow:Running Sobol' analysis with N=64 (total evaluations: 512)
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output" data-mime-type="text/html" tabindex="0">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-style: italic">                            Sobol' Sensitivity Indices                            </span>
+┏━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┓
+┃<span style="font-weight: bold"> Rank </span>┃<span style="font-weight: bold"> Parameter </span>┃<span style="font-weight: bold"> S1 (first-order) </span>┃<span style="font-weight: bold"> S1 95% CI </span>┃<span style="font-weight: bold"> ST (total-order) </span>┃<span style="font-weight: bold"> ST 95% CI </span>┃
+┡━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━┩
+│<span style="font-weight: bold"> 1    </span>│<span style="font-weight: bold"> w_r       </span>│ 0.3392           │ ±0.2278   │ 0.3332           │ ±0.1198   │
+│<span style="font-weight: bold"> 2    </span>│<span style="font-weight: bold"> w_v       </span>│ 0.3273           │ ±0.1675   │ 0.3292           │ ±0.1181   │
+│<span style="font-weight: bold"> 3    </span>│<span style="font-weight: bold"> w_t       </span>│ 0.3358           │ ±0.2196   │ 0.3291           │ ±0.1215   │
+└──────┴───────────┴──────────────────┴───────────┴──────────────────┴───────────┘
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>INFO:terraflow:Running Morris analysis with 6 trajectories (total evaluations: 24)
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output" data-mime-type="text/html" tabindex="0">
+<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-style: italic">                                  Morris Elementary Effects                                   </span>
+┏━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
+┃<span style="font-weight: bold"> Rank </span>┃<span style="font-weight: bold"> Parameter </span>┃<span style="font-weight: bold"> mu* (mean abs effect) </span>┃<span style="font-weight: bold"> mu* 95% CI </span>┃<span style="font-weight: bold"> mu (mean effect) </span>┃<span style="font-weight: bold"> sigma (std dev) </span>┃
+┡━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━┩
+│<span style="font-weight: bold"> 1    </span>│<span style="font-weight: bold"> w_r       </span>│ 0.1500                │ ±0.0000    │ 0.1500           │ 0.0000          │
+│<span style="font-weight: bold"> 2    </span>│<span style="font-weight: bold"> w_t       </span>│ 0.1500                │ ±0.0000    │ 0.1500           │ 0.0000          │
+│<span style="font-weight: bold"> 3    </span>│<span style="font-weight: bold"> w_v       </span>│ 0.1500                │ ±0.0000    │ 0.1500           │ 0.0000          │
+└──────┴───────────┴───────────────────────┴────────────┴──────────────────┴─────────────────┘
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>INFO:terraflow:Sensitivity report written to /var/folders/h_/_bjpnb894kgf18frynwf6bww0000gn/T/tmp1w7f44qa/outputs/sensitivity_report.json
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Sensitivity report written to: /var/folders/h_/_bjpnb894kgf18frynwf6bww0000gn/T/tmp1w7f44qa/outputs/sensitivity_report.json
+</pre>
 </div>
 </div>
 </div>
@@ -2512,13 +2800,13 @@ print(f"Sensitivity report written to: {report_path}")</div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=sens-load">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=sens-load">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
@@ -2544,14 +2832,27 @@ print("Keys in sensitivity_report.json:", list(report.keys()))</div>
 </div>
 </div>
 </div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=sens-sobol">
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Keys in sensitivity_report.json: ['schema_version', 'method', 'n_samples', 'parameters', 'bounds', 'timestamp', 'sobol', 'morris']
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=sens-sobol">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
@@ -2566,39 +2867,60 @@ print("Keys in sensitivity_report.json:", list(report.keys()))</div>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">sobol</span> <span class="o">=</span> <span class="n">report</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sobol"</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">sobol</span><span class="p">:</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sobol</span><span class="p">[</span><span class="s2">"S1"</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"Sobol' indices (S1 = first-order, ST = total-order):"</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'Parameter'</span><span class="si">:</span><span class="s2">&lt;12</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'S1'</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'ST'</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"-"</span> <span class="o">*</span> <span class="mi">30</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">indices</span> <span class="ow">in</span> <span class="n">sobol</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">s1</span> <span class="o">=</span> <span class="n">indices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'S1'</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">'nan'</span><span class="p">))</span>
-        <span class="n">st</span> <span class="o">=</span> <span class="n">indices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'ST'</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">'nan'</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+        <span class="n">s1</span> <span class="o">=</span> <span class="n">sobol</span><span class="p">[</span><span class="s2">"S1"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">))</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">sobol</span><span class="p">[</span><span class="s2">"ST"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">))</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">param</span><span class="si">:</span><span class="s2">&lt;12</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s1</span><span class="si">:</span><span class="s2">&gt;8.4f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">st</span><span class="si">:</span><span class="s2">&gt;8.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"No Sobol' results (method was not 'sobol' or 'both')"</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-4">sobol = report.get("sobol")
 if sobol:
+    params = list(sobol["S1"].keys())
     print("Sobol' indices (S1 = first-order, ST = total-order):")
     print(f"{'Parameter':&lt;12} {'S1':&gt;8} {'ST':&gt;8}")
     print("-" * 30)
-    for param, indices in sobol.items():
-        s1 = indices.get('S1', float('nan'))
-        st = indices.get('ST', float('nan'))
+    for param in params:
+        s1 = sobol["S1"].get(param, float("nan"))
+        st = sobol["ST"].get(param, float("nan"))
         print(f"{param:&lt;12} {s1:&gt;8.4f} {st:&gt;8.4f}")
 else:
-    print("No Sobol' results (method was not 'sobol' or 'both')")</div>
+    print("No Sobol' results (method was not 'sobol' or 'both')")
 </div>
 </div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=sens-morris">
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Sobol' indices (S1 = first-order, ST = total-order):
+Parameter          S1       ST
+------------------------------
+w_v            0.3273   0.3292
+w_t            0.3358   0.3291
+w_r            0.3392   0.3332
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=sens-morris">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
@@ -2613,27 +2935,48 @@ else:
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">morris</span> <span class="o">=</span> <span class="n">report</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"morris"</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">morris</span><span class="p">:</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">morris</span><span class="p">[</span><span class="s2">"mu_star"</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"Morris elementary effects (mu_star = mean |effect|, sigma = std):"</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'Parameter'</span><span class="si">:</span><span class="s2">&lt;12</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'mu_star'</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'sigma'</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"-"</span> <span class="o">*</span> <span class="mi">32</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">indices</span> <span class="ow">in</span> <span class="n">morris</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="n">mu</span> <span class="o">=</span> <span class="n">indices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'mu_star'</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">'nan'</span><span class="p">))</span>
-        <span class="n">sig</span> <span class="o">=</span> <span class="n">indices</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'sigma'</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s1">'nan'</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="n">morris</span><span class="p">[</span><span class="s2">"mu_star"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">))</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">morris</span><span class="p">[</span><span class="s2">"sigma"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">))</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">param</span><span class="si">:</span><span class="s2">&lt;12</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">mu</span><span class="si">:</span><span class="s2">&gt;10.4f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">sig</span><span class="si">:</span><span class="s2">&gt;8.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">"No Morris results (method was not 'morris' or 'both')"</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-5">morris = report.get("morris")
 if morris:
+    params = list(morris["mu_star"].keys())
     print("Morris elementary effects (mu_star = mean |effect|, sigma = std):")
     print(f"{'Parameter':&lt;12} {'mu_star':&gt;10} {'sigma':&gt;8}")
     print("-" * 32)
-    for param, indices in morris.items():
-        mu = indices.get('mu_star', float('nan'))
-        sig = indices.get('sigma', float('nan'))
+    for param in params:
+        mu = morris["mu_star"].get(param, float("nan"))
+        sig = morris["sigma"].get(param, float("nan"))
         print(f"{param:&lt;12} {mu:&gt;10.4f} {sig:&gt;8.4f}")
 else:
-    print("No Morris results (method was not 'morris' or 'both')")</div>
+    print("No Morris results (method was not 'morris' or 'both')")
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Morris elementary effects (mu_star = mean |effect|, sigma = std):
+Parameter       mu_star    sigma
+--------------------------------
+w_v              0.1500   0.0000
+w_t              0.1500   0.0000
+w_r              0.1500   0.0000
+</pre>
 </div>
 </div>
 </div>
