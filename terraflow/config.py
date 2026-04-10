@@ -242,6 +242,20 @@ class ValidationConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class ExportConfig(BaseModel):
+    """Configuration for H3 export (Phase 4)."""
+
+    h3_resolution: int = 8
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("h3_resolution")
+    @classmethod
+    def validate_h3_resolution(cls, v: int) -> int:
+        if not (0 <= v <= 15):
+            raise ValueError(f"h3_resolution must be 0-15, got {v}")
+        return v
+
+
 class PipelineConfig(BaseModel):
     """Top-level pipeline configuration.
 
@@ -272,6 +286,7 @@ class PipelineConfig(BaseModel):
     max_cells: int = 500  # maximum number of cells to sample from the ROI
     sensitivity: Optional[SensitivityConfig] = None  # Optional sensitivity analysis config
     validation: Optional[ValidationConfig] = None  # Optional validation config
+    export: Optional[ExportConfig] = None  # Optional H3 export config
 
     model_config = ConfigDict(extra="forbid")
 

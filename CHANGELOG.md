@@ -8,6 +8,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ## [Unreleased]
 
 ### Added
+- **H3-indexed export** (`terraflow export --format h3 -c config.yml`): re-indexes suitability results by H3 hexagonal cell for interop with DeckGL, Kepler.gl, and h3pandas. Output written to `h3_resolution_N.parquet` in the run directory. New `to_h3()` function in `terraflow.export` and `run_export()` orchestrator. Optional `[h3]` extra: `pip install terraflow-agro[h3]`.
+- `ExportConfig` Pydantic model with `h3_resolution` field (validated 0–15) in `terraflow.config`.
+- `export` CLI subcommand with `--format` (required), `--config`/`-c`, and optional `--resolution`/`-r` override.
+- Notebook `04_h3_export.ipynb` demonstrating H3 export with synthetic data.
 - **Sensitivity analysis** (`terraflow sensitivity -c config.yml`): Sobol' first-order / total-order indices and Morris elementary effects for all `ModelParams` weights via SALib. Results written to `sensitivity_report.json` in the run directory. New `sensitivity:` config block; `SensitivityConfig` in `terraflow.config`.
 - **Model validation** (`terraflow validate -c config.yml`): spatial block cross-validation (Roberts et al. 2017), Cohen's kappa against an optional reference CSV, and Moran's I on score residuals. Results appended to `report.json` under `"validation"` key. New `validation:` config block; `ValidationConfig` in `terraflow.config`.
 - `terraflow/sensitivity.py` — `run_sensitivity()` public API.

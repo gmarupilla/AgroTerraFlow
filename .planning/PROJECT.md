@@ -31,7 +31,7 @@ Every TerraFlow run produces a verifiable, reproducible result: same inputs alwa
 - ✓ Sensitivity analysis — Sobol' and Morris methods via SALib, CLI-invocable, sensitivity_report.json output — Validated in Phase 2: Sensitivity Analysis
 - ✓ Model validation — spatial block CV, Cohen's kappa, Moran's I, CLI-invocable (`terraflow validate`), demo notebook — Validated in Phase 3: Model Validation
 - ✓ Spatial statistics rigor — kriging LOOCV RMSE in report.json (`kriging_loocv`), Moran's I residual autocorrelation — Validated in Phase 3: Model Validation
-- [ ] H3 index export — output suitability results indexed by H3 cell for interop with H3-native tools (DeckGL, Pandas H3)
+- ✓ H3 index export — `terraflow.export.to_h3()` and `terraflow export --format h3` CLI subcommand; optional h3-py dep — Validated in Phase 4: H3 Export
 - [ ] JOSS paper finalization — manuscript, figures, and supplementary materials meeting reviewer standards
 
 ### Out of Scope
@@ -69,4 +69,4 @@ The library is on branch `feat/stage2-mc-uncertainty`. Phase 1 (foundation harde
 | LOOCV for kriging validation | Standard geostatistical practice; expected by reviewers | — Pending |
 
 ---
-*Last updated: 2026-04-01 — Phase 3 (Model Validation) complete*
+*Last updated: 2026-04-04 — Phase 4 (H3 Export) complete*

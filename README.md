@@ -76,6 +76,7 @@ report.json        — QA stats and timings
 | `terraflow run -c config.yml` | Run the full pipeline |
 | `terraflow sensitivity -c config.yml` | Sobol' / Morris sensitivity indices for model weights |
 | `terraflow validate -c config.yml` | Spatial block CV, Cohen's kappa, Moran's I on residuals |
+| `terraflow export --format h3 -c config.yml` | H3-indexed export for interop with H3-native visualization tools (`pip install terraflow-agro[h3]`) |
 
 See [CLI docs](https://terraflow.marupilla.dev/cli/usage/) for full reference.
 
