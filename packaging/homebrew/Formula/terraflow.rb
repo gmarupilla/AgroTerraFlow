@@ -8,9 +8,9 @@ class Terraflow < Formula
   license "MIT"
   head "https://github.com/gmarupilla/AgroTerraFlow.git", branch: "main"
 
+  depends_on "gdal"
+  depends_on "proj"
   depends_on "python@3.12"
-  depends_on "proj"   # required by pyproj / rasterio
-  depends_on "gdal"   # required by rasterio
 
   def install
     venv = virtualenv_create(libexec, "python3.12")
