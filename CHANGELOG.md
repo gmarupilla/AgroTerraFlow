@@ -7,6 +7,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.2.2] — 2026-04-12
+
 ### Added
 - **H3-indexed export** (`terraflow export --format h3 -c config.yml`): re-indexes suitability results by H3 hexagonal cell for interop with DeckGL, Kepler.gl, and h3pandas. Output written to `h3_resolution_N.parquet` in the run directory. New `to_h3()` function in `terraflow.export` and `run_export()` orchestrator. Optional `[h3]` extra: `pip install terraflow-agro[h3]`.
 - `ExportConfig` Pydantic model with `h3_resolution` field (validated 0–15) in `terraflow.config`.
