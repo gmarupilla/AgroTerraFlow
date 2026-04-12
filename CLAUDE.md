@@ -87,3 +87,128 @@ Per project conventions, every PR must:
 - Add a Jupyter notebook example in `notebooks/` and register it in `docs/notebooks/`
 - Update `mkdocs.yml` nav if new pages added
 - Add an entry to `CHANGELOG.md` under `[Unreleased]`
+
+## Packaging & Release
+
+### Versioning
+
+Version is declared in **two places** — both must be updated together:
+- `pyproject.toml` line `version = "X.Y.Z"`
+- `terraflow/__init__.py` `__version__ = "X.Y.Z"`
+
+Project follows [Semantic Versioning](https://semver.org). Current version: `0.2.1`.
+
+### Release steps
+
+```bash
+# 1. Update version in both files
+# 2. Update CHANGELOG.md: move [Unreleased] items under a new [X.Y.Z] heading with date
+# 3. Commit the version bump
+git commit -m "chore: bump version to vX.Y.Z"
+# 4. Tag and push — this fires both publish workflows
+git tag vX.Y.Z
+git push origin main --tags
+```
+
+### PyPI (`publish-pypi.yml`)
+
+Triggers on `v*.*.*` tag push. Builds sdist + wheel, attests provenance, and publishes
+to PyPI via `pypa/gh-action-pypi-publish`. Requires secret: `PYPI_API_TOKEN`.
+
+Package name on PyPI: `terraflow-agro`. Install: `pip install terraflow-agro`.
+
+### Homebrew tap (`publish-homebrew.yml`)
+
+Triggers on the same `v*.*.*` tag, runs in parallel with the PyPI workflow.
+Fetches the GitHub archive tarball, computes its SHA-256, then patches
+`Formula/terraflow.rb` in `gmarupilla/homebrew-terraflow` (separate GitHub repo)
+and pushes the update.
+
+Requires secret: `HOMEBREW_TAP_TOKEN` (GitHub PAT with `repo` write scope on
+`gmarupilla/homebrew-terraflow`).
+
+Formula source of truth: `packaging/homebrew/Formula/terraflow.rb`  
+Local helper (dev use): `packaging/homebrew/update_sha.sh <version>` — cross-platform
+(works on macOS BSD sed and Linux GNU sed).
+
+User install: `brew tap gmarupilla/terraflow && brew install terraflow`
+
+### Optional extras
+
+| Extra | Packages | Install |
+|-------|----------|---------|
+| `[h3]` | `h3>=4.0,<5` | `pip install terraflow-agro[h3]` |
+| `[viz]` | `plotly` | `pip install terraflow-agro[viz]` |
+
+## CI/CD Overview
+
+All workflows live in `.github/workflows/`:
+
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `ci.yml` | push/PR to main | Tests (Py 3.10–3.12), lint, mypy, coverage, smoke tests, Docker E2E |
+| `publish-pypi.yml` | `v*.*.*` tag | Build + publish to PyPI with provenance attestation |
+| `publish-homebrew.yml` | `v*.*.*` tag | Auto-update Homebrew tap formula |
+| `docs.yml` | push to main | Build + deploy MkDocs to GitHub Pages |
+| `docs-preview.yml` | PR | Build docs preview |
+| `quality.yml` | push/PR | Additional code quality checks |
+| `claude.yml` | PR | AI-assisted review (skips bot authors) |
+| `security.yml` | schedule/push | Dependency vulnerability scan |
+| `license-check.yml` | push/PR | Verify dependency licenses |
+| `sonarcloud.yml` | push/PR | SonarCloud static analysis |
+| `manuscript.yml` | push/PR | Build JOSS paper PDF |
+
+Coverage floor: 85% (`fail_under = 85` in `pyproject.toml`). Codecov tracks trends.
+
+## Documentation Structure
+
+MkDocs with Material theme, deployed to `https://terraflow.marupilla.dev`.
+
+```
+docs/
+├── index.md                  # Home / landing page
+├── quickstart.md             # 10-minute getting started
+├── field-guide.md            # Practical usage guide
+├── DEVELOPMENT.md            # Dev setup, release checklist
+├── ROADMAP.md                # Feature roadmap
+├── contributing.md           # Contribution guidelines
+├── architecture/
+│   ├── overview.md           # System architecture overview
+│   ├── adr-001–006.md        # Architecture Decision Records
+│   ├── boundaries.md         # System boundaries
+│   ├── run-identity.md       # Run fingerprinting design
+│   └── artifacts.md          # Output artifact contract
+├── config/
+│   ├── schema.md             # Full YAML config reference
+│   └── examples.md           # Annotated config examples
+├── cli/
+│   └── usage.md              # CLI subcommand reference
+├── install/
+│   └── homebrew.md           # Homebrew install guide (macOS)
+├── guides/
+│   └── h3-export.md          # H3 hexagonal export guide
+├── api/
+│   ├── core.md               # terraflow.core autodoc
+│   ├── ingest.md             # terraflow.ingest autodoc
+│   └── climate.md            # terraflow.climate autodoc
+└── notebooks/                # Rendered Jupyter notebooks
+    ├── terraflow_v0_2_0_comprehensive_test.ipynb
+    ├── kriging_uncertainty_demo.ipynb
+    ├── 02_sensitivity_analysis.ipynb
+    ├── 03_model_validation.ipynb
+    └── 04_h3_export.ipynb
+```
+
+When adding a new page: create the `.md` file, add it to `mkdocs.yml` nav, and
+(if it's a guide/feature) add a notebook in `notebooks/` registered under the
+`Notebooks:` nav section.
+
+## Key External Repos & Services
+
+| Resource | URL / location |
+|----------|---------------|
+| Homebrew tap | `github.com/gmarupilla/homebrew-terraflow` |
+| PyPI package | `pypi.org/project/terraflow-agro` |
+| Docs site | `terraflow.marupilla.dev` |
+| SonarCloud | project key `gmarupilla_AgroTerraFlow` |
+| Codecov | `codecov.io/gh/gmarupilla/AgroTerraFlow` |
