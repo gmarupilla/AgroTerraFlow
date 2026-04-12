@@ -9,6 +9,7 @@ This package provides utilities to:
 """
 
 from .config import PipelineConfig, load_config
+from .export import to_h3
 from .pipeline import run_pipeline
 from .stats import (
     ClimateSummary,
@@ -19,7 +20,6 @@ from .stats import (
     summarize_raster,
     summarize_raster_file,
 )
-from .export import to_h3
 from .validation import run_validation
 
 __all__ = [
@@ -38,4 +38,4 @@ __all__ = [
 ]
 
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
