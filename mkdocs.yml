@@ -137,6 +137,7 @@ nav:
       - ADR-002 BBox ROI: architecture/adr-002-bbox-roi.md
       - ADR-003 Climate Interpolation: architecture/adr-003-climate-interpolation.md
       - ADR-004 CRS Reprojection: architecture/adr-004-crs-reprojection.md
+      - ADR-006 Homebrew Distribution: architecture/adr-006-homebrew-distribution.md
       - Boundaries: architecture/boundaries.md
       - Run Identity: architecture/run-identity.md
       - Artifact Contract: architecture/artifacts.md
@@ -145,6 +146,8 @@ nav:
       - Examples: config/examples.md
   - CLI:
       - Usage: cli/usage.md
+  - Install:
+      - Homebrew (macOS): install/homebrew.md
   - Guides:
       - H3 Export: h3-export.md
   - API Reference:

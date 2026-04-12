@@ -44,6 +44,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
   seeded cell-set stability, score stability, fingerprint presence, and fingerprint
   stability across independent runs.
 - `synthetic_climate_csv_dense` pytest fixture (8 stations) for kriging tests.
+- **Homebrew tap**: `brew tap gmarupilla/terraflow && brew install terraflow` for macOS — handles GDAL and PROJ system-library installation automatically. Formula at `packaging/homebrew/Formula/terraflow.rb`.
+- `publish-homebrew.yml`: auto-updates `gmarupilla/homebrew-terraflow` formula (url + sha256) on every `v*.*.*` tag push. ADR-006 documents the tap-vs-Core decision.
 
 ### Fixed
 - **Reproducibility**: cell sampling in `run_pipeline` now uses a

@@ -5,6 +5,7 @@
 [![Publish to PyPI](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/publish-pypi.yml/badge.svg)](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/publish-pypi.yml)
 [![Build JOSS Manuscript](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/manuscript.yml/badge.svg)](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/manuscript.yml)
 [![PyPI](https://img.shields.io/pypi/v/terraflow-agro.svg)](https://pypi.org/project/terraflow-agro/)
+[![Homebrew Tap](https://img.shields.io/badge/brew-gmarupilla%2Fterraflow-orange.svg)](https://github.com/gmarupilla/homebrew-terraflow)
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=gmarupilla_AgroTerraFlow&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=gmarupilla_AgroTerraFlow)
 [![Codecov](https://codecov.io/gh/gmarupilla/AgroTerraFlow/branch/main/graph/badge.svg)](https://codecov.io/gh/gmarupilla/AgroTerraFlow)
@@ -18,6 +19,15 @@ TerraFlow is a reproducible, config-driven geospatial workflow for agricultural 
 
 ## Installation
 
+**macOS (Homebrew)** — handles GDAL and PROJ automatically:
+
+```bash
+brew tap gmarupilla/terraflow
+brew install terraflow
+```
+
+**pip / uv:**
+
 ```bash
 uv pip install terraflow-agro
 # or
@@ -29,6 +39,8 @@ For kriging-based interpolation:
 ```bash
 pip install terraflow-agro pykrige
 ```
+
+See [Homebrew install docs](https://terraflow.marupilla.dev/install/homebrew/) for update/uninstall instructions and troubleshooting.
 
 ## Quickstart
 
