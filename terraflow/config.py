@@ -284,7 +284,9 @@ class PipelineConfig(BaseModel):
     model_params: ModelParams
     climate: ClimateConfig = ClimateConfig()  # Default: spatial strategy with fallback
     max_cells: int = 500  # maximum number of cells to sample from the ROI
-    sensitivity: Optional[SensitivityConfig] = None  # Optional sensitivity analysis config
+    sensitivity: Optional[SensitivityConfig] = (
+        None  # Optional sensitivity analysis config
+    )
     validation: Optional[ValidationConfig] = None  # Optional validation config
     export: Optional[ExportConfig] = None  # Optional H3 export config
 

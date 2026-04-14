@@ -1,4 +1,5 @@
 """Unit tests for terraflow.export (to_h3) and ExportConfig."""
+
 from __future__ import annotations
 
 import importlib
@@ -321,4 +322,6 @@ def test_resolution_changes_fingerprint():
     fp8 = compute_run_fingerprint(config_res8, roi_hash, [])
     fp4 = compute_run_fingerprint(config_res4, roi_hash, [])
 
-    assert fp8 != fp4, "Different h3_resolution values must produce distinct fingerprints"
+    assert (
+        fp8 != fp4
+    ), "Different h3_resolution values must produce distinct fingerprints"

@@ -7,83 +7,84 @@ tags:
   - Reference
 ---
 
-# TerraFlow Overview
+# TerraFlow Architecture Overview
 
-TerraFlow is a reproducible geospatial modeling framework that turns local geospatial inputs into
-traceable, analysis-ready artifacts. The core pipeline focuses on deterministic processing of
-region-of-interest (ROI) geographies and raster stacks so that every run can be recreated and
-audited with confidence.
+TerraFlow is a config-driven geospatial pipeline for agricultural suitability modeling. Given a raster (land-cover GeoTIFF) and a climate CSV, it produces scored, location-stamped cell features with full provenance tracking.
 
-## Inputs (v0.2.0)
-
-- YAML configuration file.
-- ROI boundary defined in the YAML (bbox).
-- Local GeoTIFF raster input (for example, `data/usda_cdl.tif`).
-- Local climate CSV input with lat/lon coordinates (for example, `data/demo_climate.csv`) — **enhanced in v0.2.0 with spatial interpolation**.
-
-## Outputs (v0.2.0 stable contract)
-
-All outputs are written under a deterministic run directory:
+## Data Flow
 
 ```
-outputs/<run_name>/
+YAML config → PipelineConfig (Pydantic v2)
+                 ↓
+DataCatalog  ← ingest.py (metadata only; no pixel reads)
+                 ↓
+run_fingerprint ← core/run_identity.py (SHA256 of config + inputs)
+                 ↓
+geo.py  → clip raster to ROI bbox; reproject to EPSG:4326
+                 ↓
+climate.py → ClimateInterpolator (linear | kriging | IDW)
+                 ↓
+model.py → suitability_score() + suitability_label()
+                 ↓
+pipeline.py → write artifacts to output_dir/runs/<fingerprint>/
 ```
 
-- `results.csv`: extracted features and scores per sampled cell (now with **per-cell climate values in v0.2.0**).
-- `manifest.json`: canonicalized inputs, file fingerprints, and provenance metadata.
-- `report.json`: QA summaries, timing, and coverage statistics.
+## Module Map
 
-For example, a demo configuration that sets `output_dir: "outputs/demo_run"` will emit
-`outputs/demo_run/results.csv` alongside the manifest and report.
+| Module | Responsibility |
+|--------|---------------|
+| `cli.py` | Typer CLI — `run`, `sensitivity`, `validate`, `export` subcommands |
+| `config.py` | Pydantic v2 models — `PipelineConfig`, `ModelParams`, `ROI`, `SensitivityConfig`, `ValidationConfig`, `ExportConfig` |
+| `ingest.py` | `RasterLayer`, `ClimateLayer`, `DataCatalog` — metadata only, no pixel I/O |
+| `geo.py` | ROI clipping, CRS reprojection; invariant: all output in EPSG:4326 |
+| `climate.py` | `ClimateInterpolator` — linear / kriging / IDW; LOOCV variogram selection |
+| `model.py` | `suitability_score()`, `suitability_label()`, `suitability_score_array()` |
+| `pipeline.py` | Orchestration — fingerprint → load → clip → interpolate → score → write |
+| `sensitivity.py` | Sobol' / Morris via SALib — triggered by `terraflow sensitivity` |
+| `validation.py` | Spatial block CV, Cohen's kappa, Moran's I — triggered by `terraflow validate` |
+| `export.py` | H3 hexagonal re-index — triggered by `terraflow export --format h3` |
+| `core/run_identity.py` | Deterministic SHA256 fingerprint of canonicalized config + input files |
 
-## Canonical pipeline
+## Output Artifacts
 
-```mermaid
-flowchart TD
-  A[YAML config] --> C[terraflow.core]
-  B[ROI bbox] --> C
-  D[Local GeoTIFF raster] --> E[Dataset resolution layer &#40future&#41]
-  F[Local climate CSV] --> E
-  E --> C
-  C --> G[Compute run_fingerprint]
-  G --> H[Raster/vector processing\nCRS align • mask/clip • zonal stats]
-  H --> I[outputs/run_name/results.csv]
-  H --> J[outputs/run_name/manifest.json]
-  H --> K[outputs/run_name/report.json]
-```
+All artifacts land under `<output_dir>/runs/<run_fingerprint>/`:
 
-## How a run works
+| File | Schema | Contents |
+|------|--------|----------|
+| `features.parquet` | v1 | `run_id, cell_id, lat, lon, v_index, mean_temp, total_rain, score, label` (+ kriging std + CI columns when configured) |
+| `manifest.json` | v1 | Config snapshot, input fingerprints, code version, git SHA |
+| `report.json` | v1 | Coverage fractions, raster/climate stats, score stats, timings; `kriging_loocv`, `kriging_diagnostics`, `uncertainty`, and `validation` blocks appended when the relevant features are enabled |
+| `results.csv` | — | Same data as `features.parquet` in CSV format (backward compatibility) |
+| `sensitivity_report.json` | — | Sobol' and/or Morris indices per `ModelParams` weight (written by `terraflow sensitivity`) |
+| `h3_resolution_N.parquet` | — | H3-indexed features at resolution N (written by `terraflow export --format h3`) |
 
-1. **Load configuration** and normalize relevant settings.
-2. **Load and normalize the ROI** geometry for consistent spatial operations.
-3. **Resolve local datasets** via the dataset resolution layer (future) for raster and climate sources.
-4. **Compute the run_fingerprint** deterministically.
-5. **Execute raster/vector processing** for clipping, masking, and zonal statistics.
-6. **Write outputs** with timings and QA summaries for inspection.
+## Key Invariants
 
-## Reproducibility
+- **CRS:** always EPSG:4326 in output. `geo.py` reprojects any input that differs.
+- **Determinism:** identical inputs always produce the same `run_fingerprint`. Cell sampling is seeded from the fingerprint SHA256 so that the same config yields the same cell set across independent runs.
+- **Cache:** if all three required artifacts exist in the run directory, the pipeline returns immediately without re-running.
+- **Coverage:** runs fail if no valid raster cells are found in the ROI; coverage fractions are always reported in `report.json`.
+- **Atomicity:** all artifacts are written with a write-to-temp + rename pattern to prevent partial writes.
 
-The `run_fingerprint` is a base64-url-safe hash derived from canonicalized configuration, a
-stable ROI geometry hash, and fingerprints of the input files. This makes each run immutable
-and comparable. The `manifest.json` captures the canonical inputs and file fingerprints, while
-`report.json` records timing and QA summaries that explain what the run produced.
+## Reproducibility Model
 
-## Geospatial correctness
+The `run_fingerprint` is a SHA256 over:
+1. Canonicalized (key-sorted) YAML config
+2. A stable ROI geometry hash (bbox dict or GeoJSON file hash)
+3. SHA256 fingerprints of all input files (raster + CSV)
 
-TerraFlow treats geospatial correctness as a first-class concern:
+This makes each run directory immutable. Re-running with identical inputs is a no-op; changing any input or config parameter produces a new directory.
 
-- **CRS strategy:** ROI geometries are normalized and aligned to raster CRS expectations before
-  extraction begins.
-- **Clipping and masking:** raster data is clipped and masked to the ROI boundary to avoid
-  leaking pixels outside the target geography.
-- **NoData propagation:** nodata values are preserved through processing to prevent false
-  statistics.
-- **Coverage checks:** `report.json` summarizes nodata ratios and coverage statistics so runs can
-  be audited for spatial completeness.
+## Geospatial Correctness
 
-## Non-goals (v0.2.0)
+- ROI bounds in any CRS are reprojected to raster CRS before windowing (all four corners, then axis-aligned bounding box to handle non-linear projections).
+- Degenerate windows (NaN dimensions after reprojection) raise `ValueError` with diagnostic information.
+- NoData cells are masked and excluded from sampling; coverage fractions are reported.
+- Climate station coordinates are validated against `[-90, 90]` / `[-180, 180]` ranges at load time.
 
-- Remote dataset downloads or cloud-hosted sources.
-- A hosted platform, workflow engine, or orchestration service.
-- A GUI-first GIS tool.
-- A general-purpose raster processing library.
+## Non-goals
+
+- Remote dataset downloads or cloud-hosted rasters.
+- Real-time or streaming data ingestion.
+- GUI or web application layer.
+- General-purpose raster processing (use `rioxarray` or `rasterstats` instead).
