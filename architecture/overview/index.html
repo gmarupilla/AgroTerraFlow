@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#terraflow-overview" class="md-skip">
+        <a href="#terraflow-architecture-overview" class="md-skip">
           Skip to content
         </a>
       
@@ -752,10 +752,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#inputs-v020" class="md-nav__link">
+  <a href="#data-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Inputs (v0.2.0)
+        Data Flow
       
     </span>
   </a>
@@ -763,10 +763,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#outputs-v020-stable-contract" class="md-nav__link">
+  <a href="#module-map" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Outputs (v0.2.0 stable contract)
+        Module Map
       
     </span>
   </a>
@@ -774,10 +774,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#canonical-pipeline" class="md-nav__link">
+  <a href="#output-artifacts" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Canonical pipeline
+        Output Artifacts
       
     </span>
   </a>
@@ -785,10 +785,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#how-a-run-works" class="md-nav__link">
+  <a href="#key-invariants" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How a run works
+        Key Invariants
       
     </span>
   </a>
@@ -796,10 +796,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#reproducibility" class="md-nav__link">
+  <a href="#reproducibility-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Reproducibility
+        Reproducibility Model
       
     </span>
   </a>
@@ -810,7 +810,7 @@
   <a href="#geospatial-correctness" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Geospatial correctness
+        Geospatial Correctness
       
     </span>
   </a>
@@ -818,10 +818,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#non-goals-v020" class="md-nav__link">
+  <a href="#non-goals" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Non-goals (v0.2.0)
+        Non-goals
       
     </span>
   </a>
@@ -1928,10 +1928,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#inputs-v020" class="md-nav__link">
+  <a href="#data-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Inputs (v0.2.0)
+        Data Flow
       
     </span>
   </a>
@@ -1939,10 +1939,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#outputs-v020-stable-contract" class="md-nav__link">
+  <a href="#module-map" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Outputs (v0.2.0 stable contract)
+        Module Map
       
     </span>
   </a>
@@ -1950,10 +1950,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#canonical-pipeline" class="md-nav__link">
+  <a href="#output-artifacts" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Canonical pipeline
+        Output Artifacts
       
     </span>
   </a>
@@ -1961,10 +1961,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#how-a-run-works" class="md-nav__link">
+  <a href="#key-invariants" class="md-nav__link">
     <span class="md-ellipsis">
       
-        How a run works
+        Key Invariants
       
     </span>
   </a>
@@ -1972,10 +1972,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#reproducibility" class="md-nav__link">
+  <a href="#reproducibility-model" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Reproducibility
+        Reproducibility Model
       
     </span>
   </a>
@@ -1986,7 +1986,7 @@
   <a href="#geospatial-correctness" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Geospatial correctness
+        Geospatial Correctness
       
     </span>
   </a>
@@ -1994,10 +1994,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#non-goals-v020" class="md-nav__link">
+  <a href="#non-goals" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Non-goals (v0.2.0)
+        Non-goals
       
     </span>
   </a>
@@ -2042,73 +2042,148 @@
   
 
 
-<h1 id="terraflow-overview">TerraFlow Overview<a class="headerlink" href="#terraflow-overview" title="Permanent link">&para;</a></h1>
-<p>TerraFlow is a reproducible geospatial modeling framework that turns local geospatial inputs into
-traceable, analysis-ready artifacts. The core pipeline focuses on deterministic processing of
-region-of-interest (ROI) geographies and raster stacks so that every run can be recreated and
-audited with confidence.</p>
-<h2 id="inputs-v020">Inputs (v0.2.0)<a class="headerlink" href="#inputs-v020" title="Permanent link">&para;</a></h2>
-<ul>
-<li>YAML configuration file.</li>
-<li>ROI boundary defined in the YAML (bbox).</li>
-<li>Local GeoTIFF raster input (for example, <code>data/usda_cdl.tif</code>).</li>
-<li>Local climate CSV input with lat/lon coordinates (for example, <code>data/demo_climate.csv</code>) — <strong>enhanced in v0.2.0 with spatial interpolation</strong>.</li>
-</ul>
-<h2 id="outputs-v020-stable-contract">Outputs (v0.2.0 stable contract)<a class="headerlink" href="#outputs-v020-stable-contract" title="Permanent link">&para;</a></h2>
-<p>All outputs are written under a deterministic run directory:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>outputs/&lt;run_name&gt;/
+<h1 id="terraflow-architecture-overview">TerraFlow Architecture Overview<a class="headerlink" href="#terraflow-architecture-overview" title="Permanent link">&para;</a></h1>
+<p>TerraFlow is a config-driven geospatial pipeline for agricultural suitability modeling. Given a raster (land-cover GeoTIFF) and a climate CSV, it produces scored, location-stamped cell features with full provenance tracking.</p>
+<h2 id="data-flow">Data Flow<a class="headerlink" href="#data-flow" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>YAML config → PipelineConfig (Pydantic v2)
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                 ↓
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>DataCatalog  ← ingest.py (metadata only; no pixel reads)
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>                 ↓
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>run_fingerprint ← core/run_identity.py (SHA256 of config + inputs)
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>                 ↓
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>geo.py  → clip raster to ROI bbox; reproject to EPSG:4326
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>                 ↓
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>climate.py → ClimateInterpolator (linear | kriging | IDW)
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>                 ↓
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>model.py → suitability_score() + suitability_label()
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>                 ↓
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>pipeline.py → write artifacts to output_dir/runs/&lt;fingerprint&gt;/
 </span></code></pre></div>
+<h2 id="module-map">Module Map<a class="headerlink" href="#module-map" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cli.py</code></td>
+<td>Typer CLI — <code>run</code>, <code>sensitivity</code>, <code>validate</code>, <code>export</code> subcommands</td>
+</tr>
+<tr>
+<td><code>config.py</code></td>
+<td>Pydantic v2 models — <code>PipelineConfig</code>, <code>ModelParams</code>, <code>ROI</code>, <code>SensitivityConfig</code>, <code>ValidationConfig</code>, <code>ExportConfig</code></td>
+</tr>
+<tr>
+<td><code>ingest.py</code></td>
+<td><code>RasterLayer</code>, <code>ClimateLayer</code>, <code>DataCatalog</code> — metadata only, no pixel I/O</td>
+</tr>
+<tr>
+<td><code>geo.py</code></td>
+<td>ROI clipping, CRS reprojection; invariant: all output in EPSG:4326</td>
+</tr>
+<tr>
+<td><code>climate.py</code></td>
+<td><code>ClimateInterpolator</code> — linear / kriging / IDW; LOOCV variogram selection</td>
+</tr>
+<tr>
+<td><code>model.py</code></td>
+<td><code>suitability_score()</code>, <code>suitability_label()</code>, <code>suitability_score_array()</code></td>
+</tr>
+<tr>
+<td><code>pipeline.py</code></td>
+<td>Orchestration — fingerprint → load → clip → interpolate → score → write</td>
+</tr>
+<tr>
+<td><code>sensitivity.py</code></td>
+<td>Sobol' / Morris via SALib — triggered by <code>terraflow sensitivity</code></td>
+</tr>
+<tr>
+<td><code>validation.py</code></td>
+<td>Spatial block CV, Cohen's kappa, Moran's I — triggered by <code>terraflow validate</code></td>
+</tr>
+<tr>
+<td><code>export.py</code></td>
+<td>H3 hexagonal re-index — triggered by <code>terraflow export --format h3</code></td>
+</tr>
+<tr>
+<td><code>core/run_identity.py</code></td>
+<td>Deterministic SHA256 fingerprint of canonicalized config + input files</td>
+</tr>
+</tbody>
+</table>
+<h2 id="output-artifacts">Output Artifacts<a class="headerlink" href="#output-artifacts" title="Permanent link">&para;</a></h2>
+<p>All artifacts land under <code>&lt;output_dir&gt;/runs/&lt;run_fingerprint&gt;/</code>:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Schema</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>features.parquet</code></td>
+<td>v1</td>
+<td><code>run_id, cell_id, lat, lon, v_index, mean_temp, total_rain, score, label</code> (+ kriging std + CI columns when configured)</td>
+</tr>
+<tr>
+<td><code>manifest.json</code></td>
+<td>v1</td>
+<td>Config snapshot, input fingerprints, code version, git SHA</td>
+</tr>
+<tr>
+<td><code>report.json</code></td>
+<td>v1</td>
+<td>Coverage fractions, raster/climate stats, score stats, timings; <code>kriging_loocv</code>, <code>kriging_diagnostics</code>, <code>uncertainty</code>, and <code>validation</code> blocks appended when the relevant features are enabled</td>
+</tr>
+<tr>
+<td><code>results.csv</code></td>
+<td>—</td>
+<td>Same data as <code>features.parquet</code> in CSV format (backward compatibility)</td>
+</tr>
+<tr>
+<td><code>sensitivity_report.json</code></td>
+<td>—</td>
+<td>Sobol' and/or Morris indices per <code>ModelParams</code> weight (written by <code>terraflow sensitivity</code>)</td>
+</tr>
+<tr>
+<td><code>h3_resolution_N.parquet</code></td>
+<td>—</td>
+<td>H3-indexed features at resolution N (written by <code>terraflow export --format h3</code>)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="key-invariants">Key Invariants<a class="headerlink" href="#key-invariants" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>results.csv</code>: extracted features and scores per sampled cell (now with <strong>per-cell climate values in v0.2.0</strong>).</li>
-<li><code>manifest.json</code>: canonicalized inputs, file fingerprints, and provenance metadata.</li>
-<li><code>report.json</code>: QA summaries, timing, and coverage statistics.</li>
+<li><strong>CRS:</strong> always EPSG:4326 in output. <code>geo.py</code> reprojects any input that differs.</li>
+<li><strong>Determinism:</strong> identical inputs always produce the same <code>run_fingerprint</code>. Cell sampling is seeded from the fingerprint SHA256 so that the same config yields the same cell set across independent runs.</li>
+<li><strong>Cache:</strong> if all three required artifacts exist in the run directory, the pipeline returns immediately without re-running.</li>
+<li><strong>Coverage:</strong> runs fail if no valid raster cells are found in the ROI; coverage fractions are always reported in <code>report.json</code>.</li>
+<li><strong>Atomicity:</strong> all artifacts are written with a write-to-temp + rename pattern to prevent partial writes.</li>
 </ul>
-<p>For example, a demo configuration that sets <code>output_dir: "outputs/demo_run"</code> will emit
-<code>outputs/demo_run/results.csv</code> alongside the manifest and report.</p>
-<h2 id="canonical-pipeline">Canonical pipeline<a class="headerlink" href="#canonical-pipeline" title="Permanent link">&para;</a></h2>
-<div class="mermaid">flowchart TD
-  A[YAML config] --&gt; C[terraflow.core]
-  B[ROI bbox] --&gt; C
-  D[Local GeoTIFF raster] --&gt; E[Dataset resolution layer &amp;#40future&amp;#41]
-  F[Local climate CSV] --&gt; E
-  E --&gt; C
-  C --&gt; G[Compute run_fingerprint]
-  G --&gt; H[Raster/vector processing\nCRS align • mask/clip • zonal stats]
-  H --&gt; I[outputs/run_name/results.csv]
-  H --&gt; J[outputs/run_name/manifest.json]
-  H --&gt; K[outputs/run_name/report.json]</div>
-<h2 id="how-a-run-works">How a run works<a class="headerlink" href="#how-a-run-works" title="Permanent link">&para;</a></h2>
-<ol>
-<li><strong>Load configuration</strong> and normalize relevant settings.</li>
-<li><strong>Load and normalize the ROI</strong> geometry for consistent spatial operations.</li>
-<li><strong>Resolve local datasets</strong> via the dataset resolution layer (future) for raster and climate sources.</li>
-<li><strong>Compute the run_fingerprint</strong> deterministically.</li>
-<li><strong>Execute raster/vector processing</strong> for clipping, masking, and zonal statistics.</li>
-<li><strong>Write outputs</strong> with timings and QA summaries for inspection.</li>
-</ol>
-<h2 id="reproducibility">Reproducibility<a class="headerlink" href="#reproducibility" title="Permanent link">&para;</a></h2>
-<p>The <code>run_fingerprint</code> is a base64-url-safe hash derived from canonicalized configuration, a
-stable ROI geometry hash, and fingerprints of the input files. This makes each run immutable
-and comparable. The <code>manifest.json</code> captures the canonical inputs and file fingerprints, while
-<code>report.json</code> records timing and QA summaries that explain what the run produced.</p>
-<h2 id="geospatial-correctness">Geospatial correctness<a class="headerlink" href="#geospatial-correctness" title="Permanent link">&para;</a></h2>
-<p>TerraFlow treats geospatial correctness as a first-class concern:</p>
+<h2 id="reproducibility-model">Reproducibility Model<a class="headerlink" href="#reproducibility-model" title="Permanent link">&para;</a></h2>
+<p>The <code>run_fingerprint</code> is a SHA256 over:
+1. Canonicalized (key-sorted) YAML config
+2. A stable ROI geometry hash (bbox dict or GeoJSON file hash)
+3. SHA256 fingerprints of all input files (raster + CSV)</p>
+<p>This makes each run directory immutable. Re-running with identical inputs is a no-op; changing any input or config parameter produces a new directory.</p>
+<h2 id="geospatial-correctness">Geospatial Correctness<a class="headerlink" href="#geospatial-correctness" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>CRS strategy:</strong> ROI geometries are normalized and aligned to raster CRS expectations before
-  extraction begins.</li>
-<li><strong>Clipping and masking:</strong> raster data is clipped and masked to the ROI boundary to avoid
-  leaking pixels outside the target geography.</li>
-<li><strong>NoData propagation:</strong> nodata values are preserved through processing to prevent false
-  statistics.</li>
-<li><strong>Coverage checks:</strong> <code>report.json</code> summarizes nodata ratios and coverage statistics so runs can
-  be audited for spatial completeness.</li>
+<li>ROI bounds in any CRS are reprojected to raster CRS before windowing (all four corners, then axis-aligned bounding box to handle non-linear projections).</li>
+<li>Degenerate windows (NaN dimensions after reprojection) raise <code>ValueError</code> with diagnostic information.</li>
+<li>NoData cells are masked and excluded from sampling; coverage fractions are reported.</li>
+<li>Climate station coordinates are validated against <code>[-90, 90]</code> / <code>[-180, 180]</code> ranges at load time.</li>
 </ul>
-<h2 id="non-goals-v020">Non-goals (v0.2.0)<a class="headerlink" href="#non-goals-v020" title="Permanent link">&para;</a></h2>
+<h2 id="non-goals">Non-goals<a class="headerlink" href="#non-goals" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Remote dataset downloads or cloud-hosted sources.</li>
-<li>A hosted platform, workflow engine, or orchestration service.</li>
-<li>A GUI-first GIS tool.</li>
-<li>A general-purpose raster processing library.</li>
+<li>Remote dataset downloads or cloud-hosted rasters.</li>
+<li>Real-time or streaming data ingestion.</li>
+<li>GUI or web application layer.</li>
+<li>General-purpose raster processing (use <code>rioxarray</code> or <code>rasterstats</code> instead).</li>
 </ul>
 
 
