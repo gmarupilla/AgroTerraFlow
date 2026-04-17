@@ -1,4 +1,5 @@
 """TerraFlow CLI — Typer-based subcommand interface."""
+
 from __future__ import annotations
 
 import sys
@@ -21,8 +22,16 @@ app = typer.Typer(
 def run_cmd(
     config: Annotated[
         Path,
-        typer.Option(..., "--config", "-c", exists=True, file_okay=True,
-                     dir_okay=False, readable=True, help="Path to YAML config file"),
+        typer.Option(
+            ...,
+            "--config",
+            "-c",
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            readable=True,
+            help="Path to YAML config file",
+        ),
     ],
 ) -> None:
     """Run the geospatial modeling pipeline."""
@@ -48,12 +57,21 @@ def run_cmd(
 def sensitivity_cmd(
     config: Annotated[
         Path,
-        typer.Option(..., "--config", "-c", exists=True, file_okay=True,
-                     dir_okay=False, readable=True, help="Path to YAML config file"),
+        typer.Option(
+            ...,
+            "--config",
+            "-c",
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            readable=True,
+            help="Path to YAML config file",
+        ),
     ],
 ) -> None:
     """Run Sobol' and/or Morris sensitivity analysis."""
     from .sensitivity import run_sensitivity
+
     try:
         report_path = run_sensitivity(config)
         logger.info(f"Sensitivity analysis complete. Report: {report_path}")
@@ -71,14 +89,23 @@ def sensitivity_cmd(
 def validate_cmd(
     config: Annotated[
         Path,
-        typer.Option(..., "--config", "-c", exists=True, file_okay=True,
-                     dir_okay=False, readable=True, help="Path to YAML config file"),
+        typer.Option(
+            ...,
+            "--config",
+            "-c",
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            readable=True,
+            help="Path to YAML config file",
+        ),
     ],
 ) -> None:
     """Run model validation (spatial CV, Cohen's kappa, Moran's I)."""
     logger.info(f"TerraFlow validation starting with config: {config}")
     try:
         from .validation import run_validation
+
         run_validation(config)
     except ValueError as e:
         logger.error(f"Configuration error: {e}")
@@ -95,8 +122,16 @@ def validate_cmd(
 def export_cmd(
     config: Annotated[
         Path,
-        typer.Option(..., "--config", "-c", exists=True, file_okay=True,
-                     dir_okay=False, readable=True, help="Path to YAML config file"),
+        typer.Option(
+            ...,
+            "--config",
+            "-c",
+            exists=True,
+            file_okay=True,
+            dir_okay=False,
+            readable=True,
+            help="Path to YAML config file",
+        ),
     ],
     format: Annotated[
         str,
@@ -111,6 +146,7 @@ def export_cmd(
     logger.info(f"TerraFlow export starting with config: {config}, format: {format}")
     try:
         from .export import run_export
+
         output_path = run_export(config, resolution_override=resolution, format=format)
         logger.info(f"Export complete: {output_path}")
     except ValueError as e:

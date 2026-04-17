@@ -82,7 +82,9 @@ class TestSamplingDeterminism:
         synthetic_climate_csv: Path,
     ):
         """Same config + inputs → same cell lat/lon on every run (seeded sampling)."""
-        df1, df2 = self._run_twice_same_config(tmp_path, synthetic_raster, synthetic_climate_csv)
+        df1, df2 = self._run_twice_same_config(
+            tmp_path, synthetic_raster, synthetic_climate_csv
+        )
 
         assert list(df1["lat"]) == list(df2["lat"]), (
             "Seeded sampling contract violated: same inputs produced different cell lats.\n"
@@ -98,7 +100,9 @@ class TestSamplingDeterminism:
         synthetic_climate_csv: Path,
     ):
         """Same config + inputs → identical scores across recomputed runs."""
-        df1, df2 = self._run_twice_same_config(tmp_path, synthetic_raster, synthetic_climate_csv)
+        df1, df2 = self._run_twice_same_config(
+            tmp_path, synthetic_raster, synthetic_climate_csv
+        )
 
         pd.testing.assert_frame_equal(
             df1[["lat", "lon", "v_index", "score", "label"]].reset_index(drop=True),
@@ -116,7 +120,12 @@ class TestSamplingDeterminism:
         """run_pipeline must set df.attrs['run_fingerprint']."""
         from terraflow.pipeline import run_pipeline
 
-        cfg = _write_config(tmp_path / "cfg.yml", synthetic_raster, synthetic_climate_csv, tmp_path / "out")
+        cfg = _write_config(
+            tmp_path / "cfg.yml",
+            synthetic_raster,
+            synthetic_climate_csv,
+            tmp_path / "out",
+        )
         df = run_pipeline(cfg)
         assert "run_fingerprint" in df.attrs
         assert isinstance(df.attrs["run_fingerprint"], str)
@@ -136,7 +145,9 @@ class TestSamplingDeterminism:
         from terraflow.pipeline import run_pipeline
 
         shared_out = tmp_path / "shared_out"
-        cfg = _write_config(tmp_path / "cfg.yml", synthetic_raster, synthetic_climate_csv, shared_out)
+        cfg = _write_config(
+            tmp_path / "cfg.yml", synthetic_raster, synthetic_climate_csv, shared_out
+        )
 
         df1 = run_pipeline(cfg)
         df2 = run_pipeline(cfg)  # cache hit

@@ -11,14 +11,6 @@ from rasterio.io import DatasetReader
 
 from .utils import logger
 
-# ---------------------------------------------------------------------------
-# DataCatalog — lightweight metadata contract for ingest layer
-# ---------------------------------------------------------------------------
-# Architecture boundary: this module resolves datasets from local files,
-# checks availability/coverage, and collects metadata.  It MUST NOT
-# orchestrate pipeline steps or write final features.
-# ---------------------------------------------------------------------------
-
 
 class RasterLayer(BaseModel):
     """Metadata for a single raster input layer."""
@@ -84,11 +76,6 @@ class DataCatalog(BaseModel):
         return None
 
 
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
-
-
 def _sha256_file(path: Path, chunk_size: int = 8_388_608) -> str:
     """Return SHA-256 hex digest of a file's contents."""
     hasher = hashlib.sha256()
@@ -99,11 +86,6 @@ def _sha256_file(path: Path, chunk_size: int = 8_388_608) -> str:
                 break
             hasher.update(chunk)
     return hasher.hexdigest()
-
-
-# ---------------------------------------------------------------------------
-# Public factory
-# ---------------------------------------------------------------------------
 
 
 def build_data_catalog(
@@ -149,7 +131,6 @@ def build_data_catalog(
     if not climate_csv_path.exists():
         raise FileNotFoundError(f"Climate CSV not found: {climate_csv_path}")
 
-    # --- Raster metadata (no pixel reads) -----------------------------------
     with rasterio.open(raster_path) as ds:
         crs_str = ds.crs.to_string() if ds.crs is not None else "unknown"
         bounds = (ds.bounds.left, ds.bounds.bottom, ds.bounds.right, ds.bounds.top)
@@ -170,7 +151,6 @@ def build_data_catalog(
         sha256=raster_sha,
     )
 
-    # --- Climate CSV metadata (header + coordinate scan only) ---------------
     climate_df_header = pd.read_csv(climate_csv_path, nrows=0)
     cols = list(climate_df_header.columns)
     if "lat" not in cols or "lon" not in cols:
@@ -179,7 +159,6 @@ def build_data_catalog(
         )
     climate_vars = [c for c in cols if c not in ("lat", "lon")]
 
-    # Read only lat/lon for range computation (lightweight).
     coord_df = pd.read_csv(climate_csv_path, usecols=["lat", "lon"]).dropna()
     n_rows = len(coord_df)
     lat_range = (float(coord_df["lat"].min()), float(coord_df["lat"].max()))
@@ -205,11 +184,6 @@ def build_data_catalog(
         raster_layers=[raster_layer],
         climate_layers=[climate_layer],
     )
-
-
-# ---------------------------------------------------------------------------
-# Low-level loaders (kept for backward compatibility)
-# ---------------------------------------------------------------------------
 
 
 def load_raster(path: str | Path) -> DatasetReader:
@@ -294,7 +268,6 @@ def load_climate_csv(path: str | Path) -> pd.DataFrame:
     except pd.errors.ParserError as e:
         raise pd.errors.ParserError(f"Failed to parse CSV file {path}: {e}") from e
 
-    # Validate required columns
     required_cols = {"lat", "lon"}
     if not required_cols.issubset(df.columns):
         raise ValueError(
@@ -302,7 +275,6 @@ def load_climate_csv(path: str | Path) -> pd.DataFrame:
             f"Found columns: {list(df.columns)}"
         )
 
-    # Identify climate variable columns (not lat/lon)
     climate_cols = set(df.columns) - {"lat", "lon"}
     if len(climate_cols) == 0:
         raise ValueError(
@@ -312,7 +284,6 @@ def load_climate_csv(path: str | Path) -> pd.DataFrame:
 
     logger.info(f"Climate variables: {sorted(climate_cols)}")
 
-    # Remove rows with missing lat/lon
     initial_len = len(df)
     df = df.dropna(subset=["lat", "lon"])
     if len(df) < initial_len:
@@ -320,7 +291,6 @@ def load_climate_csv(path: str | Path) -> pd.DataFrame:
             f"Dropped {initial_len - len(df)} rows with missing lat/lon coordinates"
         )
 
-    # Validate latitude range
     if (df["lat"] < -90).any() or (df["lat"] > 90).any():
         bad_lats = df[(df["lat"] < -90) | (df["lat"] > 90)]
         raise ValueError(
@@ -329,7 +299,6 @@ def load_climate_csv(path: str | Path) -> pd.DataFrame:
             f"Bad values: {bad_lats['lat'].unique()}"
         )
 
-    # Validate longitude range
     if (df["lon"] < -180).any() or (df["lon"] > 180).any():
         bad_lons = df[(df["lon"] < -180) | (df["lon"] > 180)]
         raise ValueError(
@@ -338,14 +307,12 @@ def load_climate_csv(path: str | Path) -> pd.DataFrame:
             f"Bad values: {bad_lons['lon'].unique()}"
         )
 
-    # Warn about NaN values in climate variables
     nan_counts = df[list(climate_cols)].isna().sum()
     if nan_counts.any():
         logger.warning(
             f"Found NaN values in climate variables: {nan_counts[nan_counts > 0].to_dict()}"
         )
 
-    # Warn about duplicate coordinates
     duplicates = df.duplicated(subset=["lat", "lon"], keep=False).sum()
     if duplicates > 0:
         logger.warning(f"Found {duplicates} records with duplicate lat/lon coordinates")

@@ -1,11 +1,12 @@
 """Tests for terraflow.sensitivity — Sobol' and Morris sensitivity analysis."""
+
 from __future__ import annotations
 
 import json
 import re
+from pathlib import Path
 
 import pytest
-from pathlib import Path
 
 from terraflow.sensitivity import run_sensitivity
 
@@ -120,7 +121,9 @@ def test_sobol_index_bounds(tmp_path: Path) -> None:
     """S1 values in [-0.5, 1.5], ST >= 0, confidence intervals >= 0."""
     cfg_path = _write_config(tmp_path, method="sobol", n_samples=64)
     run_sensitivity(cfg_path)
-    report = json.loads((tmp_path / "outputs" / "sensitivity_report.json").read_text(encoding="utf-8"))
+    report = json.loads(
+        (tmp_path / "outputs" / "sensitivity_report.json").read_text(encoding="utf-8")
+    )
     sobol = report["sobol"]
 
     for name in ("w_v", "w_t", "w_r"):
@@ -140,7 +143,9 @@ def test_morris_produces_mu_star(tmp_path: Path) -> None:
     """run_sensitivity with method=morris produces mu_star, mu, sigma keys."""
     cfg_path = _write_config(tmp_path, method="morris")
     run_sensitivity(cfg_path)
-    report = json.loads((tmp_path / "outputs" / "sensitivity_report.json").read_text(encoding="utf-8"))
+    report = json.loads(
+        (tmp_path / "outputs" / "sensitivity_report.json").read_text(encoding="utf-8")
+    )
 
     assert "morris" in report, "morris key must be present for method=morris"
     morris = report["morris"]
@@ -160,11 +165,15 @@ def test_report_json_schema(tmp_path: Path) -> None:
     """sensitivity_report.json contains required top-level schema keys."""
     cfg_path = _write_config(tmp_path, method="both")
     run_sensitivity(cfg_path)
-    report = json.loads((tmp_path / "outputs" / "sensitivity_report.json").read_text(encoding="utf-8"))
+    report = json.loads(
+        (tmp_path / "outputs" / "sensitivity_report.json").read_text(encoding="utf-8")
+    )
 
     required_keys = {"schema_version", "method", "n_samples", "parameters", "bounds"}
     for key in required_keys:
-        assert key in report, f"Top-level key '{key}' missing from sensitivity_report.json"
+        assert (
+            key in report
+        ), f"Top-level key '{key}' missing from sensitivity_report.json"
 
     assert report["parameters"] == ["w_v", "w_t", "w_r"]
     assert report["method"] == "both"
@@ -173,7 +182,9 @@ def test_report_json_schema(tmp_path: Path) -> None:
     assert "morris" in report
 
 
-def test_report_written_to_output_dir(sensitivity_config_path: Path, tmp_path: Path) -> None:
+def test_report_written_to_output_dir(
+    sensitivity_config_path: Path, tmp_path: Path
+) -> None:
     """sensitivity_report.json is written to the output_dir path from config."""
     run_sensitivity(sensitivity_config_path)
     report_path = tmp_path / "outputs" / "sensitivity_report.json"
@@ -187,7 +198,9 @@ def test_method_both_produces_sobol_and_morris(tmp_path: Path) -> None:
     """method=both produces both sobol and morris blocks in report."""
     cfg_path = _write_config(tmp_path, method="both")
     run_sensitivity(cfg_path)
-    report = json.loads((tmp_path / "outputs" / "sensitivity_report.json").read_text(encoding="utf-8"))
+    report = json.loads(
+        (tmp_path / "outputs" / "sensitivity_report.json").read_text(encoding="utf-8")
+    )
     assert "sobol" in report, "sobol block must be present for method=both"
     assert "morris" in report, "morris block must be present for method=both"
 

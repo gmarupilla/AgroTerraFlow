@@ -96,6 +96,7 @@ def test_run_pipeline_config_in_subdirectory(
 
     # Copy fixtures into tmp_path root so relative paths resolve correctly
     import shutil
+
     shutil.copy(synthetic_raster, tmp_path / synthetic_raster.name)
     shutil.copy(synthetic_climate_csv, tmp_path / synthetic_climate_csv.name)
 
@@ -142,13 +143,21 @@ def test_pipeline_lat_lon_wgs84_for_projected_raster(tmp_path: Path):
     raster_path = tmp_path / "utm_raster.tif"
     arr = np.arange(25, dtype="float32").reshape(5, 5)
     west_utm, north_utm, pixel_m = 500_000.0, 4_261_000.0, 1_000.0
-    transform = from_origin(west=west_utm, north=north_utm, xsize=pixel_m, ysize=pixel_m)
+    transform = from_origin(
+        west=west_utm, north=north_utm, xsize=pixel_m, ysize=pixel_m
+    )
     crs = CRS.from_epsg(32614)
 
     with rasterio.open(
-        raster_path, "w", driver="GTiff",
-        height=5, width=5, count=1, dtype="float32",
-        crs=crs, transform=transform,
+        raster_path,
+        "w",
+        driver="GTiff",
+        height=5,
+        width=5,
+        count=1,
+        dtype="float32",
+        crs=crs,
+        transform=transform,
     ) as dst:
         dst.write(arr, 1)
 
@@ -193,8 +202,12 @@ max_cells: 5
 
     assert not df.empty
     # Core acceptance criterion: lat/lon must be geographic degrees
-    assert df["lat"].between(-90.0, 90.0).all(), f"lat out of range: {df['lat'].tolist()}"
-    assert df["lon"].between(-180.0, 180.0).all(), f"lon out of range: {df['lon'].tolist()}"
+    assert (
+        df["lat"].between(-90.0, 90.0).all()
+    ), f"lat out of range: {df['lat'].tolist()}"
+    assert (
+        df["lon"].between(-180.0, 180.0).all()
+    ), f"lon out of range: {df['lon'].tolist()}"
     # Scores still valid
     assert df["score"].between(0.0, 1.0).all()
 
@@ -277,9 +290,15 @@ def _write_no_crs_raster(path: Path) -> Path:
     arr = np.arange(25, dtype="float32").reshape(5, 5)
     transform = from_origin(west=-100.0, north=40.0, xsize=0.01, ysize=0.01)
     with rasterio.open(
-        path, "w", driver="GTiff",
-        height=5, width=5, count=1, dtype=arr.dtype,
-        crs=None, transform=transform,
+        path,
+        "w",
+        driver="GTiff",
+        height=5,
+        width=5,
+        count=1,
+        dtype=arr.dtype,
+        crs=None,
+        transform=transform,
     ) as dst:
         dst.write(arr, 1)
     return path
@@ -296,7 +315,9 @@ def test_crs_mismatch_error_none_crs(tmp_path, synthetic_climate_csv_dense):
 
     raster_path = _write_no_crs_raster(tmp_path / "data" / "no_crs.tif")
     cfg_path = _write_kriging_config(
-        tmp_path / "cfg.yml", raster_path, synthetic_climate_csv_dense,
+        tmp_path / "cfg.yml",
+        raster_path,
+        synthetic_climate_csv_dense,
         tmp_path / "out",
     )
     with pytest.raises(CRSMismatchError, match="has no CRS"):
@@ -313,7 +334,9 @@ def test_kriging_diagnostics_in_report(
 ):
     """report.json includes kriging_diagnostics when kriging is used."""
     cfg_path = _write_kriging_config(
-        tmp_path / "cfg.yml", synthetic_raster, synthetic_climate_csv_dense,
+        tmp_path / "cfg.yml",
+        synthetic_raster,
+        synthetic_climate_csv_dense,
         tmp_path / "out",
     )
     df = run_pipeline(cfg_path)

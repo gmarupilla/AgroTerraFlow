@@ -643,7 +643,11 @@ class TestKrigingInterpolation:
             strategy="spatial",
             interpolation_method="kriging",
         )
-        assert interpolator._krig_variogram_model in ("spherical", "exponential", "gaussian")
+        assert interpolator._krig_variogram_model in (
+            "spherical",
+            "exponential",
+            "gaussian",
+        )
 
     def test_kriging_fallback_to_linear_too_few_stations(self):
         """Kriging must fall back to linear when stations < MIN_KRIGING_STATIONS."""
@@ -842,7 +846,15 @@ class TestPipelineKrigingIntegration:
         cfg_file.write_text(cfg_content, encoding="utf-8")
 
         df = run_pipeline(cfg_file)
-        report = json.loads((tmp_path / "outputs" / "runs" / df.attrs["run_fingerprint"] / "report.json").read_text())
+        report = json.loads(
+            (
+                tmp_path
+                / "outputs"
+                / "runs"
+                / df.attrs["run_fingerprint"]
+                / "report.json"
+            ).read_text()
+        )
 
         assert "interpolation_cv" in report
         cv = report["interpolation_cv"]
@@ -857,14 +869,16 @@ class TestPipelineKrigingIntegration:
 
 def test_kriging_fallback_sparse_stations():
     """With < MIN_KRIGING_STATIONS stations, kriging falls back to linear."""
-    from terraflow.climate import ClimateInterpolator, MIN_KRIGING_STATIONS
+    from terraflow.climate import MIN_KRIGING_STATIONS, ClimateInterpolator
 
-    sparse_df = pd.DataFrame({
-        "lat": [40.0, 40.01],
-        "lon": [-100.0, -99.99],
-        "mean_temp": [18.0, 20.0],
-        "total_rain": [100.0, 120.0],
-    })
+    sparse_df = pd.DataFrame(
+        {
+            "lat": [40.0, 40.01],
+            "lon": [-100.0, -99.99],
+            "mean_temp": [18.0, 20.0],
+            "total_rain": [100.0, 120.0],
+        }
+    )
     assert len(sparse_df) < MIN_KRIGING_STATIONS
 
     interpolator = ClimateInterpolator(

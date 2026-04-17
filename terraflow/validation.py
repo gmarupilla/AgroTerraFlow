@@ -1,4 +1,5 @@
 """Model validation module — spatial block CV, Cohen's kappa, Moran's I."""
+
 from __future__ import annotations
 
 import json
@@ -148,9 +149,7 @@ def _compute_kappa(
     float:
         Cohen's kappa in [-1, 1].
     """
-    cell_coords = np.column_stack(
-        [cells_df["lat"].values, cells_df["lon"].values]
-    )
+    cell_coords = np.column_stack([cells_df["lat"].values, cells_df["lon"].values])
     ref_coords = np.column_stack(
         [reference_df["lat"].values, reference_df["lon"].values]
     )
@@ -294,11 +293,15 @@ def run_validation(config_path: Path) -> Path:
 
     # Spatial block CV
     fold_accs = _spatial_block_cv(
-        lats, lons, labels,
+        lats,
+        lons,
+        labels,
         n_blocks_side=val_cfg.n_blocks_side,
         buffer_deg=val_cfg.buffer_deg,
     )
-    mean_fold_accuracy: Optional[float] = float(np.mean(fold_accs)) if fold_accs else None
+    mean_fold_accuracy: Optional[float] = (
+        float(np.mean(fold_accs)) if fold_accs else None
+    )
 
     # Moran's I on score residuals
     morans_i_val = _morans_i(lats, lons, scores - float(scores.mean()))
@@ -311,7 +314,9 @@ def run_validation(config_path: Path) -> Path:
         reference_df = pd.read_csv(ref_path)
         n_ref = len(reference_df)
         kappa = _compute_kappa(df, reference_df)
-        logger.info(f"Cohen's kappa computed from {n_ref} reference points: {kappa:.4f}")
+        logger.info(
+            f"Cohen's kappa computed from {n_ref} reference points: {kappa:.4f}"
+        )
 
     # Read existing report.json and append validation block
     report_path = run_dir / "report.json"
@@ -331,7 +336,9 @@ def run_validation(config_path: Path) -> Path:
         "cohen_kappa": kappa,
         "morans_i_residuals": morans_i_val,
         "kriging_loocv_rmse": report.get("kriging_loocv"),
-        "reference_dataset": str(val_cfg.reference_csv) if val_cfg.reference_csv else None,
+        "reference_dataset": (
+            str(val_cfg.reference_csv) if val_cfg.reference_csv else None
+        ),
         "n_reference_points": n_ref if kappa is not None else None,
         "note": (
             "model has no free parameters; fold accuracy reflects spatial "

@@ -1,4 +1,5 @@
 """Sensitivity analysis module -- Sobol' and Morris methods via SALib."""
+
 from __future__ import annotations
 
 import json
@@ -13,7 +14,7 @@ from SALib.analyze.sobol import analyze as sobol_analyze
 from SALib.sample.morris import sample as morris_sample
 from SALib.sample.sobol import sample as sobol_sample
 
-from .config import PipelineConfig, SensitivityConfig, load_config_dict, build_config
+from .config import PipelineConfig, SensitivityConfig, build_config, load_config_dict
 from .utils import ensure_dir, logger
 
 
@@ -85,7 +86,9 @@ def _run_sobol(
     dict:
         Sobol' result dict with S1, S1_conf, ST, ST_conf, ranking keys.
     """
-    logger.info(f"Running Sobol' analysis with N={n_samples} (total evaluations: {n_samples * 8})")
+    logger.info(
+        f"Running Sobol' analysis with N={n_samples} (total evaluations: {n_samples * 8})"
+    )
     param_values = sobol_sample(problem, n_samples, calc_second_order=True, seed=42)
     Y = _evaluate_model(param_values, cfg)
     Si = sobol_analyze(problem, Y, calc_second_order=True, seed=42)
@@ -122,7 +125,9 @@ def _run_morris(
     # Morris N = number of trajectories; derive from n_samples capped at 50
     n_trajectories = max(4, min(n_samples // 10, 50))
     total_evals = (problem["num_vars"] + 1) * n_trajectories
-    logger.info(f"Running Morris analysis with {n_trajectories} trajectories (total evaluations: {total_evals})")
+    logger.info(
+        f"Running Morris analysis with {n_trajectories} trajectories (total evaluations: {total_evals})"
+    )
 
     X = morris_sample(problem, N=n_trajectories, num_levels=4, seed=42)
     Y = _evaluate_model(X, cfg)

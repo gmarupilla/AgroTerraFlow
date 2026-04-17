@@ -60,15 +60,16 @@ All artifacts land under `<output_dir>/runs/<run_fingerprint>/` (where `output_d
 
 | Module | What it owns |
 |--------|-------------|
-| `cli.py` | Typer CLI — `run`, `sensitivity`, `validate` subcommands |
-| `config.py` | `PipelineConfig`, `ModelParams`, `ROI` Pydantic models |
+| `cli.py` | Typer CLI — `run`, `sensitivity`, `validate`, `export` subcommands |
+| `config.py` | `PipelineConfig`, `ModelParams`, `ROI`, `SensitivityConfig`, `ValidationConfig`, `ExportConfig` Pydantic models |
 | `ingest.py` | `RasterLayer`, `ClimateLayer`, `DataCatalog` |
 | `geo.py` | ROI clipping, CRS alignment |
 | `climate.py` | `ClimateInterpolator` (linear / kriging / IDW) |
-| `model.py` | `suitability_score`, `suitability_label` |
+| `model.py` | `suitability_score`, `suitability_label`, `suitability_score_array` |
 | `pipeline.py` | End-to-end orchestration, artifact writing |
 | `sensitivity.py` | Sobol' / Morris analysis |
 | `validation.py` | Spatial CV, kappa, Moran's I |
+| `export.py` | H3-indexed export adapter (`to_h3()`, `run_export()`) |
 | `core/run_identity.py` | Deterministic run fingerprinting |
 
 ## Tests
@@ -96,7 +97,7 @@ Version is declared in **two places** — both must be updated together:
 - `pyproject.toml` line `version = "X.Y.Z"`
 - `terraflow/__init__.py` `__version__ = "X.Y.Z"`
 
-Project follows [Semantic Versioning](https://semver.org). Current version: `0.2.1`.
+Project follows [Semantic Versioning](https://semver.org). Current version: `0.2.2`.
 
 ### Release steps
 

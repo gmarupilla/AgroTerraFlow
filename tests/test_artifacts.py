@@ -28,13 +28,22 @@ import pytest
 import rasterio
 from rasterio.transform import from_origin
 
-from terraflow.core.run_identity import compute_run_fingerprint, fingerprint_file, hash_roi_geometry
+from terraflow.core.run_identity import (
+    compute_run_fingerprint,
+    fingerprint_file,
+    hash_roi_geometry,
+)
 from terraflow.ingest import ClimateLayer, DataCatalog, RasterLayer, build_data_catalog
-from terraflow.pipeline import FEATURES_COLUMNS_ORDERED, FEATURES_SCHEMA_VERSION, run_pipeline
+from terraflow.pipeline import (
+    FEATURES_COLUMNS_ORDERED,
+    FEATURES_SCHEMA_VERSION,
+    run_pipeline,
+)
 
 # ---------------------------------------------------------------------------
 # Shared helpers / fixtures
 # ---------------------------------------------------------------------------
+
 
 def _make_config(
     tmp_path: Path,
@@ -111,7 +120,9 @@ class TestFeaturesParquetSchema:
         pq_df = pd.read_parquet(run_dir / "features.parquet")
         # pandas ≥ 2.x may return StringDtype or object for string cols
         assert pd.api.types.is_string_dtype(pq_df["run_id"]), "run_id must be string"
-        assert pd.api.types.is_integer_dtype(pq_df["cell_id"]), "cell_id must be integer"
+        assert pd.api.types.is_integer_dtype(
+            pq_df["cell_id"]
+        ), "cell_id must be integer"
         for col in ("lat", "lon", "v_index", "mean_temp", "total_rain", "score"):
             assert pd.api.types.is_float_dtype(pq_df[col]), f"{col} must be float"
         assert pd.api.types.is_string_dtype(pq_df["label"]), "label must be string"
@@ -125,7 +136,9 @@ class TestFeaturesParquetSchema:
         fp = df.attrs["run_fingerprint"]
 
         pq_df = pd.read_parquet(run_dir / "features.parquet")
-        assert (pq_df["run_id"] == fp).all(), "All run_id values must match run_fingerprint"
+        assert (
+            pq_df["run_id"] == fp
+        ).all(), "All run_id values must match run_fingerprint"
 
     def test_score_in_unit_interval(
         self, tmp_path, synthetic_raster, synthetic_climate_csv
@@ -198,9 +211,9 @@ class TestManifestJsonSchema:
             "input_fingerprints",
             "output_files",
         }
-        assert required.issubset(manifest.keys()), (
-            f"Missing manifest keys: {required - set(manifest.keys())}"
-        )
+        assert required.issubset(
+            manifest.keys()
+        ), f"Missing manifest keys: {required - set(manifest.keys())}"
 
     def test_run_fingerprint_is_consistent(
         self, tmp_path, synthetic_raster, synthetic_climate_csv
@@ -296,10 +309,15 @@ class TestReportJsonSchema:
 
         cov = report["coverage"]
         assert cov["n_raster_cells_total"] >= cov["n_roi_valid_cells"]
-        assert cov["n_roi_valid_cells"] + cov["n_roi_nodata_cells"] == cov["n_raster_cells_total"]
+        assert (
+            cov["n_roi_valid_cells"] + cov["n_roi_nodata_cells"]
+            == cov["n_raster_cells_total"]
+        )
         assert 0.0 <= cov["roi_coverage_fraction"] <= 1.0
         assert 0.0 <= cov["roi_nodata_fraction"] <= 1.0
-        assert abs(cov["roi_coverage_fraction"] + cov["roi_nodata_fraction"] - 1.0) < 1e-6
+        assert (
+            abs(cov["roi_coverage_fraction"] + cov["roi_nodata_fraction"] - 1.0) < 1e-6
+        )
 
     def test_timings_all_positive(
         self, tmp_path, synthetic_raster, synthetic_climate_csv
@@ -354,9 +372,9 @@ class TestDeterminism:
         fps2 = [fingerprint_file(str(f))]
         fp2 = compute_run_fingerprint(cfg, roi_hash, fps2)
 
-        assert fp1 == fp2, (
-            "run_fingerprint must be content-based; mtime change must not alter it"
-        )
+        assert (
+            fp1 == fp2
+        ), "run_fingerprint must be content-based; mtime change must not alter it"
 
     def test_same_pipeline_run_twice_produces_identical_fingerprint(
         self, tmp_path, synthetic_raster, synthetic_climate_csv
@@ -409,9 +427,15 @@ class TestCrsMismatch:
         transform = from_origin(west=-100.0, north=40.0, xsize=0.01, ysize=0.01)
 
         with rasterio.open(
-            raster_path, "w", driver="GTiff",
-            height=5, width=5, count=1, dtype="float32",
-            crs="EPSG:4326", transform=transform,
+            raster_path,
+            "w",
+            driver="GTiff",
+            height=5,
+            width=5,
+            count=1,
+            dtype="float32",
+            crs="EPSG:4326",
+            transform=transform,
         ) as dst:
             dst.write(arr, 1)
 
@@ -475,14 +499,20 @@ class TestNodataCoverage:
         """Raster with half nodata cells must report coverage_fraction < 1.0."""
         raster_path = tmp_path / "partial_nodata.tif"
         arr = np.full((4, 4), fill_value=-9999.0, dtype="float32")
-        arr[0, :] = [1.0, 2.0, 3.0, 4.0]   # first row is valid
-        arr[1, :] = [5.0, 6.0, 7.0, 8.0]   # second row is valid
+        arr[0, :] = [1.0, 2.0, 3.0, 4.0]  # first row is valid
+        arr[1, :] = [5.0, 6.0, 7.0, 8.0]  # second row is valid
         transform = from_origin(west=-100.0, north=40.0, xsize=0.01, ysize=0.01)
 
         with rasterio.open(
-            raster_path, "w", driver="GTiff",
-            height=4, width=4, count=1, dtype="float32",
-            crs="EPSG:4326", transform=transform,
+            raster_path,
+            "w",
+            driver="GTiff",
+            height=4,
+            width=4,
+            count=1,
+            dtype="float32",
+            crs="EPSG:4326",
+            transform=transform,
             nodata=-9999.0,
         ) as dst:
             dst.write(arr, 1)
@@ -525,9 +555,9 @@ class TestNodataCoverage:
         with open(run_dir / "report.json", encoding="utf-8") as fh:
             report = json.load(fh)
 
-        assert report["coverage"]["roi_coverage_fraction"] < 1.0, (
-            "Expected coverage fraction < 1.0 with partial nodata raster"
-        )
+        assert (
+            report["coverage"]["roi_coverage_fraction"] < 1.0
+        ), "Expected coverage fraction < 1.0 with partial nodata raster"
 
 
 # ---------------------------------------------------------------------------

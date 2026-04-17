@@ -23,12 +23,18 @@ from terraflow.model import suitability_score, suitability_score_array
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _default_params(**overrides: object) -> ModelParams:
     base: dict[str, object] = dict(
-        v_min=0.0, v_max=255.0,
-        t_min=0.0, t_max=40.0,
-        r_min=0.0, r_max=300.0,
-        w_v=0.4, w_t=0.3, w_r=0.3,
+        v_min=0.0,
+        v_max=255.0,
+        t_min=0.0,
+        t_max=40.0,
+        r_min=0.0,
+        r_max=300.0,
+        w_v=0.4,
+        w_t=0.3,
+        w_r=0.3,
     )
     base.update(overrides)
     return ModelParams(**base)  # type: ignore[arg-type]
@@ -120,6 +126,7 @@ def _write_linear_config(
 # suitability_score_array unit tests
 # ---------------------------------------------------------------------------
 
+
 class TestSuitabilityScoreArray:
     def test_scalar_equivalence(self):
         """suitability_score_array should match suitability_score element-wise."""
@@ -129,7 +136,10 @@ class TestSuitabilityScoreArray:
         r = np.array([50.0, 150.0, 250.0])
 
         arr_result = suitability_score_array(v, t, r, params)
-        scalar_results = [suitability_score(float(v[i]), float(t[i]), float(r[i]), params) for i in range(len(v))]
+        scalar_results = [
+            suitability_score(float(v[i]), float(t[i]), float(r[i]), params)
+            for i in range(len(v))
+        ]
 
         np.testing.assert_allclose(arr_result, scalar_results, atol=1e-12)
 
@@ -160,7 +170,9 @@ class TestSuitabilityScoreArray:
         t = np.array([20.0])
         r = np.array([150.0])
 
-        assert suitability_score_array(v_high, t, r, params) >= suitability_score_array(v_low, t, r, params)
+        assert suitability_score_array(v_high, t, r, params) >= suitability_score_array(
+            v_low, t, r, params
+        )
 
     def test_degenerate_range(self):
         """When v_min == v_max, vegetation contribution is 0."""
@@ -177,6 +189,7 @@ class TestSuitabilityScoreArray:
 # ---------------------------------------------------------------------------
 # Pipeline integration tests
 # ---------------------------------------------------------------------------
+
 
 class TestMCColumnsPresent:
     def test_ci_columns_in_features_parquet(
@@ -220,12 +233,12 @@ class TestMCColumnsPresent:
         )
         df = run_pipeline(cfg)
 
-        assert (df["score_ci_low"] <= df["score"] + 1e-9).all(), (
-            "score_ci_low must be <= point score"
-        )
-        assert (df["score_ci_high"] >= df["score"] - 1e-9).all(), (
-            "score_ci_high must be >= point score"
-        )
+        assert (
+            df["score_ci_low"] <= df["score"] + 1e-9
+        ).all(), "score_ci_low must be <= point score"
+        assert (
+            df["score_ci_high"] >= df["score"] - 1e-9
+        ).all(), "score_ci_high must be >= point score"
         assert (df["score_ci_low"] <= df["score_ci_high"]).all()
 
     def test_ci_columns_in_valid_range(
@@ -425,8 +438,11 @@ class TestMCEdgeCases:
         monkeypatch.setattr(ClimateInterpolator, "interpolate", _zero_std_interpolate)
 
         cfg_path = _write_kriging_config(
-            tmp_path / "cfg.yml", synthetic_raster, synthetic_climate_csv_dense,
-            tmp_path / "out", uncertainty_samples=50,
+            tmp_path / "cfg.yml",
+            synthetic_raster,
+            synthetic_climate_csv_dense,
+            tmp_path / "out",
+            uncertainty_samples=50,
         )
         df = run_pipeline(cfg_path)
 
@@ -446,14 +462,17 @@ class TestMCEdgeCases:
         from terraflow.pipeline import run_pipeline
 
         cfg_path = _write_kriging_config(
-            tmp_path / "cfg.yml", synthetic_raster, synthetic_climate_csv_dense,
-            tmp_path / "out", uncertainty_samples=1,
+            tmp_path / "cfg.yml",
+            synthetic_raster,
+            synthetic_climate_csv_dense,
+            tmp_path / "out",
+            uncertainty_samples=1,
         )
         df = run_pipeline(cfg_path)
 
         assert "score_ci_low" in df.columns
         assert "score_ci_high" in df.columns
         ci_width = (df["score_ci_high"] - df["score_ci_low"]).abs()
-        assert ci_width.max() < 1e-9, (
-            f"CI width should be ~0 with 1 MC sample, got max={ci_width.max()}"
-        )
+        assert (
+            ci_width.max() < 1e-9
+        ), f"CI width should be ~0 with 1 MC sample, got max={ci_width.max()}"

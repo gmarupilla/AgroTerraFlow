@@ -1,4 +1,5 @@
 """H3-indexed export adapter for TerraFlow pipeline output."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -41,18 +42,30 @@ def to_h3(features: pd.DataFrame, resolution: int = 8) -> pd.DataFrame:
         If resolution is outside 0-15 or required columns are missing.
     """
     if not _H3_AVAILABLE:
-        raise ImportError("h3 is required for H3 export. Install it with: pip install terraflow-agro[h3]")
+        raise ImportError(
+            "h3 is required for H3 export. Install it with: pip install terraflow-agro[h3]"
+        )
 
     if not (0 <= resolution <= 15):
         raise ValueError(f"H3 resolution must be 0-15, got {resolution}")
 
-    required_cols = {"lat", "lon", "score", "v_index", "mean_temp", "total_rain", "label"}
+    required_cols = {
+        "lat",
+        "lon",
+        "score",
+        "v_index",
+        "mean_temp",
+        "total_rain",
+        "label",
+    }
     missing = required_cols - set(features.columns)
     if missing:
         raise ValueError(f"Missing required columns: {missing}")
 
     features = features.copy()
-    features["h3_cell"] = features.apply(lambda row: h3.latlng_to_cell(row["lat"], row["lon"], resolution), axis=1)
+    features["h3_cell"] = features.apply(
+        lambda row: h3.latlng_to_cell(row["lat"], row["lon"], resolution), axis=1
+    )
 
     numeric_cols = ["score", "v_index", "mean_temp", "total_rain"]
     numeric_agg = features.groupby("h3_cell")[numeric_cols].mean()
@@ -98,7 +111,9 @@ def run_export(
         If no pipeline run directory containing ``features.parquet`` is found.
     """
     if format != "h3":
-        raise ValueError(f"Unsupported export format: '{format}'. Supported formats: h3")
+        raise ValueError(
+            f"Unsupported export format: '{format}'. Supported formats: h3"
+        )
 
     data = load_config_dict(config_path)
     cfg = build_config(data)
@@ -111,7 +126,11 @@ def run_export(
         )
 
     # Effective resolution: CLI override > config value (per D-01, D-12)
-    effective_resolution = resolution_override if resolution_override is not None else cfg.export.h3_resolution
+    effective_resolution = (
+        resolution_override
+        if resolution_override is not None
+        else cfg.export.h3_resolution
+    )
 
     if not (0 <= effective_resolution <= 15):
         raise ValueError(f"H3 resolution must be 0-15, got {effective_resolution}")

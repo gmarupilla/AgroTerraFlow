@@ -151,9 +151,7 @@ def compute_run_fingerprint(
         }
         for fp in input_fingerprints
     ]
-    inputs_payload.sort(
-        key=lambda item: (item["sha256"], item["size_bytes"])
-    )
+    inputs_payload.sort(key=lambda item: (item["sha256"], item["size_bytes"]))
 
     payload = {
         "config": config_hash,
