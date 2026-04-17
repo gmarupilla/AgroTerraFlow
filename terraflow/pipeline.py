@@ -30,6 +30,7 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
+import rasterio
 from pyproj import Transformer
 from pyproj.exceptions import CRSError as _PyProjCRSError
 from rasterio.crs import CRS
@@ -49,37 +50,22 @@ from .ingest import build_data_catalog, load_climate_csv, load_raster
 from .model import suitability_label, suitability_score, suitability_score_array
 from .utils import ensure_dir, logger
 
-# ---------------------------------------------------------------------------
-# Schema contract
-# ---------------------------------------------------------------------------
-
 #: Tidy/wide schema for features.parquet (v1).
-#:
-#: Rationale for wide format: each *row* is one sampled cell (the natural
-#: observation unit); each *column* is one feature.  This matches the output
-#: contract of rasterstats, GeoPandas zonal_stats, and standard GIS tool
-#: pipelines.  Adding new climate variables in future releases appends columns
-#: and is backward-compatible via nullable columns.  The ``run_id`` column
-#: allows joining across runs and multi-run longitudinal datasets.
 FEATURES_SCHEMA_VERSION = "1"
 FEATURES_COLUMNS_ORDERED = [
-    "run_id",       # str   — run_fingerprint (links to manifest.json)
-    "cell_id",      # int64 — 0-based sampled-cell index (stable within a run)
-    "lat",          # float64 — WGS84 latitude (degrees N), always geographic
-    "lon",          # float64 — WGS84 longitude (degrees E), always geographic
-    "v_index",      # float64 — raster band-1 value (vegetation/crop index)
-    "mean_temp",    # float64 — interpolated mean temperature (°C)
-    "total_rain",   # float64 — interpolated total rainfall (mm)
-    "score",        # float64 — composite suitability score in [0.0, 1.0]
-    "label",        # str    — categorical: "low" / "medium" / "high"
+    "run_id",  # str   — run_fingerprint (links to manifest.json)
+    "cell_id",  # int64 — 0-based sampled-cell index (stable within a run)
+    "lat",  # float64 — WGS84 latitude (degrees N), always geographic
+    "lon",  # float64 — WGS84 longitude (degrees E), always geographic
+    "v_index",  # float64 — raster band-1 value (vegetation/crop index)
+    "mean_temp",  # float64 — interpolated mean temperature (°C)
+    "total_rain",  # float64 — interpolated total rainfall (mm)
+    "score",  # float64 — composite suitability score in [0.0, 1.0]
+    "label",  # str    — categorical: "low" / "medium" / "high"
 ]
 
 MANIFEST_SCHEMA_VERSION = "1"
 REPORT_SCHEMA_VERSION = "1"
-
-# ---------------------------------------------------------------------------
-# Internal helpers — path resolution
-# ---------------------------------------------------------------------------
 
 
 def _expand_input_paths(path_value: str, config_dir: Path) -> List[Path]:
@@ -193,11 +179,6 @@ def _resolve_roi_hash(config_dict: dict, config_dir: Path) -> str:
     raise ValueError("ROI configuration missing or unsupported")
 
 
-# ---------------------------------------------------------------------------
-# Public helper — locate a run directory by fingerprint
-# ---------------------------------------------------------------------------
-
-
 def resolve_run_dir(config_path: Path | str) -> Path:
     """Return the run directory for a given config without running the pipeline.
 
@@ -236,11 +217,6 @@ def resolve_run_dir(config_path: Path | str) -> Path:
     return output_dir / "runs" / run_fingerprint
 
 
-# ---------------------------------------------------------------------------
-# Deprecated helper (kept for backward-compat; used by existing tests)
-# ---------------------------------------------------------------------------
-
-
 def _aggregate_climate(climate_df: pd.DataFrame) -> Dict[str, float]:
     """
     Aggregate climate data into simple summary statistics (deprecated).
@@ -266,11 +242,6 @@ def _aggregate_climate(climate_df: pd.DataFrame) -> Dict[str, float]:
     return result
 
 
-# ---------------------------------------------------------------------------
-# Atomic I/O helpers
-# ---------------------------------------------------------------------------
-
-
 def _atomic_write_text(path: Path, content: str) -> None:
     """Write *content* to *path* atomically (write-to-tmp, rename)."""
     fd, tmp = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
@@ -292,15 +263,14 @@ def _atomic_write_parquet(path: Path, df: pd.DataFrame, schema_meta: dict) -> No
     import pyarrow.parquet as pq
 
     table = pa.Table.from_pandas(df, preserve_index=False)
-    # Merge custom schema version metadata into existing Parquet metadata.
     existing_meta = table.schema.metadata or {}
     merged_meta = {
         **existing_meta,
         b"terraflow_schema_version": FEATURES_SCHEMA_VERSION.encode(),
         **{
-            k.encode() if isinstance(k, str) else k: v.encode()
-            if isinstance(v, str)
-            else v
+            k.encode() if isinstance(k, str) else k: (
+                v.encode() if isinstance(v, str) else v
+            )
             for k, v in schema_meta.items()
         },
     }
@@ -319,11 +289,6 @@ def _atomic_write_parquet(path: Path, df: pd.DataFrame, schema_meta: dict) -> No
         raise
 
 
-# ---------------------------------------------------------------------------
-# Git SHA helper (optional; gracefully omitted when unavailable)
-# ---------------------------------------------------------------------------
-
-
 def _get_git_sha() -> Optional[str]:
     """Return the current HEAD SHA, or ``None`` if not in a git repo."""
     try:
@@ -340,9 +305,201 @@ def _get_git_sha() -> Optional[str]:
     return None
 
 
-# ---------------------------------------------------------------------------
-# Main pipeline entry point
-# ---------------------------------------------------------------------------
+def _project_cells_to_wgs84(
+    sampled_indices: List[tuple[int, int]],
+    clipped_transform: rasterio.Affine,
+    raster_crs: CRS,
+) -> tuple[List[float], List[float]]:
+    """Return (cell_lats, cell_lons) in WGS84 for the sampled cell grid positions."""
+    native_xs: List[float] = []
+    native_ys: List[float] = []
+    for row, col in sampled_indices:
+        x, y = xy(clipped_transform, row, col, offset="center")
+        native_xs.append(float(x))
+        native_ys.append(float(y))
+
+    wgs84 = CRS.from_epsg(4326)
+    if raster_crs != wgs84:
+        coord_tf = Transformer.from_crs(raster_crs, wgs84, always_xy=True)
+        lons, lats = coord_tf.transform(native_xs, native_ys)
+        return list(lats), list(lons)
+    return native_ys, native_xs  # native_xs=lon, native_ys=lat
+
+
+def _score_cells(
+    clipped_data: np.ma.MaskedArray,
+    sampled_indices: List[tuple[int, int]],
+    cell_lats: List[float],
+    cell_lons: List[float],
+    cell_climate_df: pd.DataFrame,
+    cfg: PipelineConfig,
+    run_fingerprint: str,
+) -> tuple[pd.DataFrame, List[str]]:
+    """Score each sampled cell and return (features DataFrame, kriging std col names)."""
+    krig_std_cols = [c for c in cell_climate_df.columns if c.endswith("_krig_std")]
+    records: List[Dict[str, Any]] = []
+
+    for cell_id, (row, col) in enumerate(sampled_indices):
+        v_index = float(clipped_data[row, col])
+        mean_temp = float(cell_climate_df.iloc[cell_id]["mean_temp"])
+        total_rain = float(cell_climate_df.iloc[cell_id]["total_rain"])
+        score = suitability_score(
+            v_index=v_index,
+            mean_temp=mean_temp,
+            total_rain=total_rain,
+            params=cfg.model_params,
+        )
+        record: Dict[str, Any] = {
+            "run_id": run_fingerprint,
+            "cell_id": cell_id,
+            "lat": cell_lats[cell_id],
+            "lon": cell_lons[cell_id],
+            "v_index": v_index,
+            "mean_temp": mean_temp,
+            "total_rain": total_rain,
+            "score": score,
+            "label": suitability_label(score),
+        }
+        for ksc in krig_std_cols:
+            record[ksc] = float(cell_climate_df.iloc[cell_id][ksc])
+        records.append(record)
+
+    df = pd.DataFrame.from_records(records)
+    return df, krig_std_cols
+
+
+def _apply_monte_carlo(
+    df: pd.DataFrame,
+    krig_std_cols: List[str],
+    cfg: PipelineConfig,
+    rng: np.random.Generator,
+) -> tuple[pd.DataFrame, List[str]]:
+    """Add Monte Carlo CI columns to *df* if configured; returns updated df and new col names.
+
+    Requires uncertainty_samples > 0 and kriging std columns present.
+    Perturbs mean_temp and total_rain using per-cell kriging std, then scores
+    each draw to derive 5th/95th percentile confidence intervals on the
+    suitability score.
+    """
+    n_mc = cfg.model_params.uncertainty_samples
+    if n_mc <= 0 or not krig_std_cols:
+        if n_mc > 0:
+            logger.warning(
+                f"uncertainty_samples={n_mc} but no kriging std columns available; "
+                "skipping Monte Carlo. Set interpolation_method='kriging' to enable."
+            )
+        return df, []
+
+    n_cells = len(df)
+    v_arr = df["v_index"].to_numpy()
+    temp_arr = df["mean_temp"].to_numpy()
+    rain_arr = df["total_rain"].to_numpy()
+    # Clip std to ≥ 0 (kriging variance is non-negative but may have
+    # tiny floating-point negatives at station locations).
+    temp_std = np.maximum(df["mean_temp_krig_std"].to_numpy(), 0.0)
+    rain_std = np.maximum(df["total_rain_krig_std"].to_numpy(), 0.0)
+
+    # Shape: (n_cells, n_mc) — rng continues deterministic stream.
+    temp_mc = rng.normal(temp_arr[:, None], temp_std[:, None], (n_cells, n_mc))
+    rain_mc = rng.normal(rain_arr[:, None], rain_std[:, None], (n_cells, n_mc))
+    # v_index has no per-cell uncertainty estimate; broadcast constant.
+    v_mc = np.broadcast_to(v_arr[:, None], (n_cells, n_mc))
+
+    scores_mc = suitability_score_array(v_mc, temp_mc, rain_mc, cfg.model_params)
+    df["score_ci_low"] = np.percentile(scores_mc, 5, axis=1)
+    df["score_ci_high"] = np.percentile(scores_mc, 95, axis=1)
+    logger.info(
+        f"Monte Carlo uncertainty propagation complete: {n_mc} samples per cell"
+    )
+    return df, ["score_ci_low", "score_ci_high"]
+
+
+def _build_report(
+    run_fingerprint: str,
+    clipped_data: np.ma.MaskedArray,
+    climate_df: pd.DataFrame,
+    df: pd.DataFrame,
+    n_cells_sampled: int,
+    n_total_cells: int,
+    n_valid_cells: int,
+    n_nodata_cells: int,
+    interpolator: "ClimateInterpolator",
+    mc_ci_cols: List[str],
+    n_mc: int,
+    timings: Dict[str, float],
+) -> Dict[str, Any]:
+    """Build the report.json payload."""
+    raster_vals = clipped_data.compressed().astype("float64")
+    climate_var_cols = [c for c in climate_df.columns if c not in ("lat", "lon")]
+    climate_var_stats: Dict[str, Any] = {
+        var: {
+            "mean": float(col.mean()) if len(col := climate_df[var].dropna()) else None,
+            "min": float(col.min()) if len(col) else None,
+            "max": float(col.max()) if len(col) else None,
+            "n_nodata": int(climate_df[var].isna().sum()),
+        }
+        for var in climate_var_cols
+    }
+    scores_arr = df["score"].to_numpy()
+
+    report: Dict[str, Any] = {
+        "schema_version": REPORT_SCHEMA_VERSION,
+        "run_fingerprint": run_fingerprint,
+        "coverage": {
+            "n_raster_cells_total": n_total_cells,
+            "n_roi_valid_cells": n_valid_cells,
+            "n_roi_nodata_cells": n_nodata_cells,
+            "roi_coverage_fraction": (
+                round(n_valid_cells / n_total_cells, 6) if n_total_cells else 0.0
+            ),
+            "roi_nodata_fraction": (
+                round(n_nodata_cells / n_total_cells, 6) if n_total_cells else 0.0
+            ),
+        },
+        "raster_stats": {
+            "count": int(raster_vals.size),
+            "mean": float(raster_vals.mean()) if raster_vals.size else None,
+            "std": float(raster_vals.std(ddof=1)) if raster_vals.size > 1 else 0.0,
+            "min": float(raster_vals.min()) if raster_vals.size else None,
+            "max": float(raster_vals.max()) if raster_vals.size else None,
+        },
+        "climate_stats": {"n_rows": len(climate_df), "variables": climate_var_stats},
+        "n_cells_sampled": n_cells_sampled,
+        "score_stats": {
+            "mean": float(scores_arr.mean()) if len(scores_arr) else None,
+            "std": float(scores_arr.std(ddof=1)) if len(scores_arr) > 1 else 0.0,
+            "min": float(scores_arr.min()) if len(scores_arr) else None,
+            "max": float(scores_arr.max()) if len(scores_arr) else None,
+        },
+        "timings_sec": timings,
+    }
+
+    if interpolator.cv_metrics:
+        report["kriging_loocv"] = {
+            var: round(stats["rmse"], 6)
+            for var, stats in interpolator.cv_metrics.get("per_variable", {}).items()
+            if stats.get("rmse") is not None
+        }
+        report["interpolation_cv"] = interpolator.cv_metrics
+
+    if interpolator.variogram_params:
+        report["kriging_diagnostics"] = interpolator.variogram_params
+
+    if mc_ci_cols:
+        ci_low = df["score_ci_low"].to_numpy()
+        ci_high = df["score_ci_high"].to_numpy()
+        report["uncertainty"] = {
+            "method": "monte_carlo",
+            "n_samples": n_mc,
+            "perturbed_variables": ["mean_temp", "total_rain"],
+            "ci_low_pct": 5,
+            "ci_high_pct": 95,
+            "score_ci_low_mean": float(ci_low.mean()),
+            "score_ci_high_mean": float(ci_high.mean()),
+            "mean_ci_width": float((ci_high - ci_low).mean()),
+        }
+
+    return report
 
 
 def run_pipeline(config_path: str | Path) -> pd.DataFrame:
@@ -386,7 +543,6 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     config_dict = load_config_dict(config_path)
     config_dir = config_path.resolve().parent
 
-    # Resolve relative input/output paths against the config file's directory.
     for _key in ("raster_path", "climate_csv", "output_dir"):
         if _key in config_dict and config_dict[_key] is not None:
             _p = Path(str(config_dict[_key]))
@@ -395,7 +551,6 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
 
     cfg: PipelineConfig = build_config(config_dict)
     logger.info(f"Loaded config from {config_path}")
-
     config_bytes_hash = hashlib.sha256(canonicalize_config(config_dict)).hexdigest()
     roi_hash = _resolve_roi_hash(config_dict, config_dir)
     input_paths = _collect_input_paths(config_dict, config_dir)
@@ -414,7 +569,9 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         run_dir / "report.json",
     ]
     if all(p.exists() for p in _required_artifacts):
-        logger.info(f"Detected identical run {run_fingerprint} — all artifacts present, returning cached result.")
+        logger.info(
+            f"Detected identical run {run_fingerprint} — all artifacts present, returning cached result."
+        )
         df = pd.read_parquet(run_dir / "features.parquet")
         df.attrs["run_fingerprint"] = run_fingerprint
         df.attrs["run_dir"] = str(run_dir)
@@ -434,7 +591,11 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         raise
     _t_load = time.perf_counter() - _t_load_start
 
-    _crs_str = f"EPSG:{raster_crs.to_epsg()}" if raster_crs is not None and raster_crs.to_epsg() else (str(raster_crs) if raster_crs else "None")
+    _crs_str = (
+        f"EPSG:{raster_crs.to_epsg()}"
+        if raster_crs is not None and raster_crs.to_epsg()
+        else (str(raster_crs) if raster_crs else "None")
+    )
     logger.info(f"Loaded raster: {cfg.raster_path} (CRS: {_crs_str})")
     logger.info(f"Loaded climate data: {cfg.climate_csv}")
 
@@ -462,11 +623,8 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     _t_clip = time.perf_counter() - _t_clip_start
     logger.info("Clipped raster to ROI")
 
-    rows: int
-    cols: int
     rows, cols = clipped_data.shape
     n_total_cells = rows * cols
-
     valid_indices: List[tuple[int, int]] = [
         (r, c)
         for r in range(rows)
@@ -483,6 +641,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         climate_df=climate_df,
         strategy=cfg.climate.strategy,
         interpolation_method=cfg.climate.interpolation_method,
+        variogram_mode=cfg.climate.variogram_mode,
         cell_id_column=cfg.climate.cell_id_column,
         fallback_to_mean=cfg.climate.fallback_to_mean,
     )
@@ -502,114 +661,29 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     sampled_indices = [valid_indices[i] for i in _sample_idx]
     logger.info(f"Sampled {max_cells} cells from {n_valid_cells} valid cells in ROI")
 
-    # Pre-compute cell centre coordinates in native raster CRS.
-    _native_xs: List[float] = []
-    _native_ys: List[float] = []
-    for row, col in sampled_indices:
-        x, y = xy(clipped_transform, row, col, offset="center")
-        _native_xs.append(float(x))
-        _native_ys.append(float(y))
-
-    # Reproject to WGS84 (EPSG:4326).
-    _wgs84 = CRS.from_epsg(4326)
-    if raster_crs != _wgs84:
-        _coord_tf = Transformer.from_crs(raster_crs, _wgs84, always_xy=True)
-        _lons, _lats = _coord_tf.transform(_native_xs, _native_ys)
-        cell_lons: List[float] = list(_lons)
-        cell_lats: List[float] = list(_lats)
-    else:
-        cell_lons = _native_xs
-        cell_lats = _native_ys
+    cell_lats, cell_lons = _project_cells_to_wgs84(
+        sampled_indices, clipped_transform, raster_crs
+    )
 
     _t_interp_start = time.perf_counter()
     cell_climate_df = interpolator.interpolate(np.array(cell_lats), np.array(cell_lons))
     _t_interp = time.perf_counter() - _t_interp_start
-    logger.info(f"Interpolated climate for {len(sampled_indices)} cells using strategy='{cfg.climate.strategy}'")
+    logger.info(
+        f"Interpolated climate for {len(sampled_indices)} cells using strategy='{cfg.climate.strategy}'"
+    )
 
     _t_score_start = time.perf_counter()
-    records: List[Dict[str, Any]] = []
-
-    # Detect kriging std columns (present when interpolation_method="kriging").
-    _krig_std_cols = [c for c in cell_climate_df.columns if c.endswith("_krig_std")]
-
-    for cell_id, (row, col) in enumerate(sampled_indices):
-        v_index = float(clipped_data[row, col])
-        lat = cell_lats[cell_id]
-        lon = cell_lons[cell_id]
-        mean_temp = float(cell_climate_df.iloc[cell_id]["mean_temp"])
-        total_rain = float(cell_climate_df.iloc[cell_id]["total_rain"])
-
-        score = suitability_score(
-            v_index=v_index,
-            mean_temp=mean_temp,
-            total_rain=total_rain,
-            params=cfg.model_params,
-        )
-        label = suitability_label(score)
-
-        record: Dict[str, Any] = {
-            "run_id": run_fingerprint,
-            "cell_id": cell_id,
-            "lat": lat,
-            "lon": lon,
-            "v_index": v_index,
-            "mean_temp": mean_temp,
-            "total_rain": total_rain,
-            "score": score,
-            "label": label,
-        }
-        # Append per-cell kriging std columns when kriging was used.
-        for ksc in _krig_std_cols:
-            record[ksc] = float(cell_climate_df.iloc[cell_id][ksc])
-
-        records.append(record)
-
-    df = pd.DataFrame.from_records(records)
-
-    # --- Monte Carlo uncertainty propagation ---------------------------------
-    # Requires: uncertainty_samples > 0 AND kriging std columns present.
-    # Perturbs mean_temp and total_rain independently using their per-cell
-    # kriging standard deviations, then scores each draw to derive 5th/95th
-    # percentile confidence intervals on the suitability score.
-    _mc_ci_cols: List[str] = []
-    _n_mc = cfg.model_params.uncertainty_samples
-    if _n_mc > 0:
-        if _krig_std_cols:
-            _mc_ci_cols = ["score_ci_low", "score_ci_high"]
-            _n_cells = len(df)
-            _v_arr = df["v_index"].to_numpy()
-            _temp_arr = df["mean_temp"].to_numpy()
-            _rain_arr = df["total_rain"].to_numpy()
-            # Clip std to ≥ 0 (kriging variance is non-negative but may have
-            # tiny floating-point negatives at station locations).
-            _temp_std = np.maximum(df["mean_temp_krig_std"].to_numpy(), 0.0)
-            _rain_std = np.maximum(df["total_rain_krig_std"].to_numpy(), 0.0)
-
-            # Shape: (n_cells, n_mc) — rng continues deterministic stream.
-            _temp_mc = rng.normal(
-                _temp_arr[:, None], _temp_std[:, None], (_n_cells, _n_mc)
-            )
-            _rain_mc = rng.normal(
-                _rain_arr[:, None], _rain_std[:, None], (_n_cells, _n_mc)
-            )
-            # v_index has no per-cell uncertainty estimate; broadcast constant.
-            _v_mc = np.broadcast_to(_v_arr[:, None], (_n_cells, _n_mc))
-
-            _scores_mc = suitability_score_array(
-                _v_mc, _temp_mc, _rain_mc, cfg.model_params
-            )  # (n_cells, n_mc), values in [0, 1]
-
-            df["score_ci_low"] = np.percentile(_scores_mc, 5, axis=1)
-            df["score_ci_high"] = np.percentile(_scores_mc, 95, axis=1)
-            logger.info(f"Monte Carlo uncertainty propagation complete: {_n_mc} samples per cell")
-        else:
-            logger.warning(
-                f"uncertainty_samples={_n_mc} but no kriging std columns available; "
-                "skipping Monte Carlo. Set interpolation_method='kriging' to enable."
-            )
-
-    # Enforce stable base column order, then append kriging std and CI columns.
-    df = df[FEATURES_COLUMNS_ORDERED + _krig_std_cols + _mc_ci_cols]
+    df, krig_std_cols = _score_cells(
+        clipped_data,
+        sampled_indices,
+        cell_lats,
+        cell_lons,
+        cell_climate_df,
+        cfg,
+        run_fingerprint,
+    )
+    df, mc_ci_cols = _apply_monte_carlo(df, krig_std_cols, cfg, rng)
+    df = df[FEATURES_COLUMNS_ORDERED + krig_std_cols + mc_ci_cols]
     _t_score = time.perf_counter() - _t_score_start
 
     raster.close()
@@ -622,7 +696,6 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         df,
         schema_meta={"run_fingerprint": run_fingerprint},
     )
-
     _atomic_write_text(run_dir / "results.csv", df.to_csv(index=False))
 
     git_sha = _get_git_sha()
@@ -653,114 +726,46 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         ],
     }
     _atomic_write_text(
-        run_dir / "manifest.json",
-        json.dumps(manifest, indent=2, default=str),
+        run_dir / "manifest.json", json.dumps(manifest, indent=2, default=str)
     )
 
-    raster_data_for_report = clipped_data.compressed().astype("float64")
-    climate_var_cols = [c for c in climate_df.columns if c not in ("lat", "lon")]
-    climate_var_stats: Dict[str, Any] = {}
-    for var in climate_var_cols:
-        col = climate_df[var].dropna()
-        climate_var_stats[var] = {
-            "mean": float(col.mean()) if len(col) else None,
-            "min": float(col.min()) if len(col) else None,
-            "max": float(col.max()) if len(col) else None,
-            "n_nodata": int(climate_df[var].isna().sum()),
-        }
-
-    scores_arr = df["score"].to_numpy()
     _t_total = time.perf_counter() - _t_total_start
     _t_write = time.perf_counter() - _t_write_start
 
-    report: Dict[str, Any] = {
-        "schema_version": REPORT_SCHEMA_VERSION,
-        "run_fingerprint": run_fingerprint,
-        "coverage": {
-            "n_raster_cells_total": n_total_cells,
-            "n_roi_valid_cells": n_valid_cells,
-            "n_roi_nodata_cells": n_nodata_cells,
-            "roi_coverage_fraction": (
-                round(n_valid_cells / n_total_cells, 6) if n_total_cells else 0.0
-            ),
-            "roi_nodata_fraction": (
-                round(n_nodata_cells / n_total_cells, 6) if n_total_cells else 0.0
-            ),
-        },
-        "raster_stats": {
-            "count": int(raster_data_for_report.size),
-            "mean": float(raster_data_for_report.mean()) if raster_data_for_report.size else None,
-            "std": float(raster_data_for_report.std(ddof=1)) if raster_data_for_report.size > 1 else 0.0,
-            "min": float(raster_data_for_report.min()) if raster_data_for_report.size else None,
-            "max": float(raster_data_for_report.max()) if raster_data_for_report.size else None,
-        },
-        "climate_stats": {
-            "n_rows": len(climate_df),
-            "variables": climate_var_stats,
-        },
-        "n_cells_sampled": len(records),
-        "score_stats": {
-            "mean": float(scores_arr.mean()) if len(scores_arr) else None,
-            "std": float(scores_arr.std(ddof=1)) if len(scores_arr) > 1 else 0.0,
-            "min": float(scores_arr.min()) if len(scores_arr) else None,
-            "max": float(scores_arr.max()) if len(scores_arr) else None,
-        },
-        "timings_sec": {
-            "build_catalog": round(_t_catalog, 4),
-            "load_inputs": round(_t_load, 4),
-            "clip_roi": round(_t_clip, 4),
-            "interpolate_climate": round(_t_interp, 4),
-            "score_cells": round(_t_score, 4),
-            "write_outputs": round(_t_write, 4),
-            "total": round(_t_total, 4),
-        },
+    timings = {
+        "build_catalog": round(_t_catalog, 4),
+        "load_inputs": round(_t_load, 4),
+        "clip_roi": round(_t_clip, 4),
+        "interpolate_climate": round(_t_interp, 4),
+        "score_cells": round(_t_score, 4),
+        "write_outputs": round(_t_write, 4),
+        "total": round(_t_total, 4),
     }
-    # Include LOOCV cross-validation metrics when kriging was used.
-    if interpolator.cv_metrics:
-        # VALD-03: expose per-variable LOOCV RMSE under 'kriging_loocv'
-        report["kriging_loocv"] = {
-            var: round(stats["rmse"], 6)
-            for var, stats in interpolator.cv_metrics.get("per_variable", {}).items()
-            if stats.get("rmse") is not None
-        }
-        report["interpolation_cv"] = interpolator.cv_metrics  # retain for compat
-
-    # Include variogram diagnostics when kriging was used.
-    if interpolator.variogram_params:
-        report["kriging_diagnostics"] = interpolator.variogram_params
-
-    # Include Monte Carlo uncertainty summary when CI columns were produced.
-    if _mc_ci_cols:
-        _ci_low = df["score_ci_low"].to_numpy()
-        _ci_high = df["score_ci_high"].to_numpy()
-        report["uncertainty"] = {
-            "method": "monte_carlo",
-            "n_samples": _n_mc,
-            "perturbed_variables": ["mean_temp", "total_rain"],
-            "ci_low_pct": 5,
-            "ci_high_pct": 95,
-            "score_ci_low_mean": float(_ci_low.mean()),
-            "score_ci_high_mean": float(_ci_high.mean()),
-            "mean_ci_width": float((_ci_high - _ci_low).mean()),
-        }
-
+    report = _build_report(
+        run_fingerprint,
+        clipped_data,
+        climate_df,
+        df,
+        n_cells_sampled=len(df),
+        n_total_cells=n_total_cells,
+        n_valid_cells=n_valid_cells,
+        n_nodata_cells=n_nodata_cells,
+        interpolator=interpolator,
+        mc_ci_cols=mc_ci_cols,
+        n_mc=cfg.model_params.uncertainty_samples,
+        timings=timings,
+    )
     _atomic_write_text(
-        run_dir / "report.json",
-        json.dumps(report, indent=2, default=str),
+        run_dir / "report.json", json.dumps(report, indent=2, default=str)
     )
 
     logger.info(
-        f"Artifacts written to {run_dir} (fingerprint={run_fingerprint}, cells={len(records)}, total={_t_total:.2f}s)"
+        f"Artifacts written to {run_dir} (fingerprint={run_fingerprint}, cells={len(df)}, total={_t_total:.2f}s)"
     )
 
     df.attrs["run_fingerprint"] = run_fingerprint
     df.attrs["run_dir"] = str(run_dir)
     return df
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 
 def _get_package_version() -> str:

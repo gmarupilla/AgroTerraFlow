@@ -643,7 +643,25 @@ class TestKrigingInterpolation:
             strategy="spatial",
             interpolation_method="kriging",
         )
-        assert interpolator._krig_variogram_model in ("spherical", "exponential", "gaussian")
+        assert interpolator._krig_variogram_model in (
+            "spherical",
+            "exponential",
+            "gaussian",
+        )
+
+    def test_kriging_extended_variogram_mode_reports_candidate_scores(self):
+        interpolator = ClimateInterpolator(
+            climate_df=_dense_climate_df(),
+            strategy="spatial",
+            interpolation_method="kriging",
+            variogram_mode="extended",
+        )
+        assert interpolator.cv_metrics["variogram_mode"] == "extended"
+        candidate_scores = interpolator.cv_metrics["candidate_scores"]
+        assert "spherical" in candidate_scores
+        assert "nested_spherical_gaussian" in candidate_scores
+        assert "nested_exponential_gaussian" in candidate_scores
+        assert interpolator._krig_variogram_model in candidate_scores
 
     def test_kriging_fallback_to_linear_too_few_stations(self):
         """Kriging must fall back to linear when stations < MIN_KRIGING_STATIONS."""
@@ -842,12 +860,77 @@ class TestPipelineKrigingIntegration:
         cfg_file.write_text(cfg_content, encoding="utf-8")
 
         df = run_pipeline(cfg_file)
-        report = json.loads((tmp_path / "outputs" / "runs" / df.attrs["run_fingerprint"] / "report.json").read_text())
+        report = json.loads(
+            (
+                tmp_path
+                / "outputs"
+                / "runs"
+                / df.attrs["run_fingerprint"]
+                / "report.json"
+            ).read_text()
+        )
 
         assert "interpolation_cv" in report
         cv = report["interpolation_cv"]
         assert "variogram_model" in cv
         assert "per_variable" in cv
+
+    def test_pipeline_kriging_extended_mode_reports_candidate_scores(
+        self, tmp_path, synthetic_raster, synthetic_climate_csv_dense
+    ):
+        import json
+        import textwrap
+
+        from terraflow.pipeline import run_pipeline
+
+        cfg_content = textwrap.dedent(f"""
+            raster_path: "{synthetic_raster}"
+            climate_csv: "{synthetic_climate_csv_dense}"
+            output_dir: "{tmp_path / 'outputs'}"
+
+            roi:
+              type: "bbox"
+              xmin: -100.04
+              ymin: 39.96
+              xmax: -99.96
+              ymax: 40.01
+
+            climate:
+              strategy: "spatial"
+              interpolation_method: "kriging"
+              variogram_mode: "extended"
+
+            model_params:
+              v_min: 0.0
+              v_max: 25.0
+              t_min: 0.0
+              t_max: 40.0
+              r_min: 0.0
+              r_max: 300.0
+              w_v: 0.4
+              w_t: 0.3
+              w_r: 0.3
+
+            max_cells: 5
+        """)
+        cfg_file = tmp_path / "cfg_kriging_extended.yml"
+        cfg_file.write_text(cfg_content, encoding="utf-8")
+
+        df = run_pipeline(cfg_file)
+        report = json.loads(
+            (
+                tmp_path
+                / "outputs"
+                / "runs"
+                / df.attrs["run_fingerprint"]
+                / "report.json"
+            ).read_text()
+        )
+
+        cv = report["interpolation_cv"]
+        assert cv["variogram_mode"] == "extended"
+        assert "candidate_scores" in cv
+        assert "nested_spherical_gaussian" in cv["candidate_scores"]
 
 
 # ---------------------------------------------------------------------------
@@ -857,14 +940,16 @@ class TestPipelineKrigingIntegration:
 
 def test_kriging_fallback_sparse_stations():
     """With < MIN_KRIGING_STATIONS stations, kriging falls back to linear."""
-    from terraflow.climate import ClimateInterpolator, MIN_KRIGING_STATIONS
+    from terraflow.climate import MIN_KRIGING_STATIONS, ClimateInterpolator
 
-    sparse_df = pd.DataFrame({
-        "lat": [40.0, 40.01],
-        "lon": [-100.0, -99.99],
-        "mean_temp": [18.0, 20.0],
-        "total_rain": [100.0, 120.0],
-    })
+    sparse_df = pd.DataFrame(
+        {
+            "lat": [40.0, 40.01],
+            "lon": [-100.0, -99.99],
+            "mean_temp": [18.0, 20.0],
+            "total_rain": [100.0, 120.0],
+        }
+    )
     assert len(sparse_df) < MIN_KRIGING_STATIONS
 
     interpolator = ClimateInterpolator(

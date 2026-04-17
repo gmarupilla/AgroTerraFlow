@@ -1,9 +1,11 @@
+import math
 from typing import Any, Dict, Tuple
 
 import numpy as np
 import rasterio
 from pyproj import Transformer
 from rasterio.crs import CRS
+from rasterio.errors import WindowError
 from rasterio.io import DatasetReader
 from rasterio.windows import Window, from_bounds
 
@@ -44,11 +46,9 @@ def clip_raster_to_roi(
         If raster does not have band 1, ROI bounds are invalid, or the
         (reprojected) ROI does not intersect the raster extent.
     """
-    # Validate that band 1 exists
     if raster.count < 1:
         raise ValueError("Raster has no bands. Cannot read band 1.")
 
-    # Validate ROI bounds before any reprojection
     if roi["xmin"] >= roi["xmax"] or roi["ymin"] >= roi["ymax"]:
         raise ValueError(
             f"Invalid ROI bounds: xmin={roi['xmin']}, xmax={roi['xmax']}, "
@@ -58,7 +58,6 @@ def clip_raster_to_roi(
 
     xmin, ymin, xmax, ymax = roi["xmin"], roi["ymin"], roi["xmax"], roi["ymax"]
 
-    # Reproject ROI bounds to raster CRS when they differ.
     raster_crs = raster.crs
     src_crs = CRS.from_user_input(roi_crs)
     if src_crs != raster_crs:
@@ -74,11 +73,8 @@ def clip_raster_to_roi(
             f"xmin={xmin:.2f} ymin={ymin:.2f} xmax={xmax:.2f} ymax={ymax:.2f}"
         )
 
-    # Compute rasterio window from the (reprojected) bounds.
     try:
-        window: Window = from_bounds(
-            xmin, ymin, xmax, ymax, transform=raster.transform
-        )
+        window: Window = from_bounds(xmin, ymin, xmax, ymax, transform=raster.transform)
     except Exception as e:
         raise ValueError(
             f"Could not compute raster window for ROI bounds "
@@ -89,7 +85,6 @@ def clip_raster_to_roi(
     # Guard against degenerate windows (NaN dimensions) that arise when
     # reprojected bounds are numerically invalid (e.g. coordinates outside
     # the valid domain of the target CRS).
-    import math
     if math.isnan(window.width) or math.isnan(window.height):
         raise ValueError(
             f"ROI bounds ({xmin}, {ymin}, {xmax}, {ymax}) produced a "
@@ -98,7 +93,18 @@ def clip_raster_to_roi(
             f"coordinates are valid in that CRS."
         )
 
-    # Read the windowed data.
+    # Snap to pixel boundaries and clamp to the raster extent so small ROIs
+    # read only the intersecting window instead of an oversized float window.
+    full_window = Window(col_off=0, row_off=0, width=raster.width, height=raster.height)
+    try:
+        window = window.round_offsets().round_lengths().intersection(full_window)
+    except WindowError as e:
+        raise ValueError(
+            f"ROI does not intersect the raster (raster extent: {raster.bounds}). "
+            f"Verify that roi_crs='{roi_crs}' matches the coordinate system of "
+            f"your xmin/ymin/xmax/ymax values."
+        ) from e
+
     data = raster.read(1, window=window, masked=True)
     transform = raster.window_transform(window)
 

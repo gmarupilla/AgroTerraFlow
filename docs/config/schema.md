@@ -116,6 +116,7 @@ Climate data is applied ==per-cell== using configurable interpolation strategies
 |---|---|---|---|
 | `strategy` | string | `"spatial"` | `"spatial"` or `"index"` — how cells are matched to climate observations |
 | `interpolation_method` | string | `"linear"` | `"linear"`, `"kriging"`, or `"idw"` — spatial algorithm (ignored when `strategy: index`) |
+| `variogram_mode` | string | `"standard"` | `"standard"` tries spherical/exponential/Gaussian; `"extended"` also evaluates nested kriging candidates (kriging only) |
 | `fallback_to_mean` | bool | `true` | Use global mean for cells outside interpolation range |
 | `cell_id_column` | string | `null` | Column for explicit cell ID matching (index strategy only) |
 
@@ -141,11 +142,14 @@ Climate data is applied ==per-cell== using configurable interpolation strategies
     climate:
       strategy: spatial
       interpolation_method: kriging
+      variogram_mode: standard
       fallback_to_mean: true
     model_params:
       # ... other params ...
       uncertainty_samples: 500  # produces score_ci_low / score_ci_high
     ```
+
+    Set `variogram_mode: extended` to evaluate additional nested candidates and record their LOOCV scores in `report.json`.
 
     !!! note "Requires pykrige"
         Install with `pip install terraflow-agro[kriging]` or `pip install pykrige`.
@@ -187,4 +191,4 @@ lat,lon,mean_temp,total_rain
 - **`lon`**: Longitude in [-180, 180]
 - **Climate variables**: One or more numeric columns (`mean_temp`, `total_rain`, etc.)
 
-If `climate` is omitted entirely, defaults to `strategy: spatial`, `interpolation_method: linear`, `fallback_to_mean: true`.
+If `climate` is omitted entirely, defaults to `strategy: spatial`, `interpolation_method: linear`, `variogram_mode: standard`, `fallback_to_mean: true`.
