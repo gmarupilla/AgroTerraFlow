@@ -5,6 +5,7 @@ import numpy as np
 import rasterio
 from pyproj import Transformer
 from rasterio.crs import CRS
+from rasterio.errors import WindowError
 from rasterio.io import DatasetReader
 from rasterio.windows import Window, from_bounds
 
@@ -91,6 +92,18 @@ def clip_raster_to_roi(
             f"Check that roi_crs='{roi_crs}' is correct and that the ROI "
             f"coordinates are valid in that CRS."
         )
+
+    # Snap to pixel boundaries and clamp to the raster extent so small ROIs
+    # read only the intersecting window instead of an oversized float window.
+    full_window = Window(col_off=0, row_off=0, width=raster.width, height=raster.height)
+    try:
+        window = window.round_offsets().round_lengths().intersection(full_window)
+    except WindowError as e:
+        raise ValueError(
+            f"ROI does not intersect the raster (raster extent: {raster.bounds}). "
+            f"Verify that roi_crs='{roi_crs}' matches the coordinate system of "
+            f"your xmin/ymin/xmax/ymax values."
+        ) from e
 
     data = raster.read(1, window=window, masked=True)
     transform = raster.window_transform(window)

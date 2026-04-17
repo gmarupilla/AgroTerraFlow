@@ -641,6 +641,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         climate_df=climate_df,
         strategy=cfg.climate.strategy,
         interpolation_method=cfg.climate.interpolation_method,
+        variogram_mode=cfg.climate.variogram_mode,
         cell_id_column=cfg.climate.cell_id_column,
         fallback_to_mean=cfg.climate.fallback_to_mean,
     )

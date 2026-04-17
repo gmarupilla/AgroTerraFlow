@@ -66,9 +66,12 @@ model_params:
 climate:
   strategy: spatial
   interpolation_method: kriging
+  variogram_mode: standard
   fallback_to_mean: true
 max_cells: 250
 ```
+
+Set `variogram_mode: extended` when you want TerraFlow to try additional nested variogram candidates before selecting the best kriging model.
 
 ## IDW (fast, no uncertainty)
 

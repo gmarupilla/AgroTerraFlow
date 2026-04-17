@@ -44,7 +44,7 @@ Example
 from __future__ import annotations
 
 import logging
-from typing import Dict, Literal, Optional, Tuple
+from typing import Callable, Dict, Literal, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -61,6 +61,49 @@ MIN_KRIGING_STATIONS: int = 5
 
 #: Variogram models tried during automatic model selection.
 _VARIOGRAM_MODELS: Tuple[str, ...] = ("spherical", "exponential", "gaussian")
+
+
+def _nested_spherical_gaussian_variogram(m: np.ndarray, d: np.ndarray) -> np.ndarray:
+    psill_sph, range_sph, psill_gau, range_gau, nugget = m
+    d = np.asarray(d, dtype=float)
+    gamma = np.full_like(d, float(nugget), dtype=float)
+
+    safe_range_sph = max(float(range_sph), 1e-12)
+    h = d / safe_range_sph
+    spherical = np.where(
+        d <= safe_range_sph,
+        float(psill_sph) * (1.5 * h - 0.5 * h**3),
+        float(psill_sph),
+    )
+
+    safe_range_gau = max(float(range_gau), 1e-12)
+    gaussian = float(psill_gau) * (
+        1.0 - np.exp(-(d**2) / ((safe_range_gau * 4.0 / 7.0) ** 2))
+    )
+    return gamma + spherical + gaussian
+
+
+def _nested_exponential_gaussian_variogram(
+    m: np.ndarray, d: np.ndarray
+) -> np.ndarray:
+    psill_exp, range_exp, psill_gau, range_gau, nugget = m
+    d = np.asarray(d, dtype=float)
+
+    safe_range_exp = max(float(range_exp), 1e-12)
+    safe_range_gau = max(float(range_gau), 1e-12)
+    exponential = float(psill_exp) * (
+        1.0 - np.exp(-d / (safe_range_exp / 3.0))
+    )
+    gaussian = float(psill_gau) * (
+        1.0 - np.exp(-(d**2) / ((safe_range_gau * 4.0 / 7.0) ** 2))
+    )
+    return float(nugget) + exponential + gaussian
+
+
+_NESTED_VARIOGRAM_FUNCTIONS: Dict[str, Callable[[np.ndarray, np.ndarray], np.ndarray]] = {
+    "nested_spherical_gaussian": _nested_spherical_gaussian_variogram,
+    "nested_exponential_gaussian": _nested_exponential_gaussian_variogram,
+}
 
 
 class CoordinateRange(BaseModel):
@@ -141,6 +184,7 @@ class ClimateInterpolator:
         climate_df: pd.DataFrame,
         strategy: Literal["spatial", "index"] = "spatial",
         interpolation_method: Literal["linear", "kriging", "idw"] = "linear",
+        variogram_mode: Literal["standard", "extended"] = "standard",
         cell_id_column: Optional[str] = None,
         fallback_to_mean: bool = True,
     ):
@@ -179,15 +223,28 @@ class ClimateInterpolator:
                 f"interpolation_method must be 'linear', 'kriging', or 'idw', "
                 f"got '{interpolation_method}'"
             )
+        if variogram_mode not in ("standard", "extended"):
+            raise ValueError(
+                f"variogram_mode must be 'standard' or 'extended', got '{variogram_mode}'"
+            )
+        if interpolation_method != "kriging" and variogram_mode != "standard":
+            raise ValueError(
+                "variogram_mode only applies when interpolation_method='kriging'"
+            )
 
         self.climate_df = climate_df.copy()
         self.strategy = strategy
         self.interpolation_method = interpolation_method
+        self.variogram_mode = variogram_mode
         self.cell_id_column = cell_id_column
         self.fallback_to_mean = fallback_to_mean
         self.cv_metrics: Dict = {}
         self._krig_variogram_model: str = "spherical"  # overwritten by _init_kriging
         self.variogram_params: dict = {}
+        self._krig_variogram_parameters: Optional[Tuple[float, ...]] = None
+        self._krig_variogram_function: Optional[
+            Callable[[np.ndarray, np.ndarray], np.ndarray]
+        ] = None
 
         self._validate_columns()
 
@@ -201,8 +258,137 @@ class ClimateInterpolator:
 
         logger.info(
             f"ClimateInterpolator initialised: strategy='{strategy}', "
-            f"interpolation_method='{interpolation_method}', records={len(self.climate_df)}, variables={self.climate_columns}"
+            f"interpolation_method='{interpolation_method}', variogram_mode='{variogram_mode}', "
+            f"records={len(self.climate_df)}, variables={self.climate_columns}"
         )
+
+    def _candidate_model_names(self) -> Tuple[str, ...]:
+        if self.variogram_mode == "extended":
+            return _VARIOGRAM_MODELS + tuple(_NESTED_VARIOGRAM_FUNCTIONS.keys())
+        return _VARIOGRAM_MODELS
+
+    def _build_ok(
+        self,
+        lons: np.ndarray,
+        lats: np.ndarray,
+        vals: np.ndarray,
+        model_name: str,
+        variogram_parameters: Optional[Tuple[float, ...]] = None,
+    ):
+        from pykrige.ok import OrdinaryKriging
+
+        kwargs = {
+            "verbose": False,
+            "enable_plotting": False,
+        }
+        if model_name in _NESTED_VARIOGRAM_FUNCTIONS:
+            kwargs.update(
+                {
+                    "variogram_model": "custom",
+                    "variogram_parameters": (
+                        list(variogram_parameters)
+                        if variogram_parameters is not None
+                        else None
+                    ),
+                    "variogram_function": _NESTED_VARIOGRAM_FUNCTIONS[model_name],
+                }
+            )
+        else:
+            kwargs["variogram_model"] = model_name
+            if variogram_parameters is not None:
+                kwargs["variogram_parameters"] = variogram_parameters
+        return OrdinaryKriging(lons, lats, vals, **kwargs)
+
+    def _fit_nested_variogram(
+        self,
+        lons: np.ndarray,
+        lats: np.ndarray,
+        vals: np.ndarray,
+        model_name: str,
+        initial_parameters: Optional[Tuple[float, ...]] = None,
+    ) -> Tuple[float, ...]:
+        from scipy.optimize import curve_fit
+
+        probe = self._build_ok(lons, lats, vals, "spherical")
+        lags = np.asarray(probe.lags, dtype=float)
+        semivariance = np.asarray(probe.semivariance, dtype=float)
+        if lags.size == 0 or semivariance.size == 0:
+            raise ValueError("No empirical semivariogram points available")
+
+        max_lag = float(max(np.nanmax(lags), 1e-6))
+        sill_guess = float(max(np.nanmax(semivariance), 1e-6))
+        nugget_guess = float(max(np.nanmin(semivariance), 0.0))
+        psill_total = max(sill_guess - nugget_guess, 1e-6)
+        initial = (
+            np.asarray(initial_parameters, dtype=float)
+            if initial_parameters is not None
+            else np.array(
+                [
+                    psill_total * 0.6,
+                    max_lag / 3.0,
+                    psill_total * 0.4,
+                    max_lag * 0.75,
+                    nugget_guess,
+                ],
+                dtype=float,
+            )
+        )
+        lower = np.array([1e-9, 1e-9, 1e-9, 1e-9, 0.0], dtype=float)
+        upper = np.array(
+            [sill_guess * 10.0, max_lag * 10.0, sill_guess * 10.0, max_lag * 10.0, sill_guess * 10.0],
+            dtype=float,
+        )
+
+        variogram_fn = _NESTED_VARIOGRAM_FUNCTIONS[model_name]
+        params, _ = curve_fit(
+            lambda dist, *m: variogram_fn(np.asarray(m, dtype=float), dist),
+            lags,
+            semivariance,
+            p0=initial,
+            bounds=(lower, upper),
+            maxfev=20000,
+        )
+        return tuple(float(p) for p in params)
+
+    def _build_variogram_diagnostics(
+        self, model_name: str, parameters: Tuple[float, ...]
+    ) -> Dict:
+        rounded = [round(float(x), 6) for x in parameters]
+        diagnostics: Dict = {
+            "model": model_name,
+            "mode": self.variogram_mode,
+            "parameters": rounded,
+            "range_units": "degrees_geographic",
+        }
+        if model_name in _NESTED_VARIOGRAM_FUNCTIONS and len(parameters) >= 5:
+            diagnostics.update(
+                {
+                    "psill": round(float(parameters[0]), 6),
+                    "nugget": round(float(parameters[4]), 6),
+                    "sill": round(float(parameters[0]) + float(parameters[4]), 6),
+                    "range_": round(float(parameters[1]), 6),
+                    "nested_components": [
+                        {
+                            "psill": round(float(parameters[0]), 6),
+                            "range_": round(float(parameters[1]), 6),
+                        },
+                        {
+                            "psill": round(float(parameters[2]), 6),
+                            "range_": round(float(parameters[3]), 6),
+                        },
+                    ],
+                }
+            )
+        elif len(parameters) >= 3:
+            diagnostics.update(
+                {
+                    "psill": round(float(parameters[0]), 6),
+                    "nugget": round(float(parameters[2]), 6),
+                    "sill": round(float(parameters[0]) + float(parameters[2]), 6),
+                    "range_": round(float(parameters[1]), 6),
+                }
+            )
+        return diagnostics
 
     def _validate_columns(self) -> None:
         """Validate that climate data has required columns."""
@@ -307,17 +493,31 @@ class ClimateInterpolator:
         vals_primary = self.climate_df[primary_var].values.astype(float)
 
         best_model: Optional[str] = None
+        best_model_params: Optional[Tuple[float, ...]] = None
         best_rmse = np.inf
+        candidate_scores: Dict[str, Dict[str, float]] = {}
 
-        for model in _VARIOGRAM_MODELS:
+        for model in self._candidate_model_names():
             try:
-                rmse, _ = self._loocv(lons, lats, vals_primary, model)
+                model_params = None
+                if model in _NESTED_VARIOGRAM_FUNCTIONS:
+                    model_params = self._fit_nested_variogram(
+                        lons, lats, vals_primary, model
+                    )
+                rmse, mae = self._loocv(
+                    lons, lats, vals_primary, model, model_params
+                )
+                candidate_scores[model] = {
+                    "rmse": round(float(rmse), 6),
+                    "mae": round(float(mae), 6),
+                }
                 logger.debug(
                     f"Variogram '{model}': LOOCV RMSE={rmse:.4f} ({primary_var})"
                 )
                 if rmse < best_rmse:
                     best_rmse = rmse
                     best_model = model
+                    best_model_params = model_params
             except (ValueError, RuntimeError, np.linalg.LinAlgError) as exc:
                 logger.debug(
                     f"Variogram model '{model}' failed during selection: {exc}"
@@ -331,35 +531,25 @@ class ClimateInterpolator:
             return
 
         self._krig_variogram_model = best_model
+        self._krig_variogram_parameters = best_model_params
+        self._krig_variogram_function = _NESTED_VARIOGRAM_FUNCTIONS.get(best_model)
         logger.info(
             f"Kriging variogram selected: '{best_model}' (LOOCV RMSE={best_rmse:.4f} for '{primary_var}')"
         )
 
-        from pykrige.ok import OrdinaryKriging
-
-        _ok_full = OrdinaryKriging(
-            lons,
-            lats,
-            vals_primary,
-            variogram_model=best_model,
-            verbose=False,
-            enable_plotting=False,
+        _ok_full = self._build_ok(
+            lons, lats, vals_primary, best_model, best_model_params
         )
-        p = _ok_full.variogram_model_parameters  # [psill, range, nugget]
-        self.variogram_params = {
-            "model": best_model,
-            "psill": round(float(p[0]), 6),
-            "nugget": round(float(p[2]), 6),
-            "sill": round(float(p[0]) + float(p[2]), 6),
-            "range_": round(float(p[1]), 6),
-            "range_units": "degrees_geographic",
-        }
+        p = tuple(float(x) for x in _ok_full.variogram_model_parameters)
+        self.variogram_params = self._build_variogram_diagnostics(best_model, p)
 
         cv_per_var: Dict = {}
         for var in self.climate_columns:
             vals = self.climate_df[var].values.astype(float)
             try:
-                rmse, mae = self._loocv(lons, lats, vals, best_model)
+                rmse, mae = self._loocv(
+                    lons, lats, vals, best_model, best_model_params
+                )
                 cv_per_var[var] = {
                     "rmse": round(float(rmse), 6),
                     "mae": round(float(mae), 6),
@@ -372,24 +562,30 @@ class ClimateInterpolator:
         self.cv_metrics = {
             "method": "loocv",
             "variogram_model": best_model,
+            "variogram_mode": self.variogram_mode,
+            "candidate_scores": candidate_scores,
             "per_variable": cv_per_var,
         }
 
     def _loocv(
-        self, lons: np.ndarray, lats: np.ndarray, vals: np.ndarray, model: str
+        self,
+        lons: np.ndarray,
+        lats: np.ndarray,
+        vals: np.ndarray,
+        model: str,
+        variogram_parameters: Optional[Tuple[float, ...]] = None,
     ) -> Tuple[float, float]:
         """Return (RMSE, MAE) via Leave-One-Out Cross-Validation for a variogram model."""
-        from pykrige.ok import OrdinaryKriging
+        if model in _NESTED_VARIOGRAM_FUNCTIONS and variogram_parameters is None:
+            variogram_parameters = self._fit_nested_variogram(lons, lats, vals, model)
 
         errors = []
         for i in range(len(vals)):
-            ok = OrdinaryKriging(
-                np.delete(lons, i),
-                np.delete(lats, i),
-                np.delete(vals, i),
-                variogram_model=model,
-                verbose=False,
-                enable_plotting=False,
+            train_lons = np.delete(lons, i)
+            train_lats = np.delete(lats, i)
+            train_vals = np.delete(vals, i)
+            ok = self._build_ok(
+                train_lons, train_lats, train_vals, model, variogram_parameters
             )
             pred, _ = ok.execute("points", np.array([lons[i]]), np.array([lats[i]]))
             errors.append(float(pred[0]) - vals[i])
@@ -510,13 +706,12 @@ class ClimateInterpolator:
         for var in self.climate_columns:
             vals = self.climate_df[var].values.astype(float)
 
-            ok = OrdinaryKriging(
+            ok = self._build_ok(
                 lons_src,
                 lats_src,
                 vals,
-                variogram_model=self._krig_variogram_model,
-                verbose=False,
-                enable_plotting=False,
+                self._krig_variogram_model,
+                self._krig_variogram_parameters,
             )
             z_pred, sigma_sq = ok.execute("points", cell_lons_arr, cell_lats_arr)
 

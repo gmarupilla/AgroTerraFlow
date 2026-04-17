@@ -203,3 +203,48 @@ def test_clip_preserves_masked_values(tmp_path: Path):
         data, _ = clip_raster_to_roi(src, roi)
         # The masked array should properly handle NoData
         assert data is not None
+
+
+def test_clip_raster_to_roi_reads_tight_window_for_small_roi(tmp_path: Path, monkeypatch):
+    raster_path = tmp_path / "large_raster.tif"
+    arr = np.arange(10_000, dtype="float32").reshape(100, 100)
+    transform = from_origin(west=0.0, north=100.0, xsize=1.0, ysize=1.0)
+
+    with rasterio.open(
+        raster_path,
+        "w",
+        driver="GTiff",
+        height=arr.shape[0],
+        width=arr.shape[1],
+        count=1,
+        dtype=arr.dtype,
+        crs="EPSG:4326",
+        transform=transform,
+    ) as dst:
+        dst.write(arr, 1)
+
+    with rasterio.open(raster_path) as src:
+        original_read = src.read
+        seen = {}
+
+        def tracking_read(*args, **kwargs):
+            seen["window"] = kwargs.get("window")
+            return original_read(*args, **kwargs)
+
+        monkeypatch.setattr(src, "read", tracking_read)
+        data, _ = clip_raster_to_roi(
+            src,
+            {
+                "xmin": 10.2,
+                "ymin": 89.2,
+                "xmax": 10.8,
+                "ymax": 89.8,
+            },
+        )
+
+    window = seen["window"]
+    assert window is not None
+    assert data.shape == (1, 1)
+    assert window.width == 1
+    assert window.height == 1
+    assert window.width * window.height < 100
