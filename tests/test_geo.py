@@ -73,6 +73,26 @@ def test_clip_raster_roi_outside_bounds_raises(tmp_path: Path):
             )
 
 
+def test_clip_raster_to_roi_partial_overlap_reads_intersection(tmp_path: Path):
+    """ROI partially outside raster extent should still read intersecting pixels."""
+    raster_path = _make_small_raster(tmp_path)
+    with rasterio.open(raster_path) as src:
+        data, transform = clip_raster_to_roi(
+            src,
+            {
+                "xmin": -100.005,
+                "ymin": 39.995,
+                "xmax": -99.985,
+                "ymax": 40.015,
+            },
+        )
+
+    assert data.size > 0
+    assert data.shape[0] >= 1
+    assert data.shape[1] >= 1
+    assert transform is not None
+
+
 def _make_projected_raster(tmp_path: Path) -> tuple[Path, dict]:
     """Create a synthetic UTM Zone 14N (EPSG:32614) raster over Kansas.
 
