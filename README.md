@@ -103,7 +103,7 @@ Three spatial algorithms are available via `interpolation_method`:
 | `idw` | Inverse Distance Weighting (power=2) — faster than kriging, no uncertainty |
 
 Combine `interpolation_method: kriging` with `uncertainty_samples: N` in `model_params` to get Monte Carlo score confidence intervals (`score_ci_low` / `score_ci_high`).
-For kriging, `variogram_mode: extended` evaluates additional nested variogram candidates and records all LOOCV candidate scores in `report.json`; use the default `standard` mode for large station networks unless nested structures are needed.
+For kriging, `variogram_mode: extended` evaluates additional nested variogram candidates and records all LOOCV candidate scores in `report.json`; use the default `standard` mode for large station networks unless nested structures are needed. See the extended variogram notebook in the docs for a worked synthetic example.
 
 See [Config Schema](https://terraflow.marupilla.dev/config/schema/) for the full reference.
 

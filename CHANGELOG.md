@@ -9,6 +9,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 - `climate.variogram_mode` config for kriging. The default `standard` mode keeps the existing spherical/exponential/Gaussian candidate set; `extended` mode also evaluates nested variogram candidates and records LOOCV candidate scores in `report.json`.
+- Notebook `05_extended_variogram_mode.ipynb` demonstrating extended kriging variogram selection with synthetic station data.
 
 ### Changed
 - Removed decorative section-banner comments and self-evident inline comments throughout `pipeline.py`, `ingest.py`, `geo.py`, and `climate.py`; comments now appear only at genuinely complex logic.
