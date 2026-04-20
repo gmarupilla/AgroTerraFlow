@@ -793,7 +793,8 @@ class TestPipelineKrigingIntegration:
 
         from terraflow.pipeline import run_pipeline
 
-        cfg_content = textwrap.dedent(f"""
+        cfg_content = textwrap.dedent(
+            f"""
             raster_path: "{synthetic_raster}"
             climate_csv: "{synthetic_climate_csv_dense}"
             output_dir: "{tmp_path / 'outputs'}"
@@ -821,7 +822,8 @@ class TestPipelineKrigingIntegration:
               w_r: 0.3
 
             max_cells: 5
-        """)
+        """
+        )
         cfg_file = tmp_path / "cfg_kriging.yml"
         cfg_file.write_text(cfg_content, encoding="utf-8")
 
@@ -841,7 +843,8 @@ class TestPipelineKrigingIntegration:
 
         from terraflow.pipeline import run_pipeline
 
-        cfg_content = textwrap.dedent(f"""
+        cfg_content = textwrap.dedent(
+            f"""
             raster_path: "{synthetic_raster}"
             climate_csv: "{synthetic_climate_csv_dense}"
             output_dir: "{tmp_path / 'outputs'}"
@@ -869,7 +872,8 @@ class TestPipelineKrigingIntegration:
               w_r: 0.3
 
             max_cells: 5
-        """)
+        """
+        )
         cfg_file = tmp_path / "cfg_kriging2.yml"
         cfg_file.write_text(cfg_content, encoding="utf-8")
 
@@ -897,7 +901,8 @@ class TestPipelineKrigingIntegration:
 
         from terraflow.pipeline import run_pipeline
 
-        cfg_content = textwrap.dedent(f"""
+        cfg_content = textwrap.dedent(
+            f"""
             raster_path: "{synthetic_raster}"
             climate_csv: "{synthetic_climate_csv_dense}"
             output_dir: "{tmp_path / 'outputs'}"
@@ -926,7 +931,8 @@ class TestPipelineKrigingIntegration:
               w_r: 0.3
 
             max_cells: 5
-        """)
+        """
+        )
         cfg_file = tmp_path / "cfg_kriging_extended.yml"
         cfg_file.write_text(cfg_content, encoding="utf-8")
 

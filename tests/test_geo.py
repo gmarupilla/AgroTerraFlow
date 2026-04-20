@@ -225,7 +225,9 @@ def test_clip_preserves_masked_values(tmp_path: Path):
         assert data is not None
 
 
-def test_clip_raster_to_roi_reads_tight_window_for_small_roi(tmp_path: Path, monkeypatch):
+def test_clip_raster_to_roi_reads_tight_window_for_small_roi(
+    tmp_path: Path, monkeypatch
+):
     raster_path = tmp_path / "large_raster.tif"
     arr = np.arange(10_000, dtype="float32").reshape(100, 100)
     transform = from_origin(west=0.0, north=100.0, xsize=1.0, ysize=1.0)

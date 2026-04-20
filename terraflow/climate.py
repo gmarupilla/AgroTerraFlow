@@ -44,7 +44,7 @@ Example
 from __future__ import annotations
 
 import logging
-from typing import Callable, Dict, Literal, Optional, Tuple
+from typing import Any, Callable, Dict, Literal, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -83,24 +83,22 @@ def _nested_spherical_gaussian_variogram(m: np.ndarray, d: np.ndarray) -> np.nda
     return gamma + spherical + gaussian
 
 
-def _nested_exponential_gaussian_variogram(
-    m: np.ndarray, d: np.ndarray
-) -> np.ndarray:
+def _nested_exponential_gaussian_variogram(m: np.ndarray, d: np.ndarray) -> np.ndarray:
     psill_exp, range_exp, psill_gau, range_gau, nugget = m
     d = np.asarray(d, dtype=float)
 
     safe_range_exp = max(float(range_exp), 1e-12)
     safe_range_gau = max(float(range_gau), 1e-12)
-    exponential = float(psill_exp) * (
-        1.0 - np.exp(-d / (safe_range_exp / 3.0))
-    )
+    exponential = float(psill_exp) * (1.0 - np.exp(-d / (safe_range_exp / 3.0)))
     gaussian = float(psill_gau) * (
         1.0 - np.exp(-(d**2) / ((safe_range_gau * 4.0 / 7.0) ** 2))
     )
     return float(nugget) + exponential + gaussian
 
 
-_NESTED_VARIOGRAM_FUNCTIONS: Dict[str, Callable[[np.ndarray, np.ndarray], np.ndarray]] = {
+_NESTED_VARIOGRAM_FUNCTIONS: Dict[
+    str, Callable[[np.ndarray, np.ndarray], np.ndarray]
+] = {
     "nested_spherical_gaussian": _nested_spherical_gaussian_variogram,
     "nested_exponential_gaussian": _nested_exponential_gaussian_variogram,
 }
@@ -273,7 +271,7 @@ class ClimateInterpolator:
     ):
         from pykrige.ok import OrdinaryKriging
 
-        kwargs = {
+        kwargs: dict[str, Any] = {
             "verbose": False,
             "enable_plotting": False,
         }
@@ -331,7 +329,13 @@ class ClimateInterpolator:
         )
         lower = np.array([1e-9, 1e-9, 1e-9, 1e-9, 0.0], dtype=float)
         upper = np.array(
-            [sill_guess * 10.0, max_lag * 10.0, sill_guess * 10.0, max_lag * 10.0, sill_guess * 10.0],
+            [
+                sill_guess * 10.0,
+                max_lag * 10.0,
+                sill_guess * 10.0,
+                max_lag * 10.0,
+                sill_guess * 10.0,
+            ],
             dtype=float,
         )
 
@@ -500,9 +504,7 @@ class ClimateInterpolator:
                     model_params = self._fit_nested_variogram(
                         lons, lats, vals_primary, model
                     )
-                rmse, mae = self._loocv(
-                    lons, lats, vals_primary, model, model_params
-                )
+                rmse, mae = self._loocv(lons, lats, vals_primary, model, model_params)
                 candidate_scores[model] = {
                     "rmse": round(float(rmse), 6),
                     "mae": round(float(mae), 6),
@@ -543,9 +545,7 @@ class ClimateInterpolator:
         for var in self.climate_columns:
             vals = self.climate_df[var].values.astype(float)
             try:
-                rmse, mae = self._loocv(
-                    lons, lats, vals, best_model, best_model_params
-                )
+                rmse, mae = self._loocv(lons, lats, vals, best_model, best_model_params)
                 cv_per_var[var] = {
                     "rmse": round(float(rmse), 6),
                     "mae": round(float(mae), 6),
@@ -691,7 +691,6 @@ class ClimateInterpolator:
         one ``{var}_krig_std`` column per climate variable (kriging prediction
         standard deviation = sqrt of kriging variance).
         """
-        from pykrige.ok import OrdinaryKriging
 
         lons_src = self.climate_df["lon"].values.astype(float)
         lats_src = self.climate_df["lat"].values.astype(float)

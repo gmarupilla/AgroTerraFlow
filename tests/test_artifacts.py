@@ -56,7 +56,8 @@ def _make_config(
     ymax: float = 41.0,
     max_cells: int = 5,
 ) -> Path:
-    content = textwrap.dedent(f"""
+    content = textwrap.dedent(
+        f"""
         raster_path: "{raster_path}"
         climate_csv: "{climate_csv}"
         output_dir: "{tmp_path / 'outputs'}"
@@ -77,7 +78,8 @@ def _make_config(
           w_t: 0.3
           w_r: 0.3
         max_cells: {max_cells}
-    """)
+    """
+    )
     cfg = tmp_path / "config.yml"
     cfg.write_text(content, encoding="utf-8")
     return cfg
@@ -443,7 +445,8 @@ class TestCrsMismatch:
         climate_path.write_text("lat,lon,mean_temp,total_rain\n38.5,-99.0,20.0,120.0\n")
 
         # ROI is valid bbox but far away from the raster (Africa vs North America)
-        cfg_content = textwrap.dedent(f"""
+        cfg_content = textwrap.dedent(
+            f"""
             raster_path: "{raster_path}"
             climate_csv: "{climate_path}"
             output_dir: "{tmp_path / 'out'}"
@@ -465,7 +468,8 @@ class TestCrsMismatch:
               w_t: 0.3
               w_r: 0.3
             max_cells: 5
-        """)
+        """
+        )
         cfg_file = tmp_path / "cfg.yml"
         cfg_file.write_text(cfg_content)
 
@@ -524,7 +528,8 @@ class TestNodataCoverage:
             "39.99,-99.99,19.0,110.0\n"
         )
 
-        cfg_content = textwrap.dedent(f"""
+        cfg_content = textwrap.dedent(
+            f"""
             raster_path: "{raster_path}"
             climate_csv: "{climate_path}"
             output_dir: "{tmp_path / 'out'}"
@@ -545,7 +550,8 @@ class TestNodataCoverage:
               w_t: 0.3
               w_r: 0.3
             max_cells: 10
-        """)
+        """
+        )
         cfg_file = tmp_path / "cfg.yml"
         cfg_file.write_text(cfg_content)
 
