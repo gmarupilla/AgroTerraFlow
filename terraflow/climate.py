@@ -223,10 +223,6 @@ class ClimateInterpolator:
                 f"interpolation_method must be 'linear', 'kriging', or 'idw', "
                 f"got '{interpolation_method}'"
             )
-        if variogram_mode not in ("standard", "extended"):
-            raise ValueError(
-                f"variogram_mode must be 'standard' or 'extended', got '{variogram_mode}'"
-            )
         if interpolation_method != "kriging" and variogram_mode != "standard":
             raise ValueError(
                 "variogram_mode only applies when interpolation_method='kriging'"

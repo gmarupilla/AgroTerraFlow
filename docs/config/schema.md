@@ -149,7 +149,7 @@ Climate data is applied ==per-cell== using configurable interpolation strategies
       uncertainty_samples: 500  # produces score_ci_low / score_ci_high
     ```
 
-    Set `variogram_mode: extended` to evaluate additional nested candidates and record their LOOCV scores in `report.json`.
+    Set `variogram_mode: extended` to evaluate additional nested candidates and record their LOOCV scores in `report.json`. Extended mode fits custom nested variograms before LOOCV, so it is slower than standard mode on large station networks.
 
     !!! note "Requires pykrige"
         Install with `pip install terraflow-agro[kriging]` or `pip install pykrige`.

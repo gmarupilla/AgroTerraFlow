@@ -181,16 +181,6 @@ class ClimateConfig(BaseModel):
             )
         return v
 
-    @field_validator("variogram_mode")
-    @classmethod
-    def validate_variogram_mode(cls, v: str) -> str:
-        """Ensure variogram_mode is valid."""
-        if v not in ("standard", "extended"):
-            raise ValueError(
-                f"variogram_mode must be 'standard' or 'extended', got '{v}'"
-            )
-        return v
-
     def validate_config(self) -> None:
         """Validate consistency of climate configuration."""
         if self.strategy != "spatial" and self.variogram_mode != "standard":

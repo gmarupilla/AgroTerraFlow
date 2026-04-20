@@ -71,7 +71,7 @@ climate:
 max_cells: 250
 ```
 
-Set `variogram_mode: extended` when you want TerraFlow to try additional nested variogram candidates before selecting the best kriging model.
+Set `variogram_mode: extended` when you want TerraFlow to try additional nested variogram candidates before selecting the best kriging model. Extended mode is more expensive than standard kriging because each nested candidate fits a custom variogram before LOOCV; prefer standard mode for large station networks unless nested structures are specifically needed.
 
 ## IDW (fast, no uncertainty)
 
