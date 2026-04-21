@@ -7,12 +7,17 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+- `climate.variogram_mode` config for kriging. The default `standard` mode keeps the existing spherical/exponential/Gaussian candidate set; `extended` mode also evaluates nested variogram candidates and records LOOCV candidate scores in `report.json`.
+- Notebook `05_extended_variogram_mode.ipynb` demonstrating extended kriging variogram selection with synthetic station data.
+
 ### Changed
 - Removed decorative section-banner comments and self-evident inline comments throughout `pipeline.py`, `ingest.py`, `geo.py`, and `climate.py`; comments now appear only at genuinely complex logic.
 - Refactored `run_pipeline()` into four extracted helpers (`_project_cells_to_wgs84`, `_score_cells`, `_apply_monte_carlo`, `_build_report`) reducing the function from 425 lines to ~130 lines of orchestration and cutting cognitive complexity below SonarQube thresholds.
 - Moved `import math` inline call in `geo.py` to module-level import.
 
 ### Fixed
+- ROI clipping now snaps requested bounds to an intersecting pixel window so very small ROIs avoid oversized raster reads.
 - Closed resolved issues: H3-01 (#60), H3-02 (#61), H3-03 (#62), H3-04 (#63), and #40 (all implemented in prior phases).
 
 ## [0.2.2] — 2026-04-12

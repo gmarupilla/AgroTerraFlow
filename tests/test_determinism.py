@@ -14,7 +14,8 @@ import pandas as pd
 
 
 def _write_config(cfg_file: Path, raster: Path, climate: Path, out_dir: Path) -> Path:
-    cfg = textwrap.dedent(f"""
+    cfg = textwrap.dedent(
+        f"""
         raster_path: "{raster}"
         climate_csv: "{climate}"
         output_dir: "{out_dir}"
@@ -38,7 +39,8 @@ def _write_config(cfg_file: Path, raster: Path, climate: Path, out_dir: Path) ->
           w_r: 0.3
 
         max_cells: 3
-    """)
+    """
+    )
     cfg_file.write_text(cfg, encoding="utf-8")
     return cfg_file
 

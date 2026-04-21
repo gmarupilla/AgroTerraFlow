@@ -157,6 +157,7 @@ class ClimateConfig(BaseModel):
 
     strategy: Literal["spatial", "index"] = "spatial"
     interpolation_method: Literal["linear", "kriging", "idw"] = "linear"
+    variogram_mode: Literal["standard", "extended"] = "standard"
     cell_id_column: str | None = None
     fallback_to_mean: bool = True
 
@@ -182,8 +183,14 @@ class ClimateConfig(BaseModel):
 
     def validate_config(self) -> None:
         """Validate consistency of climate configuration."""
-        # interpolation_method only applies to spatial strategy
-        pass
+        if self.strategy != "spatial" and self.variogram_mode != "standard":
+            raise ValueError(
+                "variogram_mode only applies when climate.strategy='spatial'"
+            )
+        if self.interpolation_method != "kriging" and self.variogram_mode != "standard":
+            raise ValueError(
+                "variogram_mode only applies when interpolation_method='kriging'"
+            )
 
 
 class WeightBounds(BaseModel):

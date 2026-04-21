@@ -19,7 +19,8 @@ def test_run_pipeline_with_synthetic_data(
 ):
     out_dir = tmp_path / "outputs"
 
-    cfg_content = textwrap.dedent(f"""
+    cfg_content = textwrap.dedent(
+        f"""
         raster_path: "{synthetic_raster}"
         climate_csv: "{synthetic_climate_csv}"
         output_dir: "{out_dir}"
@@ -43,7 +44,8 @@ def test_run_pipeline_with_synthetic_data(
           w_r: 0.3
 
         max_cells: 10
-        """)
+        """
+    )
 
     cfg_file = tmp_path / "cfg.yml"
     cfg_file.write_text(cfg_content, encoding="utf-8")
@@ -250,7 +252,8 @@ def _write_kriging_config(
     uncertainty_samples: int = 0,
 ) -> Path:
     """Write a pipeline config YAML file with kriging interpolation enabled."""
-    cfg = textwrap.dedent(f"""
+    cfg = textwrap.dedent(
+        f"""
         raster_path: "{raster_path}"
         climate_csv: "{climate_csv}"
         output_dir: "{output_dir}"
@@ -279,7 +282,8 @@ def _write_kriging_config(
           interpolation_method: "kriging"
 
         max_cells: 5
-    """)
+    """
+    )
     cfg_file.write_text(cfg, encoding="utf-8")
     return cfg_file
 
@@ -359,7 +363,9 @@ def test_resolve_run_dir_returns_deterministic_path(
 
     cfg_path = tmp_path / "cfg.yml"
     out_dir = tmp_path / "out"
-    cfg_path.write_text(textwrap.dedent(f"""
+    cfg_path.write_text(
+        textwrap.dedent(
+            f"""
         raster_path: "{synthetic_raster}"
         climate_csv: "{synthetic_climate_csv}"
         output_dir: "{out_dir}"
@@ -379,7 +385,9 @@ def test_resolve_run_dir_returns_deterministic_path(
           w_v: 0.4
           w_t: 0.3
           w_r: 0.3
-    """))
+    """
+        )
+    )
 
     run_dir = resolve_run_dir(cfg_path)
     assert run_dir.name  # fingerprint is non-empty

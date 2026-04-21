@@ -5,6 +5,7 @@ import numpy as np
 import rasterio
 from pyproj import Transformer
 from rasterio.crs import CRS
+from rasterio.errors import WindowError
 from rasterio.io import DatasetReader
 from rasterio.windows import Window, from_bounds
 
@@ -72,8 +73,27 @@ def clip_raster_to_roi(
             f"xmin={xmin:.2f} ymin={ymin:.2f} xmax={xmax:.2f} ymax={ymax:.2f}"
         )
 
+    raster_bounds = raster.bounds
+    clipped_xmin = max(xmin, raster_bounds.left)
+    clipped_ymin = max(ymin, raster_bounds.bottom)
+    clipped_xmax = min(xmax, raster_bounds.right)
+    clipped_ymax = min(ymax, raster_bounds.top)
+
+    if clipped_xmin >= clipped_xmax or clipped_ymin >= clipped_ymax:
+        raise ValueError(
+            f"ROI does not intersect the raster (raster extent: {raster.bounds}). "
+            f"Verify that roi_crs='{roi_crs}' matches the coordinate system of "
+            f"your xmin/ymin/xmax/ymax values."
+        )
+
     try:
-        window: Window = from_bounds(xmin, ymin, xmax, ymax, transform=raster.transform)
+        window: Window = from_bounds(
+            clipped_xmin,
+            clipped_ymin,
+            clipped_xmax,
+            clipped_ymax,
+            transform=raster.transform,
+        )
     except Exception as e:
         raise ValueError(
             f"Could not compute raster window for ROI bounds "
@@ -91,6 +111,18 @@ def clip_raster_to_roi(
             f"Check that roi_crs='{roi_crs}' is correct and that the ROI "
             f"coordinates are valid in that CRS."
         )
+
+    # Snap to pixel boundaries and clamp to the raster extent so small ROIs
+    # read only the intersecting window instead of an oversized float window.
+    full_window = Window(col_off=0, row_off=0, width=raster.width, height=raster.height)
+    try:
+        window = window.round_offsets().round_lengths().intersection(full_window)
+    except WindowError as e:
+        raise ValueError(
+            f"ROI does not intersect the raster (raster extent: {raster.bounds}). "
+            f"Verify that roi_crs='{roi_crs}' matches the coordinate system of "
+            f"your xmin/ymin/xmax/ymax values."
+        ) from e
 
     data = raster.read(1, window=window, masked=True)
     transform = raster.window_transform(window)
