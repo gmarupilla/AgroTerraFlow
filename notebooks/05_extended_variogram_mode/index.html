@@ -10,13 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://gmarupilla.github.io/AgroTerraFlow/notebooks/02_sensitivity_analysis/">
+        <link rel="canonical" href="https://gmarupilla.github.io/AgroTerraFlow/notebooks/05_extended_variogram_mode/">
       
       
-        <link rel="prev" href="../05_extended_variogram_mode/">
+        <link rel="prev" href="../kriging_uncertainty_demo/">
       
       
-        <link rel="next" href="../03_model_validation/">
+        <link rel="next" href="../02_sensitivity_analysis/">
       
       
         
@@ -27,7 +27,7 @@
     
     
       
-        <title>Sensitivity Analysis Demo - TerraFlow</title>
+        <title>Extended Variogram Mode - TerraFlow</title>
       
     
     
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#sensitivity-analysis-demo" class="md-skip">
+        <a href="#extended-variogram-mode" class="md-skip">
           Skip to content
         </a>
       
@@ -121,7 +121,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Sensitivity Analysis Demo
+              Extended Variogram Mode
             
           </span>
         </div>
@@ -1597,10 +1597,19 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../05_extended_variogram_mode/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1616,6 +1625,7 @@
   
 
       </a>
+      
     </li>
   
 
@@ -1625,37 +1635,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Sensitivity Analysis Demo
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../02_sensitivity_analysis/" class="md-nav__link">
         
   
   
@@ -1671,72 +1654,6 @@
   
 
       </a>
-      
-        
-
-  
-
-<nav class="md-nav md-nav--secondary" aria-label="On this page">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      On this page
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#config-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Config setup
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#inspect-the-results" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Inspect the results
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#interpreting-results" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Interpreting results
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        References
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1913,58 +1830,6 @@
   
     
   
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      On this page
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#config-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Config setup
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#inspect-the-results" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Inspect the results
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#interpreting-results" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Interpreting results
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        References
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
   
 </nav>
                   </div>
@@ -2705,31 +2570,23 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=sens-intro">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=8a90e928">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="sensitivity-analysis-demo">Sensitivity Analysis Demo<a class="anchor-link" href="#sensitivity-analysis-demo">¶</a></h1><p>This notebook demonstrates TerraFlow's sensitivity analysis workflow:</p>
-<ul>
-<li><strong>Sobol' indices</strong> (S1, ST): quantify how much each <code>ModelParams</code> weight independently
-and in total drives score variance.</li>
-<li><strong>Morris elementary effects</strong> (μ*, σ): fast screening to rank parameters by influence
-without requiring a full pipeline run.</li>
-</ul>
-<p>Sensitivity analysis helps answer: <em>if I perturb <code>w_v</code> vs <code>w_t</code>, which one changes my
-suitability scores most?</em></p>
+<h1 id="extended-variogram-mode">Extended Variogram Mode<a class="anchor-link" href="#extended-variogram-mode">¶</a></h1><p>This notebook shows how to enable TerraFlow's extended kriging variogram search on a small synthetic station network. Extended mode evaluates the default spherical, exponential, and Gaussian candidates plus nested variogram candidates, then records candidate LOOCV scores in <code>interpolation_cv</code>.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=sens-imports">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=a83f3840">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-1">
@@ -2742,131 +2599,74 @@ suitability scores most?</em></p>
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">terraflow.sensitivity</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_sensitivity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">terraflow.climate</span><span class="w"> </span><span class="kn">import</span> <span class="n">ClimateInterpolator</span>
 
-<span class="c1"># ── Self-contained synthetic config (no real data files needed) ──────────</span>
-<span class="n">tmp</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">())</span>
-<span class="n">config_path</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">/</span> <span class="s2">"config.yml"</span>
-<span class="n">config_path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="sa">f</span><span class="s2">"""</span><span class="se">\</span>
-<span class="s2">    raster_path: /nonexistent/raster.tif</span>
-<span class="s2">    climate_csv: /nonexistent/climate.csv</span>
-<span class="s2">    output_dir: </span><span class="si">{</span><span class="n">tmp</span><span class="si">}</span><span class="s2">/outputs</span>
-<span class="s2">    roi:</span>
-<span class="s2">      xmin: -100.1</span>
-<span class="s2">      ymin: 39.9</span>
-<span class="s2">      xmax: -99.9</span>
-<span class="s2">      ymax: 40.1</span>
-<span class="s2">    model_params:</span>
-<span class="s2">      v_min: 0.0</span>
-<span class="s2">      v_max: 25.0</span>
-<span class="s2">      t_min: 0.0</span>
-<span class="s2">      t_max: 40.0</span>
-<span class="s2">      r_min: 0.0</span>
-<span class="s2">      r_max: 300.0</span>
-<span class="s2">      w_v: 0.4</span>
-<span class="s2">      w_t: 0.3</span>
-<span class="s2">      w_r: 0.3</span>
-<span class="s2">    sensitivity:</span>
-<span class="s2">      w_v:</span>
-<span class="s2">        low: 0.2</span>
-<span class="s2">        high: 0.5</span>
-<span class="s2">      w_t:</span>
-<span class="s2">        low: 0.2</span>
-<span class="s2">        high: 0.5</span>
-<span class="s2">      w_r:</span>
-<span class="s2">        low: 0.1</span>
-<span class="s2">        high: 0.4</span>
-<span class="s2">      n_samples: 64</span>
-<span class="s2">      method: both</span>
-<span class="s2">"""</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Temp config: </span><span class="si">{</span><span class="n">config_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">climate_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span>
+    <span class="p">{</span>
+        <span class="s2">"lat"</span><span class="p">:</span> <span class="p">[</span><span class="mf">39.97</span><span class="p">,</span> <span class="mf">39.97</span><span class="p">,</span> <span class="mf">39.97</span><span class="p">,</span> <span class="mf">39.97</span><span class="p">,</span> <span class="mf">40.00</span><span class="p">,</span> <span class="mf">40.00</span><span class="p">,</span> <span class="mf">40.00</span><span class="p">,</span> <span class="mf">40.00</span><span class="p">],</span>
+        <span class="s2">"lon"</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">100.03</span><span class="p">,</span> <span class="o">-</span><span class="mf">100.01</span><span class="p">,</span> <span class="o">-</span><span class="mf">99.99</span><span class="p">,</span> <span class="o">-</span><span class="mf">99.97</span><span class="p">,</span> <span class="o">-</span><span class="mf">100.03</span><span class="p">,</span> <span class="o">-</span><span class="mf">100.01</span><span class="p">,</span> <span class="o">-</span><span class="mf">99.99</span><span class="p">,</span> <span class="o">-</span><span class="mf">99.97</span><span class="p">],</span>
+        <span class="s2">"mean_temp"</span><span class="p">:</span> <span class="p">[</span><span class="mf">17.0</span><span class="p">,</span> <span class="mf">18.0</span><span class="p">,</span> <span class="mf">19.0</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">,</span> <span class="mf">21.0</span><span class="p">,</span> <span class="mf">22.0</span><span class="p">,</span> <span class="mf">23.0</span><span class="p">,</span> <span class="mf">24.0</span><span class="p">],</span>
+        <span class="s2">"total_rain"</span><span class="p">:</span> <span class="p">[</span><span class="mf">90.0</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">,</span> <span class="mf">110.0</span><span class="p">,</span> <span class="mf">120.0</span><span class="p">,</span> <span class="mf">130.0</span><span class="p">,</span> <span class="mf">140.0</span><span class="p">,</span> <span class="mf">150.0</span><span class="p">,</span> <span class="mf">160.0</span><span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="n">interpolator</span> <span class="o">=</span> <span class="n">ClimateInterpolator</span><span class="p">(</span>
+    <span class="n">climate_df</span><span class="o">=</span><span class="n">climate_df</span><span class="p">,</span>
+    <span class="n">strategy</span><span class="o">=</span><span class="s2">"spatial"</span><span class="p">,</span>
+    <span class="n">interpolation_method</span><span class="o">=</span><span class="s2">"kriging"</span><span class="p">,</span>
+    <span class="n">variogram_mode</span><span class="o">=</span><span class="s2">"extended"</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">interpolator</span><span class="o">.</span><span class="n">cv_metrics</span><span class="p">[</span><span class="s2">"candidate_scores"</span><span class="p">]</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import json
-import tempfile
-import textwrap
-from pathlib import Path
+<div class="clipboard-copy-txt" id="cell-1">import numpy as np
+import pandas as pd
 
-from terraflow.sensitivity import run_sensitivity
+from terraflow.climate import ClimateInterpolator
 
-# ── Self-contained synthetic config (no real data files needed) ──────────
-tmp = Path(tempfile.mkdtemp())
-config_path = tmp / "config.yml"
-config_path.write_text(textwrap.dedent(f"""\
-    raster_path: /nonexistent/raster.tif
-    climate_csv: /nonexistent/climate.csv
-    output_dir: {tmp}/outputs
-    roi:
-      xmin: -100.1
-      ymin: 39.9
-      xmax: -99.9
-      ymax: 40.1
-    model_params:
-      v_min: 0.0
-      v_max: 25.0
-      t_min: 0.0
-      t_max: 40.0
-      r_min: 0.0
-      r_max: 300.0
-      w_v: 0.4
-      w_t: 0.3
-      w_r: 0.3
-    sensitivity:
-      w_v:
-        low: 0.2
-        high: 0.5
-      w_t:
-        low: 0.2
-        high: 0.5
-      w_r:
-        low: 0.1
-        high: 0.4
-      n_samples: 64
-      method: both
-"""))
-print(f"Temp config: {config_path}")
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Temp config: /var/folders/h_/_bjpnb894kgf18frynwf6bww0000gn/T/tmp1w7f44qa/config.yml
-</pre>
+climate_df = pd.DataFrame(
+    {
+        "lat": [39.97, 39.97, 39.97, 39.97, 40.00, 40.00, 40.00, 40.00],
+        "lon": [-100.03, -100.01, -99.99, -99.97, -100.03, -100.01, -99.99, -99.97],
+        "mean_temp": [17.0, 18.0, 19.0, 20.0, 21.0, 22.0, 23.0, 24.0],
+        "total_rain": [90.0, 100.0, 110.0, 120.0, 130.0, 140.0, 150.0, 160.0],
+    }
+)
+
+interpolator = ClimateInterpolator(
+    climate_df=climate_df,
+    strategy="spatial",
+    interpolation_method="kriging",
+    variogram_mode="extended",
+)
+
+interpolator.cv_metrics["candidate_scores"]</div>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=sens-config-note">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=ad0b9292">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="config-setup">Config setup<a class="anchor-link" href="#config-setup">¶</a></h2><p>The config must include a <code>sensitivity:</code> block. The <code>examples/demo_config.yml</code> already
-has one — point to it here, or pass any config that includes a <code>sensitivity:</code> section.</p>
+<p>Use the default <code>variogram_mode: standard</code> for large station networks unless nested structures are specifically needed. Extended mode fits custom nested variograms before LOOCV, so it is intentionally more expensive than standard kriging.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=sens-run">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=8a9414ce">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
@@ -2879,307 +2679,17 @@ has one — point to it here, or pass any config that includes a <code>sensitivi
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">report_path</span> <span class="o">=</span> <span class="n">run_sensitivity</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Sensitivity report written to: </span><span class="si">{</span><span class="n">report_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-2">report_path = run_sensitivity(config_path)
-print(f"Sensitivity report written to: {report_path}")
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>INFO:terraflow:Running Sobol' analysis with N=64 (total evaluations: 512)
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output" data-mime-type="text/html" tabindex="0">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-style: italic">                            Sobol' Sensitivity Indices                            </span>
-┏━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┓
-┃<span style="font-weight: bold"> Rank </span>┃<span style="font-weight: bold"> Parameter </span>┃<span style="font-weight: bold"> S1 (first-order) </span>┃<span style="font-weight: bold"> S1 95% CI </span>┃<span style="font-weight: bold"> ST (total-order) </span>┃<span style="font-weight: bold"> ST 95% CI </span>┃
-┡━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━┩
-│<span style="font-weight: bold"> 1    </span>│<span style="font-weight: bold"> w_r       </span>│ 0.3392           │ ±0.2278   │ 0.3332           │ ±0.1198   │
-│<span style="font-weight: bold"> 2    </span>│<span style="font-weight: bold"> w_v       </span>│ 0.3273           │ ±0.1675   │ 0.3292           │ ±0.1181   │
-│<span style="font-weight: bold"> 3    </span>│<span style="font-weight: bold"> w_t       </span>│ 0.3358           │ ±0.2196   │ 0.3291           │ ±0.1215   │
-└──────┴───────────┴──────────────────┴───────────┴──────────────────┴───────────┘
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>INFO:terraflow:Running Morris analysis with 6 trajectories (total evaluations: 24)
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output" data-mime-type="text/html" tabindex="0">
-<pre style="white-space:pre;overflow-x:auto;line-height:normal;font-family:Menlo,'DejaVu Sans Mono',consolas,'Courier New',monospace"><span style="font-style: italic">                                  Morris Elementary Effects                                   </span>
-┏━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
-┃<span style="font-weight: bold"> Rank </span>┃<span style="font-weight: bold"> Parameter </span>┃<span style="font-weight: bold"> mu* (mean abs effect) </span>┃<span style="font-weight: bold"> mu* 95% CI </span>┃<span style="font-weight: bold"> mu (mean effect) </span>┃<span style="font-weight: bold"> sigma (std dev) </span>┃
-┡━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━┩
-│<span style="font-weight: bold"> 1    </span>│<span style="font-weight: bold"> w_r       </span>│ 0.1500                │ ±0.0000    │ 0.1500           │ 0.0000          │
-│<span style="font-weight: bold"> 2    </span>│<span style="font-weight: bold"> w_t       </span>│ 0.1500                │ ±0.0000    │ 0.1500           │ 0.0000          │
-│<span style="font-weight: bold"> 3    </span>│<span style="font-weight: bold"> w_v       </span>│ 0.1500                │ ±0.0000    │ 0.1500           │ 0.0000          │
-└──────┴───────────┴───────────────────────┴────────────┴──────────────────┴─────────────────┘
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>INFO:terraflow:Sensitivity report written to /var/folders/h_/_bjpnb894kgf18frynwf6bww0000gn/T/tmp1w7f44qa/outputs/sensitivity_report.json
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Sensitivity report written to: /var/folders/h_/_bjpnb894kgf18frynwf6bww0000gn/T/tmp1w7f44qa/outputs/sensitivity_report.json
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=sens-results-hdr">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="inspect-the-results">Inspect the results<a class="anchor-link" href="#inspect-the-results">¶</a></h2>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=sens-load">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">report_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">report</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">cell_lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">39.985</span><span class="p">,</span> <span class="mf">39.995</span><span class="p">])</span>
+<span class="n">cell_lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">100.005</span><span class="p">,</span> <span class="o">-</span><span class="mf">99.985</span><span class="p">])</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s2">"Keys in sensitivity_report.json:"</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">report</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+<span class="n">interpolator</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">cell_lats</span><span class="p">,</span> <span class="n">cell_lons</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">with open(report_path) as f:
-    report = json.load(f)
+<div class="clipboard-copy-txt" id="cell-2">cell_lats = np.array([39.985, 39.995])
+cell_lons = np.array([-100.005, -99.985])
 
-print("Keys in sensitivity_report.json:", list(report.keys()))</div>
+interpolator.interpolate(cell_lats, cell_lons)</div>
 </div>
 </div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Keys in sensitivity_report.json: ['schema_version', 'method', 'n_samples', 'parameters', 'bounds', 'timestamp', 'sobol', 'morris']
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=sens-sobol">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">sobol</span> <span class="o">=</span> <span class="n">report</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"sobol"</span><span class="p">)</span>
-<span class="k">if</span> <span class="n">sobol</span><span class="p">:</span>
-    <span class="n">params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sobol</span><span class="p">[</span><span class="s2">"S1"</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"Sobol' indices (S1 = first-order, ST = total-order):"</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'Parameter'</span><span class="si">:</span><span class="s2">&lt;12</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'S1'</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'ST'</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"-"</span> <span class="o">*</span> <span class="mi">30</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
-        <span class="n">s1</span> <span class="o">=</span> <span class="n">sobol</span><span class="p">[</span><span class="s2">"S1"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">))</span>
-        <span class="n">st</span> <span class="o">=</span> <span class="n">sobol</span><span class="p">[</span><span class="s2">"ST"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">))</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">param</span><span class="si">:</span><span class="s2">&lt;12</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">s1</span><span class="si">:</span><span class="s2">&gt;8.4f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">st</span><span class="si">:</span><span class="s2">&gt;8.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"No Sobol' results (method was not 'sobol' or 'both')"</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-4">sobol = report.get("sobol")
-if sobol:
-    params = list(sobol["S1"].keys())
-    print("Sobol' indices (S1 = first-order, ST = total-order):")
-    print(f"{'Parameter':&lt;12} {'S1':&gt;8} {'ST':&gt;8}")
-    print("-" * 30)
-    for param in params:
-        s1 = sobol["S1"].get(param, float("nan"))
-        st = sobol["ST"].get(param, float("nan"))
-        print(f"{param:&lt;12} {s1:&gt;8.4f} {st:&gt;8.4f}")
-else:
-    print("No Sobol' results (method was not 'sobol' or 'both')")
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Sobol' indices (S1 = first-order, ST = total-order):
-Parameter          S1       ST
-------------------------------
-w_v            0.3273   0.3292
-w_t            0.3358   0.3291
-w_r            0.3392   0.3332
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=sens-morris">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-<div class="CodeMirror cm-s-jupyter">
-<div class="zeroclipboard-container">
-<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
-<div>
-<span class="notice" hidden="">Copied!</span>
-<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
-<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
-</svg>
-</div>
-</clipboard-copy>
-</div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">morris</span> <span class="o">=</span> <span class="n">report</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"morris"</span><span class="p">)</span>
-<span class="k">if</span> <span class="n">morris</span><span class="p">:</span>
-    <span class="n">params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">morris</span><span class="p">[</span><span class="s2">"mu_star"</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"Morris elementary effects (mu_star = mean |effect|, sigma = std):"</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="s1">'Parameter'</span><span class="si">:</span><span class="s2">&lt;12</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'mu_star'</span><span class="si">:</span><span class="s2">&gt;10</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">'sigma'</span><span class="si">:</span><span class="s2">&gt;8</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"-"</span> <span class="o">*</span> <span class="mi">32</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
-        <span class="n">mu</span> <span class="o">=</span> <span class="n">morris</span><span class="p">[</span><span class="s2">"mu_star"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">))</span>
-        <span class="n">sig</span> <span class="o">=</span> <span class="n">morris</span><span class="p">[</span><span class="s2">"sigma"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"nan"</span><span class="p">))</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">param</span><span class="si">:</span><span class="s2">&lt;12</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">mu</span><span class="si">:</span><span class="s2">&gt;10.4f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">sig</span><span class="si">:</span><span class="s2">&gt;8.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"No Morris results (method was not 'morris' or 'both')"</span><span class="p">)</span>
-</pre></div>
-<div class="clipboard-copy-txt" id="cell-5">morris = report.get("morris")
-if morris:
-    params = list(morris["mu_star"].keys())
-    print("Morris elementary effects (mu_star = mean |effect|, sigma = std):")
-    print(f"{'Parameter':&lt;12} {'mu_star':&gt;10} {'sigma':&gt;8}")
-    print("-" * 32)
-    for param in params:
-        mu = morris["mu_star"].get(param, float("nan"))
-        sig = morris["sigma"].get(param, float("nan"))
-        print(f"{param:&lt;12} {mu:&gt;10.4f} {sig:&gt;8.4f}")
-else:
-    print("No Morris results (method was not 'morris' or 'both')")
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-<div class="jp-OutputArea jp-Cell-outputArea">
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Morris elementary effects (mu_star = mean |effect|, sigma = std):
-Parameter       mu_star    sigma
---------------------------------
-w_v              0.1500   0.0000
-w_t              0.1500   0.0000
-w_r              0.1500   0.0000
-</pre>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=sens-interp">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="interpreting-results">Interpreting results<a class="anchor-link" href="#interpreting-results">¶</a></h2><p><strong>Sobol' S1 (first-order index):</strong> The fraction of output variance explained by a single
-parameter alone. High S1 → parameter is individually important.</p>
-<p><strong>Sobol' ST (total-order index):</strong> Variance fraction including all interactions. If
-<code>ST &gt;&gt; S1</code> for a parameter, it interacts strongly with others.</p>
-<p><strong>Morris μ*</strong> (mean absolute elementary effect): Overall sensitivity rank. Higher μ*
-→ more influential parameter.</p>
-<p><strong>Morris σ:</strong> Standard deviation of elementary effects. High σ relative to μ* suggests
-non-linear behaviour or interactions.</p>
-<p><strong>Practical guidance:</strong> Parameters with low ST can often be fixed at their default values
-without loss of model fidelity.</p>
-</div>
-</div>
-</div>
-</div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=sens-refs">
-<div class="jp-Cell-inputWrapper" tabindex="0">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="references">References<a class="anchor-link" href="#references">¶</a></h2><ul>
-<li>Saltelli, A. et al. (2010). Variance based sensitivity analysis of model output. Design
-and estimator for the total sensitivity index. <em>Comput. Phys. Commun.</em>, 181(2), 259–270.</li>
-<li>Morris, M.D. (1991). Factorial sampling plans for preliminary computational experiments.
-<em>Technometrics</em>, 33(2), 161–174.</li>
-<li>Herman, J. &amp; Usher, W. (2017). SALib: An open-source Python library for sensitivity
-analysis. <em>J. Open Source Softw.</em>, 2(9), 97.</li>
-</ul>
 </div>
 </div>
 </div>
@@ -3228,7 +2738,7 @@ analysis. <em>J. Open Source Softw.</em>, 2(9), 97.</li>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../05_extended_variogram_mode/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Extended Variogram Mode">
+          <a href="../kriging_uncertainty_demo/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Kriging Interpolation and Score Uncertainty">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -3238,20 +2748,20 @@ analysis. <em>J. Open Source Softw.</em>, 2(9), 97.</li>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Extended Variogram Mode
+                Kriging Interpolation and Score Uncertainty
               </div>
             </div>
           </a>
         
         
           
-          <a href="../03_model_validation/" class="md-footer__link md-footer__link--next" aria-label="Next: Model Validation Demo">
+          <a href="../02_sensitivity_analysis/" class="md-footer__link md-footer__link--next" aria-label="Next: Sensitivity Analysis Demo">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Model Validation Demo
+                Sensitivity Analysis Demo
               </div>
             </div>
             <div class="md-footer__button md-icon">
