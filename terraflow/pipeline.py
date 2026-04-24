@@ -289,6 +289,32 @@ def _atomic_write_parquet(path: Path, df: pd.DataFrame, schema_meta: dict) -> No
         raise
 
 
+def _read_features_schema_version(path: Path) -> Optional[str]:
+    """Return the ``terraflow_schema_version`` embedded in a Parquet file.
+
+    Returns ``None`` if the file is unreadable or the metadata key is absent.
+    Reading only the schema (not the column data) is cheap — a few KB at
+    most — and lets cache invalidation happen without materialising the
+    DataFrame (#39).
+    """
+    try:
+        import pyarrow.parquet as pq
+
+        schema = pq.read_schema(path)
+        meta = schema.metadata or {}
+        raw = meta.get(b"terraflow_schema_version")
+        if raw is None:
+            return None
+        return raw.decode() if isinstance(raw, (bytes, bytearray)) else str(raw)
+    except Exception as exc:  # noqa: BLE001 — cache corruption shouldn't crash the run
+        logger.warning(
+            "Could not read schema version from %s (%s); treating cache as stale.",
+            path,
+            exc,
+        )
+        return None
+
+
 def _get_git_sha() -> Optional[str]:
     """Return the current HEAD SHA, or ``None`` if not in a git repo."""
     try:
@@ -485,6 +511,27 @@ def _build_report(
     if interpolator.variogram_params:
         report["kriging_diagnostics"] = interpolator.variogram_params
 
+    if interpolator.fallback_to_mean:
+        fallback_by_var = dict(interpolator.fallback_cells_by_variable)
+        total_fallback = int(sum(fallback_by_var.values()))
+        report["interpolation_fallback"] = {
+            "fallback_cells_by_variable": fallback_by_var,
+            "fallback_cells_total": total_fallback,
+            "n_cells_sampled": int(n_cells_sampled),
+        }
+        if n_cells_sampled > 0:
+            for var, count in fallback_by_var.items():
+                ratio = count / n_cells_sampled
+                if ratio > 0.10:
+                    logger.warning(
+                        "Variable '%s' required fallback-to-mean for %d/%d cells "
+                        "(%.1f%%); spatial coverage is poor for this variable (#38).",
+                        var,
+                        count,
+                        n_cells_sampled,
+                        ratio * 100,
+                    )
+
     if mc_ci_cols:
         ci_low = df["score_ci_low"].to_numpy()
         ci_high = df["score_ci_high"].to_numpy()
@@ -569,13 +616,22 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         run_dir / "report.json",
     ]
     if all(p.exists() for p in _required_artifacts):
-        logger.info(
-            f"Detected identical run {run_fingerprint} — all artifacts present, returning cached result."
+        cached_version = _read_features_schema_version(run_dir / "features.parquet")
+        if cached_version == FEATURES_SCHEMA_VERSION:
+            logger.info(
+                f"Detected identical run {run_fingerprint} — all artifacts present, returning cached result."
+            )
+            df = pd.read_parquet(run_dir / "features.parquet")
+            df.attrs["run_fingerprint"] = run_fingerprint
+            df.attrs["run_dir"] = str(run_dir)
+            return df
+        logger.warning(
+            "Cached features.parquet at %s has schema_version=%r but current "
+            "FEATURES_SCHEMA_VERSION=%r; invalidating cache and recomputing (#39).",
+            run_dir,
+            cached_version,
+            FEATURES_SCHEMA_VERSION,
         )
-        df = pd.read_parquet(run_dir / "features.parquet")
-        df.attrs["run_fingerprint"] = run_fingerprint
-        df.attrs["run_dir"] = str(run_dir)
-        return df
 
     _t_catalog_start = time.perf_counter()
     catalog = build_data_catalog(cfg.raster_path, cfg.climate_csv)
@@ -619,6 +675,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         raster,
         cfg.roi.model_dump(),
         roi_crs=cfg.roi.roi_crs,
+        band=cfg.raster_band,
     )
     _t_clip = time.perf_counter() - _t_clip_start
     logger.info("Clipped raster to ROI")

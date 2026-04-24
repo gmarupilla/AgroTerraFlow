@@ -1,14 +1,16 @@
 ---
-title: "TerraFlow: A Reproducible Workflow for Geospatial Agricultural Modeling"
+title: "TerraFlow: A Reproducible, Uncertainty-Aware Geospatial Workflow for Agricultural Suitability Modelling"
 tags:
   - Python
   - geospatial
   - agriculture
+  - kriging
+  - sensitivity analysis
   - reproducibility
-  - workflow
 authors:
   - name: Gnaneswara Marupilla
     orcid: 0000-0002-6030-8707
+    corresponding: true
     affiliation: '1'
   - name: Chandhini Bayina
     orcid: 0009-0002-1359-1762
@@ -18,7 +20,7 @@ affiliations:
     name: Independent Researcher & Software Engineer (Scientific Computing)
   - index: 2
     name: University of Central Missouri, Missouri, United States
-date: 2025-11-27
+date: 23 April 2026
 bibliography: biblio.bib
 repository-code: 'https://github.com/gmarupilla/AgroTerraFlow'
 url: 'https://terraflow.marupilla.dev'
@@ -29,251 +31,182 @@ identifiers:
     description: Zenodo archive (pre-JOSS publication)
 ---
 
-
 # Summary
 
-TerraFlow is an open-source Python library designed to provide reproducible,
-auditable geospatial workflows for agricultural and environmental data science.
-It provides a modular, configuration-driven pipeline for loading raster
-datasets (e.g., land-cover maps, soil indices), clipping them to a user-defined
-region of interest (ROI), merging them with spatially-interpolated climate
-observations, computing per-cell suitability scores, and exporting
-analysis-ready artifacts with full provenance.
+TerraFlow is an open-source Python library that turns a raster (e.g. a
+land-cover GeoTIFF), a table of weather-station observations, and a YAML
+configuration into a scored per-cell suitability table with complete,
+machine-readable provenance.  A single `terraflow run` invocation clips
+the raster to a user-specified region of interest, reprojects it to
+WGS84, spatially interpolates station climate to cell centroids (linear,
+inverse-distance, or Ordinary Kriging with automatic variogram
+selection), computes a normalised weighted suitability score, and
+writes three guaranteed artifacts — `features.parquet`, `manifest.json`,
+`report.json` — to a content-addressable run directory.  Two companion
+sub-commands, `terraflow sensitivity` and `terraflow validate`, produce
+Sobol' and Morris indices [@herman2017salib; @saltelli2008global] and
+spatial block cross-validation with Cohen's kappa and Moran's I on the
+same run.  Identical inputs always produce the same `run_fingerprint`,
+making results independently verifiable.
 
-Unlike ad-hoc script collections, every TerraFlow run produces three guaranteed
-output artifacts — a Parquet feature table, a machine-readable provenance
-manifest, and a QA report — stored under a deterministic, content-addressable
-run directory.  The same configuration and input data always yield the same run
-fingerprint, making results independently verifiable.
+![TerraFlow architecture showing configuration, pipeline orchestration, ingestion, geospatial operations, modelling, and outputs.](figure1.jpeg){ width=85% }
 
-![TerraFlow architecture showing configuration, pipeline orchestration, ingestion, geospatial operations, modeling, and outputs.](figure1.jpeg)
+# Statement of need
 
-# Statement of Need
+Scientists building agricultural or environmental suitability maps
+routinely stitch together a raster product (e.g. the USDA Cropland
+Data Layer [@usda_cdl]), point climate observations, and a scoring
+model.  The stitching is typically done as a collection of
+notebooks and ad-hoc scripts, each of which re-implements ROI clipping,
+CRS alignment, station-to-cell interpolation, nodata accounting, and
+result export.  Three failures recur: (i) results are not reproducible
+because file paths, package versions, or random seeds drift silently
+between runs; (ii) interpolation uncertainty and model-parameter
+sensitivity are rarely quantified, so downstream claims rest on a
+single unvalidated score; and (iii) reviewers and collaborators have
+no reliable way to regenerate a specific figure from a specific
+configuration and specific input bytes.
 
-Geospatial workflows in agriculture frequently combine public raster products
-such as the USDA Cropland Data Layer (CDL) [@usda_cdl] with tabular climate
-summaries, soil data, or management records.  Typical tasks include reading
-multi-band or single-band GeoTIFFs, clipping to a study area, spatial
-interpolation of point climate observations, feature engineering, and exporting
-scored outputs.
+TerraFlow addresses all three by providing a single configuration-driven
+pipeline that: (a) fingerprints every run from the canonicalised YAML
+config plus SHA-256 content hashes of each input and writes an atomic
+`manifest.json`; (b) supports Ordinary Kriging with leave-one-out
+cross-validation-based variogram selection and propagates per-cell
+kriging standard deviation into Monte-Carlo confidence intervals on the
+final score; and (c) ships global sensitivity analysis and spatial
+block validation as first-class subcommands whose outputs live in the
+same run directory as the primary artifacts.  The intended audience is
+agricultural data scientists, agronomy and ecology researchers, and
+graduate students who need a transparent, low-friction starting point
+without building a reproducibility and uncertainty stack from scratch.
 
-Existing tools address parts of this problem but not the full pipeline:
+# State of the field
 
-- **`rasterstats`** [@rasterstats] provides efficient zonal statistics from
-  raster + vector pairs, but does not handle climate interpolation, CRS
-  normalisation, or provenance tracking.
-- **`rioxarray` / `xarray`** [@rioxarray; @hoyer2017xarray] offer powerful
-  N-dimensional raster operations but require users to assemble their own
-  pipeline and provenance strategy.
-- **Google Earth Engine (GEE)** [@gorelick2017gee] enables planetary-scale
-  analysis but requires internet connectivity, a Google account, and does not
-  support offline or air-gapped environments.
-- **QGIS** [@qgis] provides an interactive GUI for geospatial analysis but is
-  not designed for scripted, reproducible batch workflows.
-- **`rasterio`** [@gillies2013rasterio] and **`pandas`** [@mckinney2010pandas]
-  are indispensable lower-level building blocks, but they leave the pipeline
-  assembly, validation, and provenance entirely to the user.
+Several tools cover parts of this pipeline but none cover it end-to-end
+with provenance and uncertainty as first-class concerns.
+`rasterstats` [@rasterstats] computes zonal statistics from
+raster–vector pairs but does not handle CRS normalisation, climate
+interpolation, or provenance.  `rioxarray` / `xarray`
+[@rioxarray; @hoyer2017xarray] provide powerful N-dimensional raster
+operations but leave pipeline assembly and provenance to the user.
+Google Earth Engine [@gorelick2017gee] enables planetary-scale
+analysis but requires internet access and a Google account and cannot
+be used in air-gapped environments common in government and
+agricultural workflows.  `QGIS` [@qgis] supplies an interactive GUI
+but is not designed for scripted, batch-reproducible runs.
+`rasterio` [@gillies2013rasterio] and `pandas` [@mckinney2010pandas]
+are indispensable lower-level building blocks but do not offer a
+pipeline, provenance layer, or uncertainty quantification.
+We built TerraFlow rather than contributing to these libraries because
+reproducibility and uncertainty propagation are architectural concerns
+that span every stage — ingest, clipping, interpolation, scoring,
+export — and cannot be bolted onto a statistics or tiling library
+without a top-level orchestration contract.
 
-TerraFlow fills the gap between these tools by providing a fully reproducible,
-tested, configuration-driven pipeline that integrates:
+# Software design
 
-1. Pydantic-validated YAML configuration for clarity and versioning.
-2. A `DataCatalog` abstraction that separates metadata collection from
-   orchestration, making ingestion testable in isolation.
-3. Spatially-aware climate interpolation (`scipy.griddata`) with
-   configurable fallback strategies.
-4. Automatic CRS detection and reprojection: output coordinates are always
-   WGS84 geographic degrees regardless of input raster projection.
-5. A deterministic run fingerprint computed from config + ROI geometry + input
-   file SHA-256 hashes (timestamp-independent), enabling content-addressed
-   run identities.
-6. Guaranteed output artifacts: `features.parquet` (schema v1), `manifest.json`,
-   and `report.json` written atomically to
-   `<output_dir>/runs/<run_fingerprint>/`.
-7. Automated tests (124+), continuous integration, and optional Docker execution.
+TerraFlow is organised into nine modules with strict contracts
+[@wilson2017good].  `config` validates the YAML configuration with
+Pydantic [@pydantic] before any I/O runs.  `ingest` builds a
+`DataCatalog` — an immutable metadata snapshot of each layer's CRS,
+bounds, nodata value, shape, and SHA-256 — without reading pixel
+arrays, separating availability checks from computation.  `geo`
+handles windowed ROI clipping and CRS reprojection via `pyproj`.
+`climate` implements three spatial-interpolation strategies; the
+kriging path uses `pykrige` and selects among spherical, exponential,
+Gaussian, and optionally nested variogram candidates [@cressie1993spatial]
+by leave-one-out cross-validation RMSE on the first climate variable.
+`model` computes the normalised weighted suitability score.  `pipeline`
+orchestrates the end-to-end flow, derives a `numpy.random.default_rng`
+seed from the SHA-256 of the run fingerprint, samples up to
+`max_cells` valid cells, and writes the artifacts atomically.
+`sensitivity` and `validation` are optional stages consuming the same
+DataCatalog, so every analysis is pinned to the exact inputs recorded
+in the manifest.  Two design decisions matter most for research use:
+every artifact is schema-versioned (the pipeline invalidates a cached
+run when `features.parquet` carries a stale `terraflow_schema_version`),
+and the `run_fingerprint` deliberately excludes file mtimes and
+absolute paths so the same content hashes produce the same fingerprint
+across machines and filesystem copies.
 
-The target audience includes agricultural data scientists, agronomy researchers,
-and graduate students who need a transparent, low-dependency starting point for
-geospatial modeling — without building a pipeline from scratch.
+![TerraFlow pipeline: configuration is canonicalised, input files are hashed, and outputs land under a content-addressable run directory.](figure2.jpeg){ width=85% }
 
-![TerraFlow pipeline workflow from configuration to final outputs.](figure2.jpeg)
+# Research impact statement
 
-# Software Description
+TerraFlow is a new release (v0.3.0) aimed at the near-term
+reproducibility needs of agricultural researchers.  Concrete
+community-readiness signals are in place: 231 automated tests across
+15 test files, an enforced 85 % coverage floor, type-checked Python
+3.10–3.12 on CI, a public PyPI package (`terraflow-agro`), a Homebrew
+tap for macOS, and a Dockerfile whose smoke test runs the full demo
+pipeline with `--network none` and verifies that `features.parquet`,
+`manifest.json`, and `report.json` are produced offline.  The
+documentation site publishes a reproducibility page enumerating what
+the run fingerprint covers and the known sources of non-determinism.
 
-## Architecture and Design
+To make the reproducibility guarantees concrete, we report the
+metrics produced by a single end-to-end run of the bundled demo
+(`terraflow run`, `sensitivity`, and `validate` on
+`examples/demo_config.yml`).  The demo ROI spans ~608 km × 233 km
+of western Kansas; the 20-station synthetic climate network is
+interpolated to 2 000 sampled raster cells:
 
-TerraFlow is organised into modules with strict boundary contracts, following
-the principle of separation of concerns [@wilson2017good]:
+| Stage | Metric | Value |
+|-------|--------|-------|
+| Pipeline | Sampled cells / valid cells in ROI | 2 000 / 137 592 (97 % coverage) |
+| Pipeline | Total wall-clock runtime | 0.35 s |
+| Kriging  | Selected variogram model | spherical |
+| Kriging  | LOOCV RMSE, `mean_temp` | 0.29 °C |
+| Kriging  | LOOCV RMSE, `total_rain` | 7.01 mm |
+| Monte-Carlo | 90 % score CI mean width | 0.073 (n = 200 draws) |
+| Sobol' | S1 indices (`w_v`, `w_t`, `w_r`) | 0.331, 0.333, 0.333 |
+| Sobol' | ST indices (`w_v`, `w_t`, `w_r`) | 0.333, 0.333, 0.333 |
+| Block CV | Mean fold accuracy (5 folds) | 0.48 |
+| Kappa | Cohen's κ against reference CSV | −0.05 |
+| Spatial | Moran's I on score residuals | 0.19 |
 
-### `config`
+The kriging LOOCV RMSE on `mean_temp` is small relative to the 16.8–22.0 °C
+inter-station range, confirming that the selected spherical variogram
+captures the synthetic climate gradient.  The balanced Sobol' indices
+are the expected result of weights constrained to sum to one over
+variables with comparable normalised dynamic range; they demonstrate
+the full sensitivity-analysis pipeline rather than a scientific claim
+about the demo data.  The near-zero Cohen's κ is likewise expected —
+the demo raster is randomised crop codes and the reference labels are
+independent — and its purpose here is to show that the validation
+stage emits the metric, not that the demo model predicts reality.  A
+reviewer can reproduce every number in the table by running
+`make get-demo-data && terraflow run -c examples/demo_config.yml` and
+the two companion subcommands, and can verify the published
+`run_fingerprint` matches without needing any shared compute
+infrastructure.  We expect adoption among graduate courses and
+agronomy research groups that currently maintain ad-hoc scripted
+pipelines; usage metrics (PyPI downloads, GitHub stars, citation
+graph via Zenodo DOI 10.5281/zenodo.18490119) will be reported in
+future releases.
 
-Validates all configuration fields using Pydantic [@pydantic], including raster
-paths, climate CSV paths, ROI bounding box coordinates, CRS specification,
-maximum sample counts, output directories, and model weights.  Configuration
-is declared in YAML and validated before any I/O begins, providing early,
-actionable error messages.
+# AI usage disclosure
 
-### `ingest`
-
-Loads raster datasets via `rasterio` [@gillies2013rasterio] and climate tables
-via `pandas` [@mckinney2010pandas].  The module exposes a `DataCatalog`
-abstraction — a Pydantic model collecting CRS, spatial bounds, nodata value,
-dtype, shape, and SHA-256 fingerprint for each input layer.  The `DataCatalog`
-interface enforces that the ingest layer resolves metadata only and must not
-orchestrate pipeline steps or write final features.
-
-### `geo`
-
-Handles ROI clipping and spatial operations:
-
-- Bounding box validation and CRS reprojection via `pyproj`.
-- ROI clipping using windowed reads (`rasterio`), respecting native nodata
-  masking.
-- Detection and rejection of degenerate clip windows (zero-area intersections).
-
-This keeps geospatial logic localised and testable in isolation.
-
-### `climate`
-
-Implements two strategies for aligning tabular climate observations to raster
-cells:
-
-- **Spatial interpolation** (`scipy.interpolate.griddata`): bilinear
-  interpolation of weather station values to cell centroids, with
-  nearest-neighbour fallback for extrapolation.
-- **Index matching**: row-order or cell-ID based alignment for pre-gridded
-  climate data.
-
-Global mean fallback (`fallback_to_mean`) handles sparse station networks.
-
-### `model`
-
-Implements a transparent, parametric suitability model that normalises
-vegetation index, mean temperature, and total rainfall to `[0, 1]` using
-user-defined min/max bounds, computes a weighted composite score, and assigns
-a categorical label (`low`, `medium`, `high`).  Although intentionally simple,
-the model demonstrates how TerraFlow can host domain-specific extensions
-including crop-type, hydrological, or risk models.
-
-### `core.run_identity`
-
-Computes a deterministic `run_fingerprint` from three content-addressable
-components:
-
-1. **Canonical config JSON** — YAML parsed and re-serialised with sorted keys.
-2. **ROI geometry hash** — Shapely geometry [@shapely] normalised via
-   `set_precision` (1×10⁻⁷°) and `normalize`, then SHA-256 hashed over WKB
-   bytes.  Equivalent polygons in different vertex orders produce identical
-   hashes.
-3. **Input file fingerprints** — SHA-256 + byte-size per file; file
-   modification timestamps are deliberately excluded so the fingerprint is
-   stable across filesystem copies and CI clones.
-
-The fingerprint is encoded as a base64url string and used as the run directory
-name, making run directories globally unique and content-addressed.
-
-### `pipeline`
-
-Coordinates the full workflow:
-
-1. Load and validate configuration; resolve relative paths.
-2. Compute run fingerprint; detect and return cached run if all artifacts
-   exist (no-op rerun).
-3. Build `DataCatalog` (metadata only, no pixel reads at this stage).
-4. Load raster and climate data; clip raster to ROI.
-5. Interpolate climate values to cell centroids.
-6. Sample valid (non-nodata) cells up to `max_cells`; reproject centroids
-   to WGS84.
-7. Compute suitability scores.
-8. Write `features.parquet`, `manifest.json`, `report.json`, and
-   `results.csv` atomically to `<output_dir>/runs/<run_fingerprint>/`.
-
-## Output Artifact Contract
-
-Every run produces a stable, schema-versioned set of artifacts:
-
-| Artifact | Schema version | Purpose |
-|---|---|---|
-| `features.parquet` | v1 (in Parquet metadata) | Tidy/wide per-cell feature table: `run_id`, `cell_id`, `lat`, `lon`, `v_index`, `mean_temp`, `total_rain`, `score`, `label` |
-| `manifest.json` | v1 | Config snapshot, input SHA-256 fingerprints, `DataCatalog` metadata, code version, git SHA, UTC timestamp |
-| `report.json` | v1 | Per-layer coverage fraction, nodata cell counts, raster/climate statistics, per-step wall-clock timings |
-
-The `run_id` column in `features.parquet` links every row back to
-`manifest.json`, enabling multi-run provenance joins.
-
-Apache Arrow / Parquet [@pyarrow] is used as the canonical output format
-because it is cross-platform, column-compressed, schema-preserving, and
-natively readable by Python, R, Julia, and DuckDB.
-
-### `viz`
-
-Produces interactive HTML maps using Plotly [@plotly] for exploratory analysis
-and stakeholder communication.
-
-# Reproducibility
-
-TerraFlow provides the following reproducibility guarantees:
-
-- **Deterministic run identity**: the `run_fingerprint` depends only on file
-  content (SHA-256), not on timestamps, machine identity, or execution order.
-- **Cached re-runs**: identical inputs produce a no-op — the pipeline detects
-  an existing run directory and returns the cached result without re-scoring.
-- **Atomic artifact writes**: each file is written to a temporary path and
-  renamed on success, preventing partially-written outputs from being
-  mistaken for complete results.
-- **CRS enforcement**: cell coordinates are always WGS84 geographic degrees in
-  output, tested for both geographic (EPSG:4326) and projected (EPSG:32614)
-  input rasters.
-- **Seeded cell sampling**: when fewer cells are requested than exist in the
-  ROI (`max_cells < n_valid_cells`), the sampled cell set is drawn using a
-  `numpy.random.default_rng` generator seeded from the SHA-256 of the
-  `run_fingerprint`.  Identical inputs always produce the same cell set.
-- **Automated tests**: 127+ tests across 14 test files cover artifact schema
-  contracts, determinism regression, CRS handling, nodata coverage, CLI
-  behaviour, and unit tests for each module.
-- **Continuous integration**: GitHub Actions CI runs lint, type checks, tests
-  with coverage, a packaging sanity check, and a synthetic-data smoke run on
-  every push and pull request.
-- **Pinned dependencies and Docker**: optional Docker execution provides a
-  fully reproducible environment across machines.
-
-# Example Usage
-
-The repository includes a demonstration configuration:
-
-```bash
-pip install terraflow-agro
-terraflow -c examples/demo_config.yml
-```
-
-Running this command generates, under `outputs/demo_run/runs/<fingerprint>/`:
-
-- `features.parquet` — per-cell suitability scores in analysis-ready Parquet format
-- `manifest.json` — full provenance record
-- `report.json` — QA summary including coverage fraction and step timings
-- `results.csv` — backward-compatible CSV
-
-Because all file paths, ROI bounds, and model parameters are declared in the
-YAML config, workflows are portable: sharing the config file and input data is
-sufficient to reproduce results on another machine.
-
-# Future Work
-
-Possible extensions include:
-
-- STAC/COG integration for scalable cloud-native geospatial retrieval.
-- Additional input layers: soil rasters, elevation (DEM), NDVI time series.
-- ML-based yield or risk prediction models as pipeline model extensions.
-- Uncertainty quantification and ensemble scoring.
-- Educational notebooks demonstrating geospatial modeling concepts.
+The authors used Anthropic Claude as a coding assistant during
+implementation of the kriging, sensitivity, validation, and export
+modules, and during the drafting of this manuscript.  All
+AI-assisted suggestions were reviewed, edited, and validated by the
+human authors before being committed or included.  Core design
+decisions — the DataCatalog boundary contract, the run-fingerprint
+hashing scheme, the choice of LOOCV-based variogram selection, the
+Monte-Carlo uncertainty propagation model, and the artifact schema —
+were made by the human authors.  All AI-assisted code is covered by
+the project's 233 automated tests and continuous-integration quality
+gates.
 
 # Acknowledgements
 
 TerraFlow builds on the scientific Python ecosystem including
 `rasterio` [@gillies2013rasterio], `pandas` [@mckinney2010pandas],
-Pydantic [@pydantic], Plotly [@plotly], Shapely [@shapely],
-`rasterstats` [@rasterstats], and Apache Arrow [@pyarrow].
-Sample raster data for demonstrations originates from the USDA National
-Agricultural Statistics Service Cropland Data Layer [@usda_cdl].
+`pykrige`, SALib [@herman2017salib], scikit-learn, Pydantic
+[@pydantic], Shapely [@shapely], `rasterstats` [@rasterstats], and
+Apache Arrow [@pyarrow].  Sample raster data originates from the USDA
+National Agricultural Statistics Service Cropland Data Layer
+[@usda_cdl], which is in the public domain (17 U.S.C. § 105).
 
-References
+# References

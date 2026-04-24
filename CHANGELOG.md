@@ -7,9 +7,26 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-04-23
+
 ### Added
 - `climate.variogram_mode` config for kriging. The default `standard` mode keeps the existing spherical/exponential/Gaussian candidate set; `extended` mode also evaluates nested variogram candidates and records LOOCV candidate scores in `report.json`.
 - Notebook `05_extended_variogram_mode.ipynb` demonstrating extended kriging variogram selection with synthetic station data.
+- `raster_band` top-level config field (default `1`): selects the 1-based rasterio band for multi-band inputs (CDL stacks, Sentinel rasters) so users no longer need to pre-extract bands (#42). Out-of-range values raise `ValueError` at pipeline start-up; the selected band is captured in `manifest.json` via the config snapshot.
+- `report.json` now includes an `interpolation_fallback` block with per-variable fallback-to-mean counts (`fallback_cells_by_variable`) plus the aggregate total, whenever `fallback_to_mean` is enabled (#38). A WARNING is logged for any variable whose fallback ratio exceeds 10 % of sampled cells, flagging poor spatial coverage before users read the report.
+- `docs/reproducibility.md`: consolidated documentation of what the run fingerprint covers, what it excludes, known sources of non-determinism (pykrige variogram fit across scipy versions, qhull triangulation tie-breaking, BLAS-dependent summation order), cache-invalidation behaviour, and a reviewer-oriented citation and verification checklist (#46). Linked from the README and the MkDocs nav.
+- `paper/biblio.bib`: added `herman2017salib` (SALib JOSS paper, doi:10.21105/joss.00097), `saltelli2008global` (Global Sensitivity Analysis: The Primer), and `cressie1993spatial` (Statistics for Spatial Data) BibTeX entries (#65). Cited in `paper/paper.md` alongside descriptions of the Ordinary Kriging climate path and the Sobol'/Morris sensitivity and spatial-validation analyses.
+- `make docker-smoke` target that builds the Docker image and runs the demo pipeline with `--network none`, asserting `features.parquet`, `manifest.json`, and `report.json` land under the mounted output directory (#67). Added as a dedicated `docker-smoke-offline` job in `.github/workflows/ci.yml` so every push verifies air-gapped reproducibility.
+- `paper/paper.md` rewritten to comply with the 2026 JOSS structural requirements: required sections now include Summary, Statement of Need, State of the Field, Software Design, Research Impact Statement, AI Usage Disclosure, Acknowledgements, and References (#66). The submission date is synced to the current v0.2.2 release, kriging and uncertainty quantification are described as shipped features rather than Future Work, and the JOSS-required AI usage disclosure is provided.
+- `paper/paper.md` "Research impact statement" now includes a quantitative results table produced by a full end-to-end run on the bundled demo (`terraflow run`, `sensitivity`, `validate`): kriging LOOCV RMSE per climate variable, MC confidence-interval widths, Sobol' S1 / ST indices, spatial-block-CV accuracy, Cohen's κ, and Moran's I on residuals (#64). Numbers are reproducible with `make get-demo-data && terraflow run/sensitivity/validate -c examples/demo_config.yml`.
+
+### Changed
+- `examples/demo_config.yml` now uses kriging interpolation with 200-sample Monte-Carlo uncertainty propagation and samples 2 000 cells, so the demo exercises the uncertainty and sensitivity pipelines end-to-end and produces the metrics table in `paper.md` (#64).
+- `data/demo_climate.csv` expanded from 5 clustered stations to 20 stations distributed across the full demo ROI, with a plausible west-to-east temperature and precipitation gradient.
+- `scripts/make_demo_raster.py` now generates a 609×234 raster at 1 km pixels covering the full demo ROI (western Kansas, lon -101..-94, lat 38..40) in EPSG:5070. Previous version produced a 779×779 patch at 30 m pixels that spanned only ~23 km × 23 km in eastern Kansas — inconsistent with the configured ROI.
+
+### Fixed
+- `terraflow sensitivity` now resolves `output_dir` relative to the config file's parent directory, matching `terraflow run` (#64 discovery). Previously, a relative `output_dir` was evaluated against the caller's working directory, so `sensitivity_report.json` could land outside the project tree when invoked from the repo root with a config that used `output_dir: ../outputs/...`.
 
 ### Changed
 - Removed decorative section-banner comments and self-evident inline comments throughout `pipeline.py`, `ingest.py`, `geo.py`, and `climate.py`; comments now appear only at genuinely complex logic.
@@ -19,6 +36,11 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ### Fixed
 - ROI clipping now snaps requested bounds to an intersecting pixel window so very small ROIs avoid oversized raster reads.
 - Closed resolved issues: H3-01 (#60), H3-02 (#61), H3-03 (#62), H3-04 (#63), and #40 (all implemented in prior phases).
+- `ClimateInterpolator` now resolves duplicate station coordinates by averaging numeric values at initialisation instead of only warning (#43). This prevents the singular-covariance failure mode in Ordinary Kriging when input CSVs contain repeated lat/lon entries (common with aggregated NOAA summaries); resolution count is logged at INFO.
+- Pipeline cache hits now verify the `terraflow_schema_version` embedded in `features.parquet` against the current `FEATURES_SCHEMA_VERSION` and re-run instead of silently returning stale artifacts when the version is mismatched or missing (#39). A WARNING log is emitted when invalidation occurs.
+
+### Tests
+- Added `TestMaxCellsBoundary` regression coverage in `tests/test_determinism.py` for `max_cells == n_valid_cells` and `max_cells > n_valid_cells`, pinning the seeded-sampling contract at the boundary (#37).
 
 ## [0.2.2] — 2026-04-12
 

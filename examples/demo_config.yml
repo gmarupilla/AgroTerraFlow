@@ -21,6 +21,8 @@ roi:
   xmax: -94    # East  (longitude, WGS84)
   ymax: 40     # North (latitude,  WGS84)
 
+max_cells: 2000
+
 model_params:
   v_min: 0
   v_max: 255
@@ -31,6 +33,14 @@ model_params:
   w_v: 0.4
   w_t: 0.3
   w_r: 0.3
+  uncertainty_samples: 200
+
+# Spatial interpolation — kriging exposes per-cell prediction standard
+# deviations that feed the Monte-Carlo confidence intervals above.
+climate:
+  strategy: spatial
+  interpolation_method: kriging
+  fallback_to_mean: true
 
 # Sensitivity analysis configuration (Phase 2)
 # Run with: terraflow sensitivity -c examples/demo_config.yml

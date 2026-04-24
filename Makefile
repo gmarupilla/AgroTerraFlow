@@ -7,7 +7,7 @@ PRE_COMMIT = .venv/bin/pre-commit
 MYPY = .venv/bin/mypy
 PIP_LICENSES = .venv/bin/pip-licenses
 
-.PHONY: help venv install dev test test-cov smoke-test typecheck license-check run build clean docker-build docker-run lint lint-fix pre-commit docs-serve docs-build paper get-demo-data
+.PHONY: help venv install dev test test-cov smoke-test typecheck license-check run build clean docker-build docker-run docker-smoke lint lint-fix pre-commit docs-serve docs-build paper get-demo-data
 
 help:
 	@echo "Available commands:"
@@ -24,6 +24,7 @@ help:
 	@echo "  make clean         - Remove build artifacts"
 	@echo "  make docker-build  - Build Docker image"
 	@echo "  make docker-run    - Run Docker image"
+	@echo "  make docker-smoke  - Build image and run demo pipeline with --network none to verify offline reproducibility"
 	@echo "  make release       - Bump version, tag, and push"
 	@echo "  make pre-commit    - Install git pre-commit hooks"
 	@echo "  make docs-serve    - Serve MkDocs site locally"
@@ -88,6 +89,35 @@ docker-run:
 		-v $(PWD):/app \
 		terraflow:latest \
 		--config examples/demo_config.yml
+
+# Offline smoke test — runs the demo pipeline entirely without network and
+# asserts that all three JOSS-required artifacts (features.parquet,
+# manifest.json, report.json) appear under the mounted output dir.
+# Uses --network none to guarantee the run cannot reach external services;
+# every input (synthetic raster, climate CSV, wheel) is baked into the
+# image at build time.  See issue #67.
+docker-smoke:
+	docker build -t terraflow:latest .
+	@set -e; \
+	out=$$(mktemp -d 2>/dev/null || mktemp -d -t terraflow-smoke); \
+	trap 'rm -rf "$$out"' EXIT; \
+	echo "Running demo pipeline in docker with --network none..."; \
+	docker run --rm --network none \
+		-v "$$out":/app/outputs \
+		terraflow:latest \
+		run --config examples/demo_config.yml; \
+	fp_dir=$$(ls -d "$$out"/demo_run/runs/*/ 2>/dev/null | head -n1); \
+	if [ -z "$$fp_dir" ]; then \
+		echo "docker-smoke FAILED: no run directory under $$out/demo_run/runs/"; \
+		exit 1; \
+	fi; \
+	for artifact in features.parquet manifest.json report.json; do \
+		if [ ! -f "$$fp_dir/$$artifact" ]; then \
+			echo "docker-smoke FAILED: missing $$fp_dir/$$artifact"; \
+			exit 1; \
+		fi; \
+	done; \
+	echo "docker-smoke OK: offline run produced all 3 artifacts in $$fp_dir"
 
 lint:
 	$(RUFF) check terraflow tests --fix

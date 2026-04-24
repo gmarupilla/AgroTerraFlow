@@ -13,7 +13,7 @@
 
 TerraFlow is a reproducible, config-driven geospatial workflow for agricultural suitability modeling. Give it a land-cover raster, a climate CSV, and a YAML config — it returns a scored, location-stamped results table with full provenance.
 
-**Documentation:** [terraflow.marupilla.dev](https://terraflow.marupilla.dev)
+**Documentation:** [terraflow.marupilla.dev](https://terraflow.marupilla.dev) — see the [Reproducibility page](https://terraflow.marupilla.dev/reproducibility/) for what the run fingerprint covers and known sources of non-determinism.
 
 ---
 

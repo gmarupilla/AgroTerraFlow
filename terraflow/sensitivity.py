@@ -241,6 +241,12 @@ def run_sensitivity(config_path: Path) -> Path:
     """
     data = load_config_dict(config_path)
     cfg = build_config(data)
+    # Resolve output_dir relative to the config file (mirroring run_pipeline)
+    # so `output_dir: ../outputs/demo_run` lands under the config's parent
+    # directory regardless of the caller's working directory.
+    config_dir = Path(config_path).resolve().parent
+    if not cfg.output_dir.is_absolute():
+        cfg.output_dir = (config_dir / cfg.output_dir).resolve()
 
     if cfg.sensitivity is None:
         raise ValueError(
