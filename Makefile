@@ -100,7 +100,8 @@ docker-smoke:
 	docker build -t terraflow:latest .
 	@set -e; \
 	out=$$(mktemp -d 2>/dev/null || mktemp -d -t terraflow-smoke); \
-	trap 'rm -rf "$$out"' EXIT; \
+	cleanup() { docker run --rm -v "$$out":/cleanup alpine:3 sh -c 'rm -rf /cleanup/*' 2>/dev/null || true; rmdir "$$out" 2>/dev/null || true; }; \
+	trap cleanup EXIT; \
 	echo "Running demo pipeline in docker with --network none..."; \
 	docker run --rm --network none \
 		-v "$$out":/app/outputs \
