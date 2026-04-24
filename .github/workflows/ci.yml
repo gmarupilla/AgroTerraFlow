@@ -85,3 +85,15 @@ jobs:
           test -f "$run_dir/features.parquet"
           test -f "$run_dir/manifest.json"
           test -f "$run_dir/report.json"
+
+  docker-smoke-offline:
+    # JOSS-04 (#67): reviewers must be able to reproduce results in an
+    # air-gapped environment.  Runs the demo pipeline with --network none
+    # to prove nothing fetches external data at runtime.
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run offline docker smoke
+        run: make docker-smoke

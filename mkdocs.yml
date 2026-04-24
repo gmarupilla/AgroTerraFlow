@@ -131,6 +131,7 @@ nav:
   - Home: index.md
   - TerraFlow in 10 Minutes: quickstart.md
   - Field Guide: field-guide.md
+  - Reproducibility: reproducibility.md
   - Architecture:
       - TerraFlow Overview: architecture/overview.md
       - ADR-001 Band Selection: architecture/adr-001-band-selection.md

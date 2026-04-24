@@ -16,6 +16,7 @@ def clip_raster_to_roi(
     raster: DatasetReader,
     roi: Dict[str, Any],
     roi_crs: str = "EPSG:4326",
+    band: int = 1,
 ) -> Tuple[np.ma.MaskedArray, rasterio.Affine]:
     """
     Clip a raster to the region of interest and return data & transform.
@@ -48,6 +49,11 @@ def clip_raster_to_roi(
     """
     if raster.count < 1:
         raise ValueError("Raster has no bands. Cannot read band 1.")
+    if band < 1 or band > raster.count:
+        raise ValueError(
+            f"raster_band={band} is out of range; raster has {raster.count} band(s). "
+            f"Valid values: 1..{raster.count}."
+        )
 
     if roi["xmin"] >= roi["xmax"] or roi["ymin"] >= roi["ymax"]:
         raise ValueError(
@@ -124,7 +130,7 @@ def clip_raster_to_roi(
             f"your xmin/ymin/xmax/ymax values."
         ) from e
 
-    data = raster.read(1, window=window, masked=True)
+    data = raster.read(band, window=window, masked=True)
     transform = raster.window_transform(window)
 
     if data.size == 0:

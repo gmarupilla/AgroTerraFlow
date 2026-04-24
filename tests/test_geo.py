@@ -270,3 +270,45 @@ def test_clip_raster_to_roi_reads_tight_window_for_small_roi(
     assert window.width == 1
     assert window.height == 1
     assert window.width * window.height < 100
+
+
+def _make_multiband_raster(tmp_path: Path, n_bands: int = 3) -> Path:
+    """Write a 3x3 synthetic raster with ``n_bands`` bands.  Band k holds
+    the constant value ``k * 10`` so tests can verify the selected band."""
+    raster_path = tmp_path / "mb_raster.tif"
+    transform = from_origin(west=-100.0, north=40.0, xsize=0.01, ysize=0.01)
+    with rasterio.open(
+        raster_path,
+        "w",
+        driver="GTiff",
+        height=3,
+        width=3,
+        count=n_bands,
+        dtype="float32",
+        crs="EPSG:4326",
+        transform=transform,
+    ) as dst:
+        for b in range(1, n_bands + 1):
+            dst.write(np.full((3, 3), b * 10.0, dtype="float32"), b)
+    return raster_path
+
+
+def test_clip_raster_selects_requested_band(tmp_path: Path):
+    """``band=2`` must return band-2 values, not band-1 (#42)."""
+    raster_path = _make_multiband_raster(tmp_path, n_bands=3)
+    roi = {"xmin": -100.0, "ymin": 39.97, "xmax": -99.97, "ymax": 40.0}
+    with rasterio.open(raster_path) as src:
+        data_b1, _ = clip_raster_to_roi(src, roi, band=1)
+        data_b2, _ = clip_raster_to_roi(src, roi, band=2)
+        data_b3, _ = clip_raster_to_roi(src, roi, band=3)
+    assert np.all(data_b1 == 10.0)
+    assert np.all(data_b2 == 20.0)
+    assert np.all(data_b3 == 30.0)
+
+
+def test_clip_raster_out_of_range_band_raises(tmp_path: Path):
+    raster_path = _make_multiband_raster(tmp_path, n_bands=2)
+    roi = {"xmin": -100.0, "ymin": 39.97, "xmax": -99.97, "ymax": 40.0}
+    with rasterio.open(raster_path) as src:
+        with pytest.raises(ValueError, match="out of range"):
+            clip_raster_to_roi(src, roi, band=5)

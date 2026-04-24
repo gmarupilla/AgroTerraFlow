@@ -121,8 +121,7 @@ max_cells: 10
 
 def test_cli_raster_file_not_found(tmp_path: Path, capsys):
     """Test CLI error handling when raster file doesn't exist."""
-    cfg_content = textwrap.dedent(
-        """
+    cfg_content = textwrap.dedent("""
         raster_path: "nonexistent_raster.tif"
         climate_csv: "data/climate.csv"
         output_dir: "outputs"
@@ -143,8 +142,7 @@ def test_cli_raster_file_not_found(tmp_path: Path, capsys):
           w_t: 0.3
           w_r: 0.3
         max_cells: 10
-        """
-    )
+        """)
 
     cfg_file = tmp_path / "test_config.yml"
     cfg_file.write_text(cfg_content, encoding="utf-8")
@@ -164,8 +162,7 @@ def test_cli_climate_file_not_found(tmp_path: Path, capsys):
     import rasterio
     from rasterio.transform import from_origin
 
-    cfg_content = textwrap.dedent(
-        """
+    cfg_content = textwrap.dedent("""
         raster_path: "data/synthetic_raster.tif"
         climate_csv: "nonexistent_climate.csv"
         output_dir: "outputs"
@@ -186,8 +183,7 @@ def test_cli_climate_file_not_found(tmp_path: Path, capsys):
           w_t: 0.3
           w_r: 0.3
         max_cells: 10
-        """
-    )
+        """)
 
     cfg_file = tmp_path / "test_config.yml"
     cfg_file.write_text(cfg_content, encoding="utf-8")

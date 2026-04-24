@@ -285,6 +285,7 @@ class PipelineConfig(BaseModel):
     """
 
     raster_path: Path
+    raster_band: int = 1
     climate_csv: Path
     output_dir: Path
     roi: ROI
@@ -305,6 +306,21 @@ class PipelineConfig(BaseModel):
         """Ensure max_cells is a positive integer."""
         if v <= 0:
             raise ValueError(f"max_cells must be positive, got {v}")
+        return v
+
+    @field_validator("raster_band")
+    @classmethod
+    def validate_raster_band(cls, v: int) -> int:
+        """Ensure raster_band is a positive 1-based rasterio band index.
+
+        Existence of the band in the actual file is verified at pipeline
+        runtime, because we cannot know the band count at config-load time
+        without opening the raster (#42).
+        """
+        if v < 1:
+            raise ValueError(
+                f"raster_band is a 1-based rasterio index; must be >= 1, got {v}"
+            )
         return v
 
     def validate_all(self) -> None:

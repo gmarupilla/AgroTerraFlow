@@ -233,6 +233,10 @@ class ClimateInterpolator:
         self.cell_id_column = cell_id_column
         self.fallback_to_mean = fallback_to_mean
         self.cv_metrics: Dict = {}
+        # Per-variable count of interpolated NaNs that were replaced with the
+        # global mean during the most recent ``interpolate()`` call (#38).
+        # Zero-initialised lazily once ``climate_columns`` is known below.
+        self.fallback_cells_by_variable: Dict[str, int] = {}
         self._krig_variogram_model: str = "spherical"  # overwritten by _init_kriging
         self.variogram_params: dict = {}
         self._krig_variogram_parameters: Optional[Tuple[float, ...]] = None
@@ -449,11 +453,46 @@ class ClimateInterpolator:
                     f"Row {idx}: Invalid coordinate ({lat}, {lon}): {e}"
                 ) from e
 
-        duplicates = self.climate_df.duplicated(subset=["lat", "lon"], keep=False).sum()
-        if duplicates > 0:
-            logger.warning(
-                f"Found {duplicates} duplicate lat/lon coordinates in climate data. Interpolation may produce ambiguous results."
-            )
+        self._resolve_duplicate_stations()
+
+    def _resolve_duplicate_stations(self) -> None:
+        """Merge rows that share identical lat/lon by averaging numeric values.
+
+        Real-world station networks (e.g. aggregated NOAA summaries) may
+        contain multiple entries for the same coordinate.  Ordinary Kriging
+        builds a covariance matrix over station locations, and duplicate
+        coordinates produce a singular matrix that fails with opaque
+        ``pykrige`` errors (issue #43).  Averaging duplicate records
+        collapses them to a single station while preserving the measurement
+        information, and keeps determinism bit-stable because the merge is
+        purely a function of the input CSV.
+        """
+        dup_mask = self.climate_df.duplicated(subset=["lat", "lon"], keep=False)
+        n_duplicate_rows = int(dup_mask.sum())
+        if n_duplicate_rows == 0:
+            return
+
+        n_unique_dup_coords = int(
+            self.climate_df.loc[dup_mask, ["lat", "lon"]].drop_duplicates().shape[0]
+        )
+
+        agg: Dict[str, str] = {col: "mean" for col in self.climate_columns}
+        if self.cell_id_column and self.cell_id_column in self.climate_df.columns:
+            agg[self.cell_id_column] = "first"
+
+        merged = self.climate_df.groupby(
+            ["lat", "lon"], as_index=False, sort=False
+        ).agg(agg)
+
+        logger.info(
+            "Resolved %d duplicate station row(s) across %d distinct coordinate(s) "
+            "by averaging numeric values; %d -> %d stations.",
+            n_duplicate_rows,
+            n_unique_dup_coords,
+            len(self.climate_df),
+            len(merged),
+        )
+        self.climate_df = merged.reset_index(drop=True)
 
     def _compute_mean_climate(self) -> dict:
         """Cache mean values of each climate variable for fallback use."""
@@ -620,6 +659,8 @@ class ClimateInterpolator:
                 f"Got {len(cell_lats)} and {len(cell_lons)}"
             )
 
+        self.fallback_cells_by_variable = {col: 0 for col in self.climate_columns}
+
         if self.strategy == "spatial":
             return self._interpolate_spatial(cell_lats, cell_lons)
         else:
@@ -675,6 +716,7 @@ class ClimateInterpolator:
                 nan_mask = np.isnan(interp_values)
                 if nan_mask.any():
                     interp_values[nan_mask] = self._climate_mean[col]
+                    self.fallback_cells_by_variable[col] = int(nan_mask.sum())
                     logger.info(
                         f"Filled {nan_mask.sum()} cells with mean {col} ({self._climate_mean[col]:.3f}) due to extrapolation"
                     )
@@ -718,6 +760,7 @@ class ClimateInterpolator:
                 nan_mask = np.isnan(z_pred_arr)
                 if nan_mask.any():
                     z_pred_arr[nan_mask] = self._climate_mean[var]
+                    self.fallback_cells_by_variable[var] = int(nan_mask.sum())
                     logger.info(
                         f"Filled {nan_mask.sum()} NaN kriging predictions with mean {var}"
                     )
@@ -759,6 +802,7 @@ class ClimateInterpolator:
                 nan_mask = np.isnan(interp_values)
                 if nan_mask.any():
                     interp_values[nan_mask] = self._climate_mean[var]
+                    self.fallback_cells_by_variable[var] = int(nan_mask.sum())
 
             result[var] = interp_values
 
@@ -774,6 +818,7 @@ class ClimateInterpolator:
         if self.cell_id_column is None:
             if n_climate < n_cells:
                 if self.fallback_to_mean:
+                    n_filled = n_cells - n_climate
                     logger.warning(
                         f"Climate records ({n_climate}) < cells ({n_cells}). "
                         "Using global mean for unmatched cells."
@@ -784,6 +829,7 @@ class ClimateInterpolator:
                         while len(values) < n_cells:
                             values.append(self._climate_mean[col])
                         result_dict[col] = values[:n_cells]
+                        self.fallback_cells_by_variable[col] = n_filled
                     return pd.DataFrame(result_dict)
                 else:
                     raise ValueError(

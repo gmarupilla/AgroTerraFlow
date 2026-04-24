@@ -47,8 +47,7 @@ def _write_kriging_config(
     out_dir: Path,
     uncertainty_samples: int = 0,
 ) -> Path:
-    cfg = textwrap.dedent(
-        f"""
+    cfg = textwrap.dedent(f"""
         raster_path: "{raster}"
         climate_csv: "{climate}"
         output_dir: "{out_dir}"
@@ -77,8 +76,7 @@ def _write_kriging_config(
           interpolation_method: "kriging"
 
         max_cells: 5
-    """
-    )
+    """)
     cfg_file.write_text(cfg, encoding="utf-8")
     return cfg_file
 
@@ -90,8 +88,7 @@ def _write_linear_config(
     out_dir: Path,
     uncertainty_samples: int = 200,
 ) -> Path:
-    cfg = textwrap.dedent(
-        f"""
+    cfg = textwrap.dedent(f"""
         raster_path: "{raster}"
         climate_csv: "{climate}"
         output_dir: "{out_dir}"
@@ -120,8 +117,7 @@ def _write_linear_config(
           interpolation_method: "linear"
 
         max_cells: 5
-    """
-    )
+    """)
     cfg_file.write_text(cfg, encoding="utf-8")
     return cfg_file
 

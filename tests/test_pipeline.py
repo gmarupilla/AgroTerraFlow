@@ -19,8 +19,7 @@ def test_run_pipeline_with_synthetic_data(
 ):
     out_dir = tmp_path / "outputs"
 
-    cfg_content = textwrap.dedent(
-        f"""
+    cfg_content = textwrap.dedent(f"""
         raster_path: "{synthetic_raster}"
         climate_csv: "{synthetic_climate_csv}"
         output_dir: "{out_dir}"
@@ -44,8 +43,7 @@ def test_run_pipeline_with_synthetic_data(
           w_r: 0.3
 
         max_cells: 10
-        """
-    )
+        """)
 
     cfg_file = tmp_path / "cfg.yml"
     cfg_file.write_text(cfg_content, encoding="utf-8")
@@ -252,8 +250,7 @@ def _write_kriging_config(
     uncertainty_samples: int = 0,
 ) -> Path:
     """Write a pipeline config YAML file with kriging interpolation enabled."""
-    cfg = textwrap.dedent(
-        f"""
+    cfg = textwrap.dedent(f"""
         raster_path: "{raster_path}"
         climate_csv: "{climate_csv}"
         output_dir: "{output_dir}"
@@ -282,8 +279,7 @@ def _write_kriging_config(
           interpolation_method: "kriging"
 
         max_cells: 5
-    """
-    )
+    """)
     cfg_file.write_text(cfg, encoding="utf-8")
     return cfg_file
 
@@ -363,9 +359,7 @@ def test_resolve_run_dir_returns_deterministic_path(
 
     cfg_path = tmp_path / "cfg.yml"
     out_dir = tmp_path / "out"
-    cfg_path.write_text(
-        textwrap.dedent(
-            f"""
+    cfg_path.write_text(textwrap.dedent(f"""
         raster_path: "{synthetic_raster}"
         climate_csv: "{synthetic_climate_csv}"
         output_dir: "{out_dir}"
@@ -385,9 +379,7 @@ def test_resolve_run_dir_returns_deterministic_path(
           w_v: 0.4
           w_t: 0.3
           w_r: 0.3
-    """
-        )
-    )
+    """))
 
     run_dir = resolve_run_dir(cfg_path)
     assert run_dir.name  # fingerprint is non-empty
@@ -395,3 +387,279 @@ def test_resolve_run_dir_returns_deterministic_path(
 
     # Calling twice returns the same path (deterministic)
     assert resolve_run_dir(cfg_path) == run_dir
+
+
+class TestInterpolationFallbackReporting:
+    """Issue #38: ``report.json`` must break down fallback-to-mean counts
+    per climate variable so users can spot variables with poor spatial
+    coverage; a WARNING is emitted when any variable exceeds 10 %.
+    """
+
+    def _write_cfg(self, tmp_path: Path, raster: Path, climate: Path) -> Path:
+        cfg_path = tmp_path / "cfg.yml"
+        cfg_path.write_text(textwrap.dedent(f"""
+            raster_path: "{raster}"
+            climate_csv: "{climate}"
+            output_dir: "{tmp_path / 'out'}"
+            roi:
+              type: bbox
+              xmin: -100.05
+              ymin: 39.95
+              xmax: -99.95
+              ymax: 40.05
+            model_params:
+              v_min: 0.0
+              v_max: 25.0
+              t_min: 0.0
+              t_max: 40.0
+              r_min: 0.0
+              r_max: 300.0
+              w_v: 0.4
+              w_t: 0.3
+              w_r: 0.3
+            climate:
+              strategy: spatial
+              interpolation_method: linear
+              fallback_to_mean: true
+            max_cells: 20
+            """))
+        return cfg_path
+
+    def test_report_contains_per_variable_fallback_counts(
+        self,
+        tmp_path: Path,
+        synthetic_raster: Path,
+        synthetic_climate_csv: Path,
+    ):
+        cfg_path = self._write_cfg(tmp_path, synthetic_raster, synthetic_climate_csv)
+        df = run_pipeline(cfg_path)
+        run_dir = Path(df.attrs["run_dir"])
+        report = json.loads((run_dir / "report.json").read_text())
+        assert "interpolation_fallback" in report
+        fb = report["interpolation_fallback"]
+        assert "fallback_cells_by_variable" in fb
+        assert set(fb["fallback_cells_by_variable"]).issuperset(
+            {"mean_temp", "total_rain"}
+        )
+        assert isinstance(fb["fallback_cells_total"], int)
+
+    def test_fallback_warning_above_10pct(
+        self,
+        tmp_path: Path,
+        synthetic_raster: Path,
+        caplog,
+    ):
+        import logging
+
+        # Place climate stations in a tiny non-colinear triangle far from
+        # the ROI so every cell lies outside the Delaunay convex hull and
+        # linear interpolation returns NaN -> fallback-to-mean for 100 %.
+        climate_path = tmp_path / "far_climate.csv"
+        climate_path.write_text(
+            "lat,lon,mean_temp,total_rain\n"
+            "10.0,10.0,15.0,100.0\n"
+            "10.1,10.0,16.0,110.0\n"
+            "10.0,10.1,17.0,120.0\n"
+        )
+
+        caplog.set_level(logging.WARNING, logger="terraflow")
+        cfg_path = self._write_cfg(tmp_path, synthetic_raster, climate_path)
+        df = run_pipeline(cfg_path)
+        run_dir = Path(df.attrs["run_dir"])
+        report = json.loads((run_dir / "report.json").read_text())
+        fb = report["interpolation_fallback"]
+        assert fb["fallback_cells_total"] > 0, (
+            f"Expected non-zero fallback cells when stations are far "
+            f"from the raster; got report={fb!r}"
+        )
+        any_gt_10 = any(
+            count / fb["n_cells_sampled"] > 0.10
+            for count in fb["fallback_cells_by_variable"].values()
+        )
+        if any_gt_10:
+            assert any(
+                "fallback-to-mean" in rec.message
+                for rec in caplog.records
+                if rec.levelno == logging.WARNING
+            ), f"Expected >10% fallback warning, caplog records: {caplog.text!r}"
+
+
+class TestMultiBandRasterSupport:
+    """Issue #42: pipeline respects ``raster_band`` config and records it."""
+
+    def _write_multiband_raster(self, tmp_path: Path, n_bands: int = 2) -> Path:
+        raster_path = tmp_path / "mb.tif"
+        transform = from_origin(west=-100.05, north=40.05, xsize=0.02, ysize=0.02)
+        with rasterio.open(
+            raster_path,
+            "w",
+            driver="GTiff",
+            height=5,
+            width=5,
+            count=n_bands,
+            dtype="float32",
+            crs=CRS.from_epsg(4326),
+            transform=transform,
+        ) as dst:
+            for b in range(1, n_bands + 1):
+                dst.write(np.full((5, 5), float(b * 10), dtype="float32"), b)
+        return raster_path
+
+    def _write_cfg(
+        self,
+        tmp_path: Path,
+        raster: Path,
+        climate: Path,
+        *,
+        band: int,
+    ) -> Path:
+        tmp_path.mkdir(parents=True, exist_ok=True)
+        cfg_path = tmp_path / "cfg.yml"
+        cfg_path.write_text(textwrap.dedent(f"""
+            raster_path: "{raster}"
+            raster_band: {band}
+            climate_csv: "{climate}"
+            output_dir: "{tmp_path / f'out_b{band}'}"
+            roi:
+              type: bbox
+              xmin: -100.05
+              ymin: 39.95
+              xmax: -99.95
+              ymax: 40.05
+            model_params:
+              v_min: 0.0
+              v_max: 25.0
+              t_min: 0.0
+              t_max: 40.0
+              r_min: 0.0
+              r_max: 300.0
+              w_v: 1.0
+              w_t: 0.0
+              w_r: 0.0
+            max_cells: 10
+            """))
+        return cfg_path
+
+    def test_band_selection_changes_pipeline_v_index(
+        self,
+        tmp_path: Path,
+        synthetic_climate_csv: Path,
+    ):
+        raster = self._write_multiband_raster(tmp_path, n_bands=3)
+
+        df_b1 = run_pipeline(
+            self._write_cfg(tmp_path / "c1", raster, synthetic_climate_csv, band=1)
+        )
+        df_b2 = run_pipeline(
+            self._write_cfg(tmp_path / "c2", raster, synthetic_climate_csv, band=2)
+        )
+        # Band 1 pixel value is 10, band 2 is 20; v_index is the raw pixel.
+        assert np.allclose(df_b1["v_index"], 10.0)
+        assert np.allclose(df_b2["v_index"], 20.0)
+
+    def test_out_of_range_band_raises(
+        self,
+        tmp_path: Path,
+        synthetic_climate_csv: Path,
+    ):
+        raster = self._write_multiband_raster(tmp_path, n_bands=2)
+        cfg_path = self._write_cfg(tmp_path, raster, synthetic_climate_csv, band=5)
+        with pytest.raises(ValueError, match="out of range"):
+            run_pipeline(cfg_path)
+
+    def test_manifest_records_selected_band(
+        self,
+        tmp_path: Path,
+        synthetic_climate_csv: Path,
+    ):
+        raster = self._write_multiband_raster(tmp_path, n_bands=3)
+        cfg_path = self._write_cfg(tmp_path, raster, synthetic_climate_csv, band=2)
+        df = run_pipeline(cfg_path)
+        run_dir = Path(df.attrs["run_dir"])
+        manifest = json.loads((run_dir / "manifest.json").read_text())
+        assert manifest["config"]["raster_band"] == 2
+
+
+class TestCacheSchemaVersionInvalidation:
+    """Issue #39: stale ``features.parquet`` with a mismatched
+    ``terraflow_schema_version`` must be invalidated so the pipeline
+    recomputes, rather than silently returning old artifacts."""
+
+    def _write_cfg(self, tmp_path: Path, raster: Path, climate: Path) -> Path:
+        cfg_path = tmp_path / "cfg.yml"
+        cfg_path.write_text(textwrap.dedent(f"""
+            raster_path: "{raster}"
+            climate_csv: "{climate}"
+            output_dir: "{tmp_path / 'out'}"
+            roi:
+              type: bbox
+              xmin: -100.05
+              ymin: 39.95
+              xmax: -99.95
+              ymax: 40.05
+            model_params:
+              v_min: 0.0
+              v_max: 25.0
+              t_min: 0.0
+              t_max: 40.0
+              r_min: 0.0
+              r_max: 300.0
+              w_v: 0.4
+              w_t: 0.3
+              w_r: 0.3
+            max_cells: 5
+            """))
+        return cfg_path
+
+    def test_mismatched_schema_version_triggers_rerun(
+        self,
+        tmp_path: Path,
+        synthetic_raster: Path,
+        synthetic_climate_csv: Path,
+        caplog,
+    ):
+        import logging
+
+        import pyarrow.parquet as pq
+
+        cfg_path = self._write_cfg(tmp_path, synthetic_raster, synthetic_climate_csv)
+        df_first = run_pipeline(cfg_path)
+        run_dir = Path(df_first.attrs["run_dir"])
+        parquet_path = run_dir / "features.parquet"
+        mtime_before = parquet_path.stat().st_mtime_ns
+
+        # Rewrite the parquet with a bogus schema_version to simulate a
+        # stale cache written by an older TerraFlow release.
+        table = pq.read_table(parquet_path)
+        stale_meta = dict(table.schema.metadata or {})
+        stale_meta[b"terraflow_schema_version"] = b"0"
+        table = table.replace_schema_metadata(stale_meta)
+        pq.write_table(table, parquet_path, compression="snappy")
+
+        caplog.set_level(logging.WARNING)
+        df_second = run_pipeline(cfg_path)
+
+        assert "invalidating cache" in caplog.text.lower()
+        mtime_after = parquet_path.stat().st_mtime_ns
+        assert mtime_after > mtime_before, (
+            "features.parquet should be regenerated when schema_version "
+            "is stale, but its mtime did not advance."
+        )
+        assert df_second.attrs["run_fingerprint"] == df_first.attrs["run_fingerprint"]
+
+    def test_matching_schema_version_hits_cache(
+        self,
+        tmp_path: Path,
+        synthetic_raster: Path,
+        synthetic_climate_csv: Path,
+    ):
+        cfg_path = self._write_cfg(tmp_path, synthetic_raster, synthetic_climate_csv)
+        df_first = run_pipeline(cfg_path)
+        run_dir = Path(df_first.attrs["run_dir"])
+        mtime_before = (run_dir / "features.parquet").stat().st_mtime_ns
+
+        df_second = run_pipeline(cfg_path)
+        mtime_after = (run_dir / "features.parquet").stat().st_mtime_ns
+
+        assert mtime_before == mtime_after  # cache hit, not rewritten
+        assert df_second.attrs["run_fingerprint"] == df_first.attrs["run_fingerprint"]

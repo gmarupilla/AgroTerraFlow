@@ -136,19 +136,28 @@ class TestClimateInterpolatorInit:
         with pytest.raises(ValueError, match="Invalid longitude"):
             ClimateInterpolator(climate_df=climate_df, strategy="spatial")
 
-    def test_duplicate_coordinates_warning(self, caplog):
-        """Duplicate coordinates logged as warning."""
+    def test_duplicate_coordinates_merged_by_averaging(self, caplog):
+        """Duplicate lat/lon rows collapse to a single station via mean (#43)."""
+        import logging
+
+        caplog.set_level(logging.INFO)
         climate_df = pd.DataFrame(
             {
-                "lat": [40.0, 40.0, 40.2],  # First two are duplicates
+                "lat": [40.0, 40.0, 40.2],
                 "lon": [-74.0, -74.0, -74.2],
-                "mean_temp": [15.0, 16.0, 17.0],
+                "mean_temp": [15.0, 17.0, 20.0],
             }
         )
 
-        ClimateInterpolator(climate_df=climate_df, strategy="spatial")
+        interpolator = ClimateInterpolator(climate_df=climate_df, strategy="spatial")
 
-        assert "duplicate" in caplog.text.lower()
+        assert len(interpolator.climate_df) == 2
+        merged_row = interpolator.climate_df[
+            (interpolator.climate_df["lat"] == 40.0)
+            & (interpolator.climate_df["lon"] == -74.0)
+        ].iloc[0]
+        assert merged_row["mean_temp"] == pytest.approx(16.0)
+        assert "Resolved 2 duplicate station row(s)" in caplog.text
 
     def test_mean_climate_computed(self):
         """Mean climate values are cached on init."""
@@ -165,6 +174,41 @@ class TestClimateInterpolatorInit:
 
         assert interpolator._climate_mean["mean_temp"] == 20.0
         assert interpolator._climate_mean["total_rain"] == 200.0
+
+
+class TestDuplicateStationKriging:
+    """Issue #43 regression: kriging with duplicate coordinates must not
+    raise a singular-matrix error.  Duplicate rows are averaged during
+    ``ClimateInterpolator`` initialisation, yielding a well-posed kriging
+    system.
+    """
+
+    def test_kriging_with_duplicate_stations_succeeds(self, caplog):
+        import logging
+
+        pytest.importorskip("pykrige")
+        caplog.set_level(logging.INFO)
+
+        climate_df = pd.DataFrame(
+            {
+                "lat": [40.0, 40.0, 40.1, 40.2, 40.3, 40.4],
+                "lon": [-74.0, -74.0, -74.1, -74.2, -74.3, -74.4],
+                "mean_temp": [15.0, 17.0, 16.5, 17.0, 17.5, 18.0],
+            }
+        )
+
+        interpolator = ClimateInterpolator(
+            climate_df=climate_df,
+            strategy="spatial",
+            interpolation_method="kriging",
+        )
+
+        assert len(interpolator.climate_df) == 5
+        assert "Resolved" in caplog.text
+
+        result = interpolator.interpolate(np.array([40.15]), np.array([-74.15]))
+        assert len(result) == 1
+        assert np.isfinite(result["mean_temp"].iloc[0])
 
 
 class TestClimateInterpolatorSpatial:
@@ -793,8 +837,7 @@ class TestPipelineKrigingIntegration:
 
         from terraflow.pipeline import run_pipeline
 
-        cfg_content = textwrap.dedent(
-            f"""
+        cfg_content = textwrap.dedent(f"""
             raster_path: "{synthetic_raster}"
             climate_csv: "{synthetic_climate_csv_dense}"
             output_dir: "{tmp_path / 'outputs'}"
@@ -822,8 +865,7 @@ class TestPipelineKrigingIntegration:
               w_r: 0.3
 
             max_cells: 5
-        """
-        )
+        """)
         cfg_file = tmp_path / "cfg_kriging.yml"
         cfg_file.write_text(cfg_content, encoding="utf-8")
 
@@ -843,8 +885,7 @@ class TestPipelineKrigingIntegration:
 
         from terraflow.pipeline import run_pipeline
 
-        cfg_content = textwrap.dedent(
-            f"""
+        cfg_content = textwrap.dedent(f"""
             raster_path: "{synthetic_raster}"
             climate_csv: "{synthetic_climate_csv_dense}"
             output_dir: "{tmp_path / 'outputs'}"
@@ -872,8 +913,7 @@ class TestPipelineKrigingIntegration:
               w_r: 0.3
 
             max_cells: 5
-        """
-        )
+        """)
         cfg_file = tmp_path / "cfg_kriging2.yml"
         cfg_file.write_text(cfg_content, encoding="utf-8")
 
@@ -901,8 +941,7 @@ class TestPipelineKrigingIntegration:
 
         from terraflow.pipeline import run_pipeline
 
-        cfg_content = textwrap.dedent(
-            f"""
+        cfg_content = textwrap.dedent(f"""
             raster_path: "{synthetic_raster}"
             climate_csv: "{synthetic_climate_csv_dense}"
             output_dir: "{tmp_path / 'outputs'}"
@@ -931,8 +970,7 @@ class TestPipelineKrigingIntegration:
               w_r: 0.3
 
             max_cells: 5
-        """
-        )
+        """)
         cfg_file = tmp_path / "cfg_kriging_extended.yml"
         cfg_file.write_text(cfg_content, encoding="utf-8")
 
