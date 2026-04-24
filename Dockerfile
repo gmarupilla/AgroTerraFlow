@@ -33,6 +33,12 @@ RUN python scripts/make_demo_raster.py
 # Pipeline writes here at runtime
 RUN mkdir -p outputs
 
+# Run as non-root user
+RUN groupadd --system --gid 1001 terraflow && \
+    useradd --system --uid 1001 --gid terraflow --home-dir /app --shell /sbin/nologin terraflow && \
+    chown -R terraflow:terraflow /app
+USER terraflow
+
 # Default: run the demo pipeline; override --config for custom runs
 ENTRYPOINT ["python", "-m", "terraflow.cli"]
 CMD ["run", "--config", "examples/demo_config.yml"]

@@ -33,7 +33,7 @@ def test_load_config_tmp(tmp_path: Path):
 
     cfg = load_config(cfg_file)
     assert cfg.raster_path.name == "usda_cdl.tif"
-    assert cfg.model_params.w_v == 0.4
+    assert cfg.model_params.w_v == pytest.approx(0.4)
     assert cfg.roi.type == "bbox"
 
 

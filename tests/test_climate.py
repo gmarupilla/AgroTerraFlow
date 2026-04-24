@@ -153,8 +153,8 @@ class TestClimateInterpolatorInit:
 
         assert len(interpolator.climate_df) == 2
         merged_row = interpolator.climate_df[
-            (interpolator.climate_df["lat"] == 40.0)
-            & (interpolator.climate_df["lon"] == -74.0)
+            np.isclose(interpolator.climate_df["lat"], 40.0)
+            & np.isclose(interpolator.climate_df["lon"], -74.0)
         ].iloc[0]
         assert merged_row["mean_temp"] == pytest.approx(16.0)
         assert "Resolved 2 duplicate station row(s)" in caplog.text
@@ -172,8 +172,8 @@ class TestClimateInterpolatorInit:
 
         interpolator = ClimateInterpolator(climate_df=climate_df)
 
-        assert interpolator._climate_mean["mean_temp"] == 20.0
-        assert interpolator._climate_mean["total_rain"] == 200.0
+        assert interpolator._climate_mean["mean_temp"] == pytest.approx(20.0)
+        assert interpolator._climate_mean["total_rain"] == pytest.approx(200.0)
 
 
 class TestDuplicateStationKriging:
@@ -360,9 +360,9 @@ class TestClimateInterpolatorIndex:
 
         # Should match rows 0, 1, 2 from climate_df (ignoring input coords)
         assert len(result) == 3
-        assert result["mean_temp"].iloc[0] == 10.0
-        assert result["mean_temp"].iloc[1] == 15.0
-        assert result["mean_temp"].iloc[2] == 20.0
+        assert result["mean_temp"].iloc[0] == pytest.approx(10.0)
+        assert result["mean_temp"].iloc[1] == pytest.approx(15.0)
+        assert result["mean_temp"].iloc[2] == pytest.approx(20.0)
 
     def test_index_fewer_climate_records_with_fallback(self):
         """Fewer climate records than cells with fallback."""
@@ -386,10 +386,10 @@ class TestClimateInterpolatorIndex:
 
         assert len(result) == 4
         # First 2 from climate data, last 2 from mean
-        assert result["mean_temp"].iloc[0] == 10.0
-        assert result["mean_temp"].iloc[1] == 20.0
-        assert result["mean_temp"].iloc[2] == 15.0  # Fallback
-        assert result["mean_temp"].iloc[3] == 15.0  # Fallback
+        assert result["mean_temp"].iloc[0] == pytest.approx(10.0)
+        assert result["mean_temp"].iloc[1] == pytest.approx(20.0)
+        assert result["mean_temp"].iloc[2] == pytest.approx(15.0)  # Fallback
+        assert result["mean_temp"].iloc[3] == pytest.approx(15.0)  # Fallback
 
     def test_index_more_climate_records_than_cells(self):
         """More climate records than cells (takes first N for index matching)."""
@@ -449,7 +449,7 @@ class TestLoadClimateCSV:
 
         assert len(df) == 1
         assert list(df.columns) == ["lat", "lon", "mean_temp", "total_rain"]
-        assert df["lat"].iloc[0] == 40.0
+        assert df["lat"].iloc[0] == pytest.approx(40.0)
 
     def test_load_csv_missing_file_raises_error(self):
         """Missing file raises FileNotFoundError."""

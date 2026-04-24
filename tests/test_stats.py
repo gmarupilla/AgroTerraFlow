@@ -40,9 +40,9 @@ def test_raster_summary_from_array_basic():
     summary = RasterSummary.from_array(arr)
 
     assert summary.count == 4
-    assert summary.mean == 2.5
-    assert summary.min == 1.0
-    assert summary.max == 4.0
+    assert summary.mean == pytest.approx(2.5)
+    assert summary.min == pytest.approx(1.0)
+    assert summary.max == pytest.approx(4.0)
     assert summary.std is not None
 
 
@@ -51,7 +51,7 @@ def test_raster_summary_single_value_std_zero():
     summary = RasterSummary.from_array(arr)
 
     assert summary.count == 1
-    assert summary.std == 0.0
+    assert summary.std == pytest.approx(0.0)
 
 
 def test_summarize_raster_and_file(tmp_path: Path):
@@ -62,8 +62,8 @@ def test_summarize_raster_and_file(tmp_path: Path):
         summary = summarize_raster(ds)
 
     assert summary.count == 9
-    assert summary.min == 0.0
-    assert summary.max == 8.0
+    assert summary.min == pytest.approx(0.0)
+    assert summary.max == pytest.approx(8.0)
 
     summary2 = summarize_raster_file(raster_path)
     assert summary2.count == summary.count
@@ -96,8 +96,8 @@ def test_compare_rasters_ratio(tmp_path: Path):
         ratio, summary = compare_rasters(ds_a, ds_b, mode="ratio")
 
     assert np.allclose(ratio.compressed(), 0.5)
-    assert summary.min == 0.5
-    assert summary.max == 0.5
+    assert summary.min == pytest.approx(0.5)
+    assert summary.max == pytest.approx(0.5)
 
 
 def test_compare_rasters_shape_mismatch(tmp_path: Path):
@@ -131,5 +131,5 @@ def test_batch_summarize(tmp_path: Path):
     summaries = batch_summarize([path_a, path_b])
 
     assert set(summaries.keys()) == {"alpha", "beta"}
-    assert summaries["alpha"].mean == 1.0
-    assert summaries["beta"].mean == 3.0
+    assert summaries["alpha"].mean == pytest.approx(1.0)
+    assert summaries["beta"].mean == pytest.approx(3.0)

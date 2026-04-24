@@ -42,8 +42,10 @@ jobs:
           echo "SHA256: ${SHA}"
 
       - name: Clone tap repo
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
-          git clone "https://x-access-token:${{ secrets.HOMEBREW_TAP_TOKEN }}@github.com/gmarupilla/homebrew-terraflow.git" tap-repo
+          git clone "https://x-access-token:${HOMEBREW_TAP_TOKEN}@github.com/gmarupilla/homebrew-terraflow.git" tap-repo
 
       - name: Update formula
         run: |

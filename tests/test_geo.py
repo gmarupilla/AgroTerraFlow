@@ -301,9 +301,9 @@ def test_clip_raster_selects_requested_band(tmp_path: Path):
         data_b1, _ = clip_raster_to_roi(src, roi, band=1)
         data_b2, _ = clip_raster_to_roi(src, roi, band=2)
         data_b3, _ = clip_raster_to_roi(src, roi, band=3)
-    assert np.all(data_b1 == 10.0)
-    assert np.all(data_b2 == 20.0)
-    assert np.all(data_b3 == 30.0)
+    assert np.allclose(data_b1, 10.0)
+    assert np.allclose(data_b2, 20.0)
+    assert np.allclose(data_b3, 30.0)
 
 
 def test_clip_raster_out_of_range_band_raises(tmp_path: Path):
