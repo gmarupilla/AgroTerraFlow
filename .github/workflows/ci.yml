@@ -71,6 +71,12 @@ jobs:
       - name: Build Docker image
         run: docker build -t terraflow:ci .
 
+      - name: Prepare output directory
+        run: |
+          mkdir -p docker-out
+          # Container runs as uid 1001 (terraflow user); match host ownership
+          sudo chown -R 1001:1001 docker-out
+
       - name: Run demo pipeline end-to-end
         run: |
           docker run --rm \
