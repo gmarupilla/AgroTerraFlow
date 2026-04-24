@@ -224,8 +224,8 @@ def test_aggregate_climate_means():
 
     result = _aggregate_climate(df)
 
-    assert result["mean_temp"] == 12.0
-    assert result["total_rain"] == 110.0
+    assert result["mean_temp"] == pytest.approx(12.0)
+    assert result["total_rain"] == pytest.approx(110.0)
 
 
 def test_aggregate_climate_missing_columns():

@@ -16,11 +16,6 @@ on:
         required: false
         default: "false"
 
-permissions:
-  contents: write
-  pull-requests: write
-  deployments: write
-
 concurrency:
   group: docs-preview-${{ github.event.number || 'prune' }}
   cancel-in-progress: true
@@ -29,6 +24,10 @@ jobs:
   preview:
     if: github.event_name == 'pull_request' && (github.event.inputs.prune_only != 'true')
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      deployments: write
     environment:
       name: Pages Preview
       url: https://terraflow.marupilla.dev/runs/${{ github.run_id }}/
@@ -89,6 +88,8 @@ jobs:
   prune:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
