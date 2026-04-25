@@ -1,4 +1,4 @@
-mkdocs>=1.5
+mkdocs>=1.6.1
 mkdocs-material>=9
 mkdocstrings[python]>=0.24
 mkdocs-gen-files>=0.5
