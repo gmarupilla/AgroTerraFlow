@@ -1,6 +1,6 @@
 mkdocs>=1.5
 mkdocs-material>=9
-mkdocstrings[python]>=0.24
+mkdocstrings[python]>=1.0.4
 mkdocs-gen-files>=0.5
 mkdocs-literate-nav>=0.6
 mkdocs-section-index>=0.3
