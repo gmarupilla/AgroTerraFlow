@@ -6,4 +6,4 @@ mkdocs-literate-nav>=0.6
 mkdocs-section-index>=0.3
 mkdocs-mermaid2-plugin>=1.1.1
 pymdown-extensions>=10
-mkdocs-jupyter>=0.24
+mkdocs-jupyter>=0.26.3
