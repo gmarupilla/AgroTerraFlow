@@ -1,7 +1,7 @@
 mkdocs>=1.6.1
 mkdocs-material>=9
 mkdocstrings[python]>=0.24
-mkdocs-gen-files>=0.5
+mkdocs-gen-files>=0.6.1
 mkdocs-literate-nav>=0.6
 mkdocs-section-index>=0.3
 mkdocs-mermaid2-plugin>=1.2.3
