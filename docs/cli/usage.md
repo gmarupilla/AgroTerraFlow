@@ -42,7 +42,7 @@ TerraFlow exposes a lightweight CLI for running the pipeline.
     ```
 
 !!! tip "Portable Configs"
-    Relative paths in the config file are resolved relative to the config file's own directory, not the current working directory. This means configs are portable — you can run `terraflow -c /any/dir/config.yml` from any location.
+    Relative paths in the config file are resolved relative to the config file's own directory, not the current working directory. This means configs are portable — you can run `terraflow run -c /any/dir/config.yml` from any location.
 
 ## Common flags
 
