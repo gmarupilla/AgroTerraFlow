@@ -9,7 +9,7 @@ tags:
 
 # Configuration Schema
 
-TerraFlow v0.2.1 uses a single YAML configuration file that maps to the `PipelineConfig` model.
+TerraFlow uses a single YAML configuration file that maps to the `PipelineConfig` model.
 It is validated with Pydantic v2 and rejects unknown fields. Geographic coordinates are validated with custom pydantic field validators.
 
 ## Top-level fields
@@ -17,11 +17,15 @@ It is validated with Pydantic v2 and rejects unknown fields. Geographic coordina
 | Field | Type | Description |
 | --- | --- | --- |
 | `raster_path` | string | Path to the input raster (GeoTIFF). |
+| `raster_band` | integer | 1-based rasterio band index for multi-band inputs (default: `1`). Out-of-range values raise `ValueError` at start-up; the selected band is captured in `manifest.json`. |
 | `climate_csv` | string | Path to the climate CSV (must have `lat`, `lon`, and climate variable columns). |
 | `output_dir` | string | Directory to write run outputs. |
 | `roi` | object | Region of interest definition (bbox supported). |
 | `model_params` | object | Parameters for suitability scoring. |
 | `climate` | object | Climate data handling configuration (optional, defaults to spatial interpolation). |
+| `sensitivity` | object | Optional Sobol' / Morris sensitivity analysis block (consumed by `terraflow sensitivity`). |
+| `validation` | object | Optional spatial-block CV / Cohen's kappa block (consumed by `terraflow validate`). |
+| `export` | object | Optional H3 export block (consumed by `terraflow export --format h3`). |
 | `max_cells` | integer | Maximum cells sampled from the ROI (default: 500). |
 
 ## ROI (bbox)

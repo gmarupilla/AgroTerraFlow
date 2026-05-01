@@ -16,7 +16,7 @@ TerraFlow exposes a lightweight CLI for running the pipeline.
 === "Direct CLI"
 
     ```bash
-    terraflow --config path/to/config.yml
+    terraflow run --config path/to/config.yml
     ```
 
     The command will:
@@ -28,21 +28,21 @@ TerraFlow exposes a lightweight CLI for running the pipeline.
 === "Python Module"
 
     ```python
-    from terraflow.pipeline import main
-    
+    from terraflow.pipeline import run_pipeline
+
     # Run the pipeline programmatically
-    main("path/to/config.yml")
+    run_pipeline("path/to/config.yml")
     ```
 
 === "Without Install"
 
     ```bash
     # Use python -m fallback (no install required)
-    python -m terraflow.cli --config path/to/config.yml
+    python -m terraflow.cli run --config path/to/config.yml
     ```
 
 !!! tip "Portable Configs"
-    Relative paths in the config file are resolved relative to the config file's own directory, not the current working directory. This means configs are portable — you can run `terraflow -c /any/dir/config.yml` from any location.
+    Relative paths in the config file are resolved relative to the config file's own directory, not the current working directory. This means configs are portable — you can run `terraflow run -c /any/dir/config.yml` from any location.
 
 ## Common flags
 
@@ -132,3 +132,18 @@ Results are appended to the existing `report.json` under the `"validation"` key:
     TerraFlow's suitability model has no free parameters — scores are deterministic given the config. Fold accuracy reflects how spatially consistent the label distribution is across your study area, not model generalization.
 
 See [`notebooks/03_model_validation.ipynb`](../notebooks/03_model_validation.ipynb) for a worked example.
+
+## H3 export
+
+Re-index pipeline output to H3 hexagonal cells for interop with DeckGL, Kepler.gl, and h3pandas. Requires the optional `[h3]` extra:
+
+```bash
+pip install terraflow-agro[h3]
+terraflow export --format h3 -c config.yml
+# or pass an explicit resolution override:
+terraflow export --format h3 -c config.yml --resolution 8
+```
+
+The output `h3_resolution_N.parquet` lands in the run directory alongside `features.parquet`. The H3 resolution participates in the run fingerprint, so different resolutions produce distinct cached artifacts.
+
+See [`notebooks/04_h3_export.ipynb`](../notebooks/04_h3_export.ipynb) and the [H3 export guide](../h3-export.md) for a worked example.

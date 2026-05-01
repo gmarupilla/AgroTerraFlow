@@ -17,6 +17,33 @@ TerraFlow is a reproducible, config-driven geospatial workflow for agricultural 
 
 ---
 
+## At a Glance
+
+```mermaid
+flowchart LR
+    CFG["Config<br/>(YAML + Pydantic)"] --> PIPE["Pipeline<br/>(orchestration)"]
+    PIPE --> ING["Ingest<br/>(raster, climate)"]
+    PIPE --> GEO["Geospatial<br/>(ROI clipping)"]
+    PIPE --> MOD["Model<br/>(suitability scoring)"]
+    PIPE --> OUT["Outputs<br/>(Parquet, CSV,<br/>manifest, report)"]
+    ING --> GEO
+    ING --> MOD
+    GEO --> MOD
+```
+
+| Property | What TerraFlow guarantees |
+|---|---|
+| **Deterministic outputs** | Same config + same inputs → bit-identical results, addressed by run fingerprint |
+| **Provenance** | Every run writes a `manifest.json` capturing config, input hashes, software versions, and fingerprint |
+| **Spatial validation** | Spatial-block CV with Cohen's κ + Moran's I on residuals (`terraflow validate`) |
+| **Sensitivity analysis** | Sobol' / Morris indices for model weights (`terraflow sensitivity`) |
+| **Uncertainty quantification** | Kriging Monte Carlo → score CIs (`score_ci_low` / `score_ci_high`) |
+| **Interop** | H3-indexed export for downstream tools (`terraflow export --format h3`) |
+| **Distribution** | PyPI (`terraflow-agro`) + Homebrew (`gmarupilla/terraflow`) + Docker |
+| **Citation** | Citable via `CITATION.cff`; JOSS paper in preparation |
+
+---
+
 ## Installation
 
 **macOS (Homebrew)** — handles GDAL and PROJ automatically:
@@ -45,7 +72,7 @@ See [Homebrew install docs](https://terraflow.marupilla.dev/install/homebrew/) f
 ## Quickstart
 
 ```bash
-terraflow --config config.yml
+terraflow run --config config.yml
 ```
 
 A minimal config:
@@ -128,9 +155,11 @@ make docs-build
 
 ## Architecture
 
-Core modules: `cli`, `config`, `climate`, `geo`, `ingest`, `model`, `pipeline`, `stats`, `viz`.
+Core modules: `cli`, `config`, `climate`, `core/run_identity`, `exceptions`, `export`, `geo`, `ingest`, `model`, `pipeline`, `sensitivity`, `stats`, `utils`, `validation`, `viz`.
 
-Key design decisions are documented in Architecture Decision Records under `docs/architecture/`.
+Run artifacts under `<output_dir>/runs/<fingerprint>/` include `features.parquet`, `manifest.json`, `report.json`, and `results.csv`. When kriging is configured, `report.json` also carries `kriging_diagnostics` (model, nugget, sill, range), `kriging_loocv` RMSE per variable, `uncertainty` coverage, and an `interpolation_fallback` block with per-variable fallback-to-mean counts. Multi-band rasters are supported via the top-level `raster_band` field (1-based; default `1`).
+
+Key design decisions are documented in Architecture Decision Records under `docs/architecture/`. See [`docs/reproducibility.md`](https://terraflow.marupilla.dev/reproducibility/) for the run fingerprint contract and known sources of non-determinism.
 
 ## Project Scope
 
