@@ -1,6 +1,6 @@
 site_name: TerraFlow
 site_description: Reproducible geospatial modeling with spatial climate interpolation — config-driven, fingerprinted, and spatially aware.
-site_url: https://gmarupilla.github.io/AgroTerraFlow/
+site_url: https://terraflow.marupilla.dev/
 repo_url: https://github.com/gmarupilla/AgroTerraFlow
 repo_name: gmarupilla/AgroTerraFlow
 edit_uri: edit/main/docs/
@@ -138,6 +138,7 @@ nav:
       - ADR-002 BBox ROI: architecture/adr-002-bbox-roi.md
       - ADR-003 Climate Interpolation: architecture/adr-003-climate-interpolation.md
       - ADR-004 CRS Reprojection: architecture/adr-004-crs-reprojection.md
+      - ADR-005 Kriging Interpolation: architecture/adr-005-kriging-interpolation.md
       - ADR-006 Homebrew Distribution: architecture/adr-006-homebrew-distribution.md
       - Boundaries: architecture/boundaries.md
       - Run Identity: architecture/run-identity.md
@@ -154,7 +155,13 @@ nav:
   - API Reference:
       - terraflow.core: api/core.md
       - terraflow.ingest: api/ingest.md
+      - terraflow.geo: api/geo.md
       - terraflow.climate: api/climate.md
+      - terraflow.model: api/model.md
+      - terraflow.stats: api/stats.md
+      - terraflow.sensitivity: api/sensitivity.md
+      - terraflow.validation: api/validation.md
+      - terraflow.export: api/export.md
   - Notebooks:
       - TerraFlow v0.2.0 Demo: notebooks/terraflow_v0_2_0_comprehensive_test.ipynb
       - Kriging and Uncertainty: notebooks/kriging_uncertainty_demo.ipynb

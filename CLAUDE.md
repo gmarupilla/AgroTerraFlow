@@ -97,7 +97,7 @@ Version is declared in **two places** — both must be updated together:
 - `pyproject.toml` line `version = "X.Y.Z"`
 - `terraflow/__init__.py` `__version__ = "X.Y.Z"`
 
-Project follows [Semantic Versioning](https://semver.org). Current version: `0.2.2`.
+Project follows [Semantic Versioning](https://semver.org). Current version: `0.3.0`.
 
 ### Release steps
 
@@ -197,7 +197,8 @@ docs/
     ├── kriging_uncertainty_demo.ipynb
     ├── 02_sensitivity_analysis.ipynb
     ├── 03_model_validation.ipynb
-    └── 04_h3_export.ipynb
+    ├── 04_h3_export.ipynb
+    └── 05_extended_variogram_mode.ipynb
 ```
 
 When adding a new page: create the `.md` file, add it to `mkdocs.yml` nav, and
