@@ -167,3 +167,46 @@ def compute_run_fingerprint(
 
     digest = hashlib.sha256(payload_bytes).digest()
     return base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
+
+
+def compute_geoai_fingerprint(
+    config_dict: dict,
+    input_fingerprints: list[dict],
+    model_metadata: dict,
+) -> str:
+    """Deterministic fingerprint for a ``terraflow geoai`` engine run.
+
+    ``model_metadata`` must contain:
+      - ``name`` (str): model identifier
+      - ``weights_sha256`` (str): pretrained-weights hash
+      - ``geoai_major_minor`` (str): e.g. ``"0.1"`` (patch deliberately
+        excluded so bug-fix releases of ``geoai`` do not invalidate caches).
+    """
+    config_hash = hashlib.sha256(canonicalize_config(config_dict)).hexdigest()
+
+    inputs_payload = sorted(
+        (
+            {"sha256": fp["sha256"], "size_bytes": fp["size_bytes"]}
+            for fp in input_fingerprints
+        ),
+        key=lambda item: (item["sha256"], item["size_bytes"]),
+    )
+
+    payload = {
+        "config": config_hash,
+        "inputs": inputs_payload,
+        "model": {
+            "name": model_metadata["name"],
+            "weights_sha256": model_metadata["weights_sha256"],
+            "geoai_major_minor": model_metadata["geoai_major_minor"],
+        },
+    }
+    payload_bytes = json.dumps(
+        payload,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+
+    digest = hashlib.sha256(payload_bytes).digest()
+    return base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
