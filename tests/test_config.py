@@ -214,7 +214,7 @@ def test_geoai_config_defaults_valid():
     cfg = GeoAIConfig(engine="landcover")
     assert cfg.engine == "landcover"
     assert cfg.chip_size == 512
-    assert cfg.confidence_threshold == 0.5
+    assert cfg.confidence_threshold == pytest.approx(0.5)
     assert cfg.batch_size == 4
 
 
@@ -287,7 +287,7 @@ def test_pipeline_config_accepts_optional_geoai_block(tmp_path: Path):
     assert cfg.geoai is not None
     assert cfg.geoai.engine == "landcover"
     assert cfg.geoai.chip_size == 256
-    assert cfg.geoai.confidence_threshold == 0.75
+    assert cfg.geoai.confidence_threshold == pytest.approx(0.75)
     assert cfg.geoai.batch_size == 8
 
 
