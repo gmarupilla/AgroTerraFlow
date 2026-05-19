@@ -263,6 +263,38 @@ class ExportConfig(BaseModel):
         return v
 
 
+class GeoAIConfig(BaseModel):
+    """Configuration for the optional ``terraflow geoai`` engine subcommand."""
+
+    engine: Literal["fields", "landcover", "canopy"]
+    chip_size: int = 512
+    confidence_threshold: float = 0.5
+    batch_size: int = 4
+
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("chip_size")
+    @classmethod
+    def validate_chip_size(cls, v: int) -> int:
+        if v < 32 or (v & (v - 1)) != 0:
+            raise ValueError(f"chip_size must be a power of two >= 32, got {v}")
+        return v
+
+    @field_validator("confidence_threshold")
+    @classmethod
+    def validate_confidence_threshold(cls, v: float) -> float:
+        if not (0.0 <= v <= 1.0):
+            raise ValueError(f"confidence_threshold must be in [0, 1], got {v}")
+        return v
+
+    @field_validator("batch_size")
+    @classmethod
+    def validate_batch_size(cls, v: int) -> int:
+        if v <= 0:
+            raise ValueError(f"batch_size must be positive, got {v}")
+        return v
+
+
 class PipelineConfig(BaseModel):
     """Top-level pipeline configuration.
 
@@ -297,6 +329,7 @@ class PipelineConfig(BaseModel):
     )
     validation: Optional[ValidationConfig] = None  # Optional validation config
     export: Optional[ExportConfig] = None  # Optional H3 export config
+    geoai: Optional[GeoAIConfig] = None  # Optional GeoAI engine config
 
     model_config = ConfigDict(extra="forbid")
 
