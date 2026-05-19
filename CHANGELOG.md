@@ -9,7 +9,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 - Optional `[geoai]` extra (`pip install terraflow-agro[geoai]`) bringing in `geoai-py` and `torch` for the upcoming `terraflow geoai` subcommand (#91, epic #90).
-- `GeoAIConfig` Pydantic block accepted under `geoai:` in pipeline configs, with validation for engine name (`fields`/`landcover`/`canopy`), power-of-two `chip_size`, `confidence_threshold` in [0, 1], and positive `batch_size`.
+- `GeoAIConfig` Pydantic block accepted under `geoai:` in pipeline configs, with validation for engine name (`fields`/`landcover`/`canopy`), power-of-two `chip_size` (≥ 32), `confidence_threshold` in [0, 1], and positive `batch_size`.
 - Internal `terraflow.core.run_identity.compute_geoai_fingerprint()` for deterministic GeoAI-run identity (hashes config, inputs, and `name`/`weights_sha256`/`geoai_major_minor`).
 
 ## [0.3.0] — 2026-04-23
