@@ -10,7 +10,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ### Added
 - Optional `[geoai]` extra (`pip install terraflow-agro[geoai]`) bringing in `geoai-py` and `torch` for the upcoming `terraflow geoai` subcommand (#91, epic #90).
 - `GeoAIConfig` Pydantic block accepted under `geoai:` in pipeline configs, with validation for engine name (`fields`/`landcover`/`canopy`), power-of-two `chip_size` (≥ 32), `confidence_threshold` in [0, 1], and positive `batch_size`.
-- Internal `terraflow.core.run_identity.compute_geoai_fingerprint()` for deterministic GeoAI-run identity (hashes config, inputs, and `name`/`weights_sha256`/`geoai_major_minor`).
+- Internal `terraflow.core.run_identity.compute_geoai_fingerprint()` for deterministic GeoAI-run identity. Hashes config, inputs (`{sha256, size_bytes}` shape now enforced), and `name`/`weights_sha256`/`geoai_major_minor`; optionally also `device` and `torch_major_minor`.
+- `terraflow.geoai_engine` module with `run_fields()`, `run_landcover()`, `run_canopy()` orchestrators (#92). Validates `config.geoai.engine`, fingerprints inputs + device/torch, writes artifacts to `<output_dir>/runs/<geoai_fingerprint>/geoai/`, emits `geoai_manifest.json` and `report.json`, seeds `torch.manual_seed` from the fingerprint, and skips inference on cache hits. Engine bodies are placeholders that land in #94.
 
 ## [0.3.0] — 2026-04-23
 
