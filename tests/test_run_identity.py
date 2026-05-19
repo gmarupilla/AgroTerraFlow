@@ -298,6 +298,24 @@ def test_geoai_fingerprint_changes_when_inputs_change():
     assert fp1 != fp2
 
 
+def test_geoai_fingerprint_changes_when_model_name_changes():
+    cfg, inputs, model = _geoai_args()
+    fp1 = compute_geoai_fingerprint(cfg, inputs, model)
+
+    renamed = dict(model, name="ftw-v2")
+    fp2 = compute_geoai_fingerprint(cfg, inputs, renamed)
+    assert fp1 != fp2
+
+
+def test_geoai_fingerprint_empty_inputs_stable():
+    cfg, _, model = _geoai_args()
+    fp1 = compute_geoai_fingerprint(cfg, [], model)
+    fp2 = compute_geoai_fingerprint(cfg, [], model)
+    assert fp1 == fp2
+    assert "=" not in fp1
+    assert len(fp1) > 30
+
+
 def test_geoai_fingerprint_input_order_invariant():
     cfg, _, model = _geoai_args()
     inputs_a = [

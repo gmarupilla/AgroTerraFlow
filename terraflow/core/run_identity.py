@@ -181,6 +181,12 @@ def compute_geoai_fingerprint(
       - ``weights_sha256`` (str): pretrained-weights hash
       - ``geoai_major_minor`` (str): e.g. ``"0.1"`` (patch deliberately
         excluded so bug-fix releases of ``geoai`` do not invalidate caches).
+
+    Only ``major.minor`` of the ``geoai`` library is mixed into the hash:
+    patch bumps almost never change model outputs, and silent output drift
+    from a real weight swap is already caught by ``weights_sha256``. Using
+    the full version here would needlessly invalidate the cache on every
+    bug-fix release.
     """
     config_hash = hashlib.sha256(canonicalize_config(config_dict)).hexdigest()
 

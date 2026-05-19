@@ -229,7 +229,7 @@ def test_geoai_config_accepts_pow2_chip_sizes(size: int):
     assert cfg.chip_size == size
 
 
-@pytest.mark.parametrize("size", [0, -1, 3, 500, 513])
+@pytest.mark.parametrize("size", [0, -1, 1, 2, 3, 16, 500, 513])
 def test_geoai_config_rejects_non_pow2_chip_size(size: int):
     with pytest.raises(ValidationError, match="chip_size"):
         GeoAIConfig(engine="fields", chip_size=size)

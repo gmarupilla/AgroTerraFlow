@@ -276,8 +276,8 @@ class GeoAIConfig(BaseModel):
     @field_validator("chip_size")
     @classmethod
     def validate_chip_size(cls, v: int) -> int:
-        if v <= 0 or (v & (v - 1)) != 0:
-            raise ValueError(f"chip_size must be a positive power of two, got {v}")
+        if v < 32 or (v & (v - 1)) != 0:
+            raise ValueError(f"chip_size must be a power of two >= 32, got {v}")
         return v
 
     @field_validator("confidence_threshold")

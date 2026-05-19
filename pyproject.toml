@@ -48,7 +48,7 @@ dependencies = [
 [project.optional-dependencies]
 viz = ["plotly>=5.0.0"]
 h3 = ["h3>=4.0,<5"]
-geoai = ["geoai-py>=0.1", "torch>=2.0"]
+geoai = ["geoai-py>=0.1", "torch>=2.0,<3"]
 dev = [
   "pytest>=7.0",
   "pytest-cov>=3.0",
