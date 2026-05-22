@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any, Callable
 
 import typer
 
@@ -16,6 +16,67 @@ app = typer.Typer(
     help="TerraFlow: reproducible geospatial agricultural modeling.",
     add_completion=False,
 )
+
+geoai_app = typer.Typer(
+    help="Run optional GeoAI field, landcover, and canopy engines.",
+    add_completion=False,
+)
+
+
+def _config_option() -> Any:
+    return typer.Option(
+        ...,
+        "--config",
+        "-c",
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        readable=True,
+        help="Path to YAML config file",
+    )
+
+
+def _geoai_cmd_factory(engine_name: str, runner_attr: str) -> Callable[[Path], None]:
+    def geoai_cmd(
+        config: Annotated[
+            Path,
+            _config_option(),
+        ],
+    ) -> None:
+        """Run a GeoAI engine."""
+        logger.info(f"TerraFlow GeoAI {engine_name} starting with config: {config}")
+        try:
+            from . import geoai_engine
+
+            runner = getattr(geoai_engine, runner_attr)
+            output_path = runner(config)
+            logger.info(f"GeoAI {engine_name} complete: {output_path}")
+        except ValueError as e:
+            logger.error(f"GeoAI {engine_name} configuration error: {e}")
+            print(f"ERROR: {e}", file=sys.stderr)
+            raise SystemExit(1)
+        except ImportError as e:
+            logger.error(f"Missing dependency: {e}")
+            print(f"ERROR: {e}", file=sys.stderr)
+            raise SystemExit(1)
+        except FileNotFoundError as e:
+            logger.error(f"File not found: {e}")
+            print(f"ERROR: {e}", file=sys.stderr)
+            raise SystemExit(1)
+        except Exception as e:
+            logger.error(f"GeoAI {engine_name} failed: {e}", exc_info=True)
+            print(f"ERROR: GeoAI {engine_name} failed - {e}", file=sys.stderr)
+            raise SystemExit(1)
+
+    geoai_cmd.__name__ = f"geoai_{engine_name}_cmd"
+    geoai_cmd.__doc__ = f"Run GeoAI {engine_name} inference."
+    return geoai_cmd
+
+
+geoai_app.command("fields")(_geoai_cmd_factory("fields", "run_fields"))
+geoai_app.command("landcover")(_geoai_cmd_factory("landcover", "run_landcover"))
+geoai_app.command("canopy")(_geoai_cmd_factory("canopy", "run_canopy"))
+app.add_typer(geoai_app, name="geoai")
 
 
 @app.command("run")

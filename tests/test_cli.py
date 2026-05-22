@@ -6,8 +6,11 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from typer.testing import CliRunner
 
-from terraflow.cli import main
+from terraflow.cli import app, main
+
+runner = CliRunner()
 
 
 def test_cli_missing_config_arg(capsys):
@@ -228,6 +231,28 @@ def test_cli_help_message(capsys):
     captured = capsys.readouterr()
     assert "run" in captured.out.lower()
     assert "sensitivity" in captured.out.lower()
+
+
+def test_cli_geoai_help_outputs_render():
+    help_invocations = [
+        ["geoai", "--help"],
+        ["geoai", "fields", "--help"],
+        ["geoai", "landcover", "--help"],
+        ["geoai", "canopy", "--help"],
+    ]
+
+    for args in help_invocations:
+        result = runner.invoke(app, args)
+
+        assert result.exit_code == 0
+        assert "--config" in result.output or "fields" in result.output
+
+
+def test_cli_geoai_bogus_command_returns_typer_error():
+    result = runner.invoke(app, ["geoai", "bogus", "-c", "x.yml"])
+
+    assert result.exit_code == 2
+    assert "no such command" in result.output.lower()
 
 
 def test_cli_value_error_from_pipeline(tmp_path: Path, capsys):
