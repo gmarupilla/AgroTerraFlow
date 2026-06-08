@@ -6,8 +6,8 @@ TerraFlow ships three optional remote-sensing runners that wrap
 | Subcommand | Purpose | Output artifact set |
 |---|---|---|
 | `terraflow geoai fields` | Field-boundary detection (FTW-v1) | `fields.geojson`, `field_stats.parquet` |
-| `terraflow geoai landcover` | Landcover classification | `landcover.tif` |
-| `terraflow geoai canopy` | Canopy-height regression | `canopy.tif` |
+| `terraflow geoai landcover` | Landcover classification | `landcover.tif`, `landcover_proba.tif`, `class_fractions.json` |
+| `terraflow geoai canopy` | Canopy-height regression | `canopy_height.tif`, `canopy_stats.json` |
 
 Each runner writes its outputs to
 `<output_dir>/runs/<geoai_fingerprint>/geoai/` alongside a

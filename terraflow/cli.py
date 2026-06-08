@@ -55,6 +55,10 @@ def _invoke(name: str, fn: Callable[[], Any]) -> Any:
         logger.error(f"{name} missing dependency: {e}")
         print(f"ERROR: {e}", file=sys.stderr)
         raise SystemExit(1) from e
+    except NotImplementedError as e:
+        logger.error(f"{name} not yet implemented: {e}")
+        print(f"ERROR: {name} not yet implemented - {e}", file=sys.stderr)
+        raise SystemExit(2) from e
     except Exception as e:
         logger.error(f"{name} failed: {e}", exc_info=True)
         print(f"ERROR: {name} failed - {e}", file=sys.stderr)

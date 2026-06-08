@@ -86,8 +86,9 @@ We add a thin adapter module, `terraflow.geoai_engine`, that:
   `terraflow/geoai_engine.py` or `tests/test_geoai_engine.py` change; baseline
   CI does not pay the torch-install cost.
 - ROI clipping is **deliberately deferred** — runners process the full raster
-  for v0.4.0 and rely on the ROI being baked into the input. A follow-up
-  issue will add native ROI clipping to the geoai runners with a regression
-  test.
+  for v0.4.0 and rely on the ROI being baked into the input. The manifest
+  records `roi_applied: false` and a `roi_note` so consumers do not
+  silently assume ROI was honoured. A follow-up issue will add native ROI
+  clipping to the geoai runners with a regression test.
 - Real pretrained-weight SHA-256 digests are placeholders until the weight
   registry is wired up alongside `geoai-py >= 0.2`.

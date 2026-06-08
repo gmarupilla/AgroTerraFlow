@@ -5,16 +5,22 @@ on:
     branches: ["main"]
     paths:
       - "terraflow/geoai_engine.py"
-      - "tests/test_geoai_engine.py"
+      - "terraflow/config.py"
+      - "terraflow/cli.py"
       - "terraflow/core/run_identity.py"
+      - "tests/test_geoai_engine.py"
+      - "tests/test_run_identity.py"
       - ".github/workflows/geoai-integration.yml"
       - "pyproject.toml"
   pull_request:
     branches: ["main"]
     paths:
       - "terraflow/geoai_engine.py"
-      - "tests/test_geoai_engine.py"
+      - "terraflow/config.py"
+      - "terraflow/cli.py"
       - "terraflow/core/run_identity.py"
+      - "tests/test_geoai_engine.py"
+      - "tests/test_run_identity.py"
       - ".github/workflows/geoai-integration.yml"
       - "pyproject.toml"
   workflow_dispatch:

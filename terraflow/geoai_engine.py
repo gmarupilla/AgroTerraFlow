@@ -171,6 +171,11 @@ def _run(
                 "model": model_meta,
                 "inputs": input_fingerprints,
                 "config": config_dict,
+                "roi_applied": False,
+                "roi_note": (
+                    "ROI clipping deferred in v0.4.0 — runner processed the "
+                    "full raster. Bake ROI into the input upstream if needed."
+                ),
             },
             sort_keys=True,
             indent=2,

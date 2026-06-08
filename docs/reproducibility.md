@@ -140,6 +140,15 @@ geoai_manifest.json, report.json, <engine artifacts>}`. The manifest
 captures the full payload listed above and is sufficient to recreate the
 cached run on the same hardware.
 
+`compute_geoai_fingerprint` treats `device` and `torch_major_minor` as
+**optional** keys in `model_metadata` — they are folded into the hash
+only when supplied. The in-tree `terraflow.geoai_engine._run` always
+populates them, so the CLI runners and the Python wrappers behave as
+documented above. Bypassing the engine module (e.g. calling
+`compute_geoai_fingerprint` directly from a custom adapter) and omitting
+those keys yields a different fingerprint than the engine's — pin both
+keys explicitly if you need cross-tool fingerprint agreement.
+
 ## How to cite a specific run
 
 For a publication, cite the run the way you would cite a software version:
