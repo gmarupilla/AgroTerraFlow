@@ -163,6 +163,25 @@ def _run(
     elapsed = time.perf_counter() - start
 
     _atomic_write_text(
+        run_dir / "report.json",
+        json.dumps(
+            {
+                "engine": engine,
+                "duration_s": round(elapsed, 6),
+                "device": model_meta["device"],
+                "torch_major_minor": model_meta["torch_major_minor"],
+                "deterministic": True,
+            },
+            sort_keys=True,
+            indent=2,
+        ),
+    )
+    # NOTE: manifest is written LAST so its presence acts as a
+    # completion marker. The cache-hit guard above checks
+    # `manifest_path.exists()`; if a previous run was interrupted
+    # between engine artifacts and the manifest write the directory
+    # is treated as missing and inference re-runs.
+    _atomic_write_text(
         manifest_path,
         json.dumps(
             {
@@ -180,20 +199,6 @@ def _run(
             sort_keys=True,
             indent=2,
             default=str,
-        ),
-    )
-    _atomic_write_text(
-        run_dir / "report.json",
-        json.dumps(
-            {
-                "engine": engine,
-                "duration_s": round(elapsed, 6),
-                "device": model_meta["device"],
-                "torch_major_minor": model_meta["torch_major_minor"],
-                "deterministic": True,
-            },
-            sort_keys=True,
-            indent=2,
         ),
     )
 

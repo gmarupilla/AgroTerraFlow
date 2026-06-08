@@ -261,3 +261,30 @@ def test_threshold_bump_produces_new_fingerprint(
 
     assert dir_a != dir_b
     assert len(calls) == 2
+
+
+def test_manifest_is_written_last_as_completion_marker(
+    tmp_path: Path,
+    synthetic_raster: Path,
+    stub_geoai: None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Manifest must be the last file written so its presence guarantees
+    the run completed; cache-hit guard relies on this. Regression test
+    for the Codex review feedback on PR #109."""
+    stub, _calls = _stub_runner_factory(("fields.geojson", "field_stats.parquet"))
+    monkeypatch.setattr(geoai_engine, "_do_fields", stub)
+
+    cfg_path = _write_config(tmp_path, synthetic_raster, engine="fields")
+    run_dir = geoai_engine.run_fields(cfg_path)
+
+    manifest_mtime = (run_dir / "geoai_manifest.json").stat().st_mtime_ns
+    report_mtime = (run_dir / "report.json").stat().st_mtime_ns
+    fields_mtime = (run_dir / "fields.geojson").stat().st_mtime_ns
+    stats_mtime = (run_dir / "field_stats.parquet").stat().st_mtime_ns
+
+    for other in (report_mtime, fields_mtime, stats_mtime):
+        assert manifest_mtime >= other, (
+            "manifest_geoai.json must be written after every engine artifact "
+            "so its existence is a valid completion marker"
+        )
