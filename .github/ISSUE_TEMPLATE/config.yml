@@ -1,0 +1,19 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://terraflow.marupilla.dev
+    about: |
+      Browse the docs site (quickstart, field guide, GeoAI guide, configuration
+      schema, CLI reference, reproducibility page).
+  - name: Reproducibility help
+    url: https://terraflow.marupilla.dev/reproducibility/
+    about: |
+      Read what the run fingerprint covers, the known sources of
+      non-determinism, and how to cite a specific run before opening an issue
+      about non-reproducible output.
+  - name: Security vulnerability
+    url: https://github.com/gmarupilla/AgroTerraFlow/security/advisories/new
+    about: Report security issues privately via GitHub Security Advisories — see SECURITY.md.
+  - name: Contributing guide
+    url: https://github.com/gmarupilla/AgroTerraFlow/blob/main/CONTRIBUTING.md
+    about: How to set up the dev environment, run the tests, and open a pull request.

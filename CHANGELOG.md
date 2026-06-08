@@ -7,6 +7,18 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+- `# AI usage disclosure` section in `paper/paper.md` (now a **required** section per the JOSS review criteria). The section discloses that AI tools were used as a coding assistant during implementation and manuscript drafting, that AI-assisted code is human-reviewed before commit, and that the 289 automated tests on Python 3.10/3.11/3.12 verify correctness (#111).
+- `.github/ISSUE_TEMPLATE/bug_report.yml` (YAML-form bug report including TerraFlow version, Python version, OS, config YAML, repro command, expected vs actual, optional `run_fingerprint`) and `feature_request.yml` (problem / proposal / alternatives / subsystem). `.github/ISSUE_TEMPLATE/config.yml` disables blank issues and surfaces the docs site, reproducibility page, security advisory flow, and contributing guide (#113).
+- `.github/SUPPORT.md` documenting all support channels (docs, discussions, bug reports, reproducibility help, security disclosures, contributing) so the JOSS "seek support" community-guidelines item is closed (#114).
+- `.github/pull_request_template.md` with the project's PR checklist (lint / typecheck / coverage / CHANGELOG / docs / notebook / mkdocs nav / reproducibility-impact section) so new contributors see the gate at PR-open time (#114).
+
+### Changed
+- `CITATION.cff` refreshed: `version: 0.4.0`, `date-released: 2026-06-08`, title now matches the JOSS paper subtitle ("…and Foundation-Model Inference"), abstract mentions the v0.4.0 GeoAI engine, and keyword list adds `kriging`, `sensitivity-analysis`, `uncertainty-quantification`, `geoai`, `foundation-models`, `pytorch` (#112). The `doi:` field is removed for now: the previously recorded `10.5281/zenodo.18490119` actually resolves to the v0.1.5 archive, and no v0.4.0 Zenodo record has been minted (GitHub→Zenodo integration not yet enabled). JOSS archives the accepted version itself on publication, so the citation handle is the repository URL until then.
+- `paper/paper.md` AI usage disclosure section expanded to name the specific AI tools and model versions used (Anthropic Claude Code with `claude-opus-4-7` for v0.4.0 GeoAI / paper revisions, earlier Claude Sonnet 4.x / Opus 4.x for v0.2.x – v0.3.0 climate-pipeline work; OpenAI Codex GitHub App for automated PR review), per the JOSS criterion that AI disclosures must be specific rather than generic.
+- `paper/paper.md` frontmatter `repository-artifact` + `identifiers` removed (same v0.1.5-vs-v0.4.0 mismatch reason as the CITATION.cff DOI removal). In-body citation-graph mention reworded to point at the Zenodo archive that will be minted on JOSS acceptance.
+- GitHub repo About sidebar: description now references the GeoAI engine; topics gained `geoai`, `foundation-models`, `pytorch` (within GitHub's 20-topic cap, dropping `opengeos`) (#115; metadata-only change, no code diff).
+
 ## [0.4.0] — 2026-06-08
 
 ### Added

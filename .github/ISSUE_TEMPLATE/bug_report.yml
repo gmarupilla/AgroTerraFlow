@@ -1,0 +1,103 @@
+name: Bug report
+description: Report a defect, regression, or unexpected behaviour in TerraFlow.
+title: "[bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a report. Reproducibility is one of
+        TerraFlow's core guarantees, so please include the YAML config and the
+        `run_fingerprint` (from `<output_dir>/runs/<fingerprint>/manifest.json`)
+        whenever possible — that lets us recreate the failing run exactly.
+
+  - type: input
+    id: version
+    attributes:
+      label: TerraFlow version
+      description: Output of `python -c "import terraflow; print(terraflow.__version__)"`.
+      placeholder: "0.4.0"
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: "3.12.4"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "macOS 14.5 arm64 / Ubuntu 24.04 x86_64 / Windows 11"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: Install method
+      options:
+        - pip / uv
+        - Homebrew tap (gmarupilla/terraflow)
+        - Docker image
+        - Editable install from source
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: YAML config (or a minimal repro snippet)
+      description: |
+        Paste the `terraflow run -c <config>` YAML. Trim any secrets or paths,
+        but keep the structure intact so we can reproduce.
+      render: yaml
+    validations:
+      required: false
+
+  - type: textarea
+    id: command
+    attributes:
+      label: Command(s) you ran
+      placeholder: "terraflow run -c config.yml"
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: What happened instead. Include the full exception/traceback if any.
+      render: text
+    validations:
+      required: true
+
+  - type: input
+    id: fingerprint
+    attributes:
+      label: run_fingerprint (if the failure produced one)
+      description: Directory name under `<output_dir>/runs/`. Helps us pin the exact failing run.
+      placeholder: "e.g. 9c8d…f2a3"
+    validations:
+      required: false
+
+  - type: textarea
+    id: extras
+    attributes:
+      label: Anything else?
+      description: Logs, screenshots, environment variables, related issues.
+    validations:
+      required: false

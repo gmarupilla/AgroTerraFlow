@@ -1,20 +1,25 @@
 cff-version: 1.2.0
 message: "If you use TerraFlow in your research, please cite it as below."
 type: software
-title: "TerraFlow: A Reproducible Workflow for Geospatial Agricultural Modeling"
-version: 0.2.0
-date-released: "2026-02-24"
+title: "TerraFlow: A Reproducible, Uncertainty-Aware Geospatial Workflow for Agricultural Suitability Modelling and Foundation-Model Inference"
+version: 0.4.0
+date-released: "2026-06-08"
 license: MIT
 repository-code: "https://github.com/gmarupilla/AgroTerraFlow"
 url: "https://terraflow.marupilla.dev"
-doi: 10.5281/zenodo.18490119
 abstract: >
-  TerraFlow is an open-source Python library for reproducible, auditable geospatial
-  workflows in agricultural and environmental data science. It provides a
-  config-driven pipeline for raster ingestion, ROI clipping, spatial climate
-  interpolation, suitability scoring, and provenance-tracked artifact export.
+  TerraFlow is an open-source Python library for reproducible, auditable
+  geospatial workflows in agricultural and environmental data science.
+  It provides a config-driven pipeline for raster ingestion, ROI clipping,
+  spatial climate interpolation (linear, IDW, or Ordinary Kriging with
+  LOOCV variogram selection), suitability scoring with Monte-Carlo
+  uncertainty propagation, global sensitivity analysis (Sobol' / Morris),
+  spatial block cross-validation, and provenance-tracked artifact export.
   Every run produces a deterministic content-addressed fingerprint enabling
-  independent verification of results.
+  independent verification of results. Beginning with v0.4.0, an optional
+  GeoAI engine (terraflow geoai {fields,landcover,canopy}) wraps the
+  opengeos/geoai foundation-model library behind the same fingerprint,
+  manifest, and cache-hit contract used by the climate pipeline.
 keywords:
   - geospatial
   - agriculture
@@ -23,6 +28,12 @@ keywords:
   - climate
   - workflow
   - Python
+  - kriging
+  - sensitivity-analysis
+  - uncertainty-quantification
+  - geoai
+  - foundation-models
+  - pytorch
 authors:
   - family-names: Marupilla
     given-names: Gnaneswara
