@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 import textwrap
 from pathlib import Path
-from typing import Tuple
+from typing import Callable, Tuple
 
 import pytest
 
@@ -30,8 +30,7 @@ def _write_config(
     confidence_threshold: float = 0.5,
     filename: str | None = None,
 ) -> Path:
-    cfg = textwrap.dedent(
-        f"""
+    cfg = textwrap.dedent(f"""
         raster_path: "{raster_path}"
         climate_csv: "{tmp_path / 'climate.csv'}"
         output_dir: "{tmp_path / 'outputs'}"
@@ -56,8 +55,7 @@ def _write_config(
           chip_size: 64
           confidence_threshold: {confidence_threshold}
           batch_size: 2
-        """
-    )
+        """)
     cfg_path = tmp_path / (filename or f"cfg_{engine}.yml")
     cfg_path.write_text(cfg, encoding="utf-8")
     return cfg_path
@@ -116,8 +114,7 @@ def test_runner_rejects_wrong_engine_in_config(
 def test_runner_rejects_missing_geoai_block(
     tmp_path: Path, synthetic_raster: Path, stub_geoai: None
 ) -> None:
-    cfg = textwrap.dedent(
-        f"""
+    cfg = textwrap.dedent(f"""
         raster_path: "{synthetic_raster}"
         climate_csv: "{tmp_path / 'climate.csv'}"
         output_dir: "{tmp_path / 'outputs'}"
@@ -137,25 +134,25 @@ def test_runner_rejects_missing_geoai_block(
           w_v: 0.4
           w_t: 0.3
           w_r: 0.3
-        """
-    )
+        """)
     cfg_path = tmp_path / "cfg_no_geoai.yml"
     cfg_path.write_text(cfg, encoding="utf-8")
     with pytest.raises(ValueError, match="no `geoai:` block"):
         geoai_engine.run_fields(cfg_path)
 
 
-def _stub_runner_factory(artifacts: Tuple[str, ...]):
-    """Return a runner body that writes empty placeholder files."""
+def _stub_runner_factory(
+    artifacts: Tuple[str, ...],
+) -> Tuple[Callable[[object, Path], None], list[Path]]:
+    """Return ``(runner_body, calls)`` — calls list records each invocation."""
     calls: list[Path] = []
 
-    def _stub(_cfg, run_dir: Path) -> None:
+    def _stub(_cfg: object, run_dir: Path) -> None:
         calls.append(run_dir)
         for name in artifacts:
             (run_dir / name).write_text("", encoding="utf-8")
 
-    _stub.calls = calls  # type: ignore[attr-defined]
-    return _stub
+    return _stub, calls
 
 
 @pytest.mark.parametrize(
@@ -191,7 +188,7 @@ def test_runner_writes_artifacts(
     public_fn: str,
     artifacts: Tuple[str, ...],
 ) -> None:
-    stub = _stub_runner_factory(artifacts)
+    stub, calls = _stub_runner_factory(artifacts)
     monkeypatch.setattr(geoai_engine, runner_attr, stub)
 
     cfg_path = _write_config(tmp_path, synthetic_raster, engine=engine)
@@ -215,7 +212,7 @@ def test_runner_writes_artifacts(
     assert report["deterministic"] is True
     assert "duration_s" in report
 
-    assert len(stub.calls) == 1  # type: ignore[attr-defined]
+    assert len(calls) == 1
 
 
 def test_runner_cache_hit_skips_inference(
@@ -224,7 +221,7 @@ def test_runner_cache_hit_skips_inference(
     stub_geoai: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    stub = _stub_runner_factory(("fields.geojson", "field_stats.parquet"))
+    stub, calls = _stub_runner_factory(("fields.geojson", "field_stats.parquet"))
     monkeypatch.setattr(geoai_engine, "_do_fields", stub)
 
     cfg_path = _write_config(tmp_path, synthetic_raster, engine="fields")
@@ -232,7 +229,7 @@ def test_runner_cache_hit_skips_inference(
     second = geoai_engine.run_fields(cfg_path)
 
     assert first == second
-    assert len(stub.calls) == 1  # type: ignore[attr-defined]
+    assert len(calls) == 1
 
 
 def test_threshold_bump_produces_new_fingerprint(
@@ -241,7 +238,7 @@ def test_threshold_bump_produces_new_fingerprint(
     stub_geoai: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    stub = _stub_runner_factory(("fields.geojson", "field_stats.parquet"))
+    stub, calls = _stub_runner_factory(("fields.geojson", "field_stats.parquet"))
     monkeypatch.setattr(geoai_engine, "_do_fields", stub)
 
     cfg_a = _write_config(
@@ -263,4 +260,4 @@ def test_threshold_bump_produces_new_fingerprint(
     dir_b = geoai_engine.run_fields(cfg_b)
 
     assert dir_a != dir_b
-    assert len(stub.calls) == 2  # type: ignore[attr-defined]
+    assert len(calls) == 2

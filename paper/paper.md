@@ -20,7 +20,7 @@ affiliations:
     name: Independent Researcher & Software Engineer (Scientific Computing)
   - index: 2
     name: University of Central Missouri, Missouri, United States
-date: 23 April 2026
+date: 8 June 2026
 bibliography: biblio.bib
 repository-code: 'https://github.com/gmarupilla/AgroTerraFlow'
 url: 'https://terraflow.marupilla.dev'
@@ -129,11 +129,22 @@ and the `run_fingerprint` deliberately excludes file mtimes and
 absolute paths so the same content hashes produce the same fingerprint
 across machines and filesystem copies.
 
+Beginning with v0.4.0, TerraFlow ships an optional GeoAI engine
+adapter (`terraflow geoai {fields,landcover,canopy}`) that wraps the
+`geoai` Python library [@wu2026geoai] behind the same fingerprint and
+manifest contract.  Pretrained field-boundary, landcover, and canopy
+models become orchestrated, cache-aware subcommands rather than ad-hoc
+notebook scripts; runtime device (`cpu`/`cuda`/`mps`) and the
+`torch` minor version participate in the fingerprint so cached runs
+correctly invalidate when the inference substrate changes.  The
+extra is opt-in (`pip install "terraflow-agro[geoai]"`) and the
+default install remains lightweight.
+
 ![TerraFlow pipeline: configuration is canonicalised, input files are hashed, and outputs land under a content-addressable run directory.](figure2.jpeg){ width=85% }
 
 # Research impact statement
 
-TerraFlow is a new release (v0.3.0) aimed at the near-term
+TerraFlow is a new release (v0.4.0) aimed at the near-term
 reproducibility needs of agricultural researchers.  Concrete
 community-readiness signals are in place: 231 automated tests across
 15 test files, an enforced 85 % coverage floor, type-checked Python
@@ -184,20 +195,6 @@ agronomy research groups that currently maintain ad-hoc scripted
 pipelines; usage metrics (PyPI downloads, GitHub stars, citation
 graph via Zenodo DOI 10.5281/zenodo.18490119) will be reported in
 future releases.
-
-# AI usage disclosure
-
-The authors used Anthropic Claude as a coding assistant during
-implementation of the kriging, sensitivity, validation, and export
-modules, and during the drafting of this manuscript.  All
-AI-assisted suggestions were reviewed, edited, and validated by the
-human authors before being committed or included.  Core design
-decisions — the DataCatalog boundary contract, the run-fingerprint
-hashing scheme, the choice of LOOCV-based variogram selection, the
-Monte-Carlo uncertainty propagation model, and the artifact schema —
-were made by the human authors.  All AI-assisted code is covered by
-the project's 233 automated tests and continuous-integration quality
-gates.
 
 # Acknowledgements
 

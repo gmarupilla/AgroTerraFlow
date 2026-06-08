@@ -36,37 +36,42 @@ def _config_option() -> Any:
     )
 
 
-def _geoai_cmd_factory(engine_name: str, runner_attr: str) -> Callable[[Path], None]:
-    def geoai_cmd(
-        config: Annotated[
-            Path,
-            _config_option(),
-        ],
-    ) -> None:
-        """Run a GeoAI engine."""
-        logger.info(f"TerraFlow GeoAI {engine_name} starting with config: {config}")
-        try:
-            from . import geoai_engine
+ConfigPath = Annotated[Path, _config_option()]
 
-            runner = getattr(geoai_engine, runner_attr)
-            output_path = runner(config)
-            logger.info(f"GeoAI {engine_name} complete: {output_path}")
-        except ValueError as e:
-            logger.error(f"GeoAI {engine_name} configuration error: {e}")
-            print(f"ERROR: {e}", file=sys.stderr)
-            raise SystemExit(1)
-        except ImportError as e:
-            logger.error(f"Missing dependency: {e}")
-            print(f"ERROR: {e}", file=sys.stderr)
-            raise SystemExit(1)
-        except FileNotFoundError as e:
-            logger.error(f"File not found: {e}")
-            print(f"ERROR: {e}", file=sys.stderr)
-            raise SystemExit(1)
-        except Exception as e:
-            logger.error(f"GeoAI {engine_name} failed: {e}", exc_info=True)
-            print(f"ERROR: GeoAI {engine_name} failed - {e}", file=sys.stderr)
-            raise SystemExit(1)
+
+def _invoke(name: str, fn: Callable[[], Any]) -> Any:
+    """Run *fn* and translate known exceptions into uniform CLI exits."""
+    try:
+        return fn()
+    except ValueError as e:
+        logger.error(f"{name} configuration error: {e}")
+        print(f"ERROR: {e}", file=sys.stderr)
+        raise SystemExit(1) from e
+    except FileNotFoundError as e:
+        logger.error(f"{name} file not found: {e}")
+        print(f"ERROR: {e}", file=sys.stderr)
+        raise SystemExit(1) from e
+    except ImportError as e:
+        logger.error(f"{name} missing dependency: {e}")
+        print(f"ERROR: {e}", file=sys.stderr)
+        raise SystemExit(1) from e
+    except Exception as e:
+        logger.error(f"{name} failed: {e}", exc_info=True)
+        print(f"ERROR: {name} failed - {e}", file=sys.stderr)
+        raise SystemExit(1) from e
+
+
+def _geoai_cmd_factory(engine_name: str, runner_attr: str) -> Callable[[Path], None]:
+    label = f"GeoAI {engine_name}"
+
+    def geoai_cmd(config: ConfigPath) -> None:
+        """Run a GeoAI engine."""
+        logger.info(f"TerraFlow {label} starting with config: {config}")
+        from . import geoai_engine
+
+        runner = getattr(geoai_engine, runner_attr)
+        output_path = _invoke(label, lambda: runner(config))
+        logger.info(f"{label} complete: {output_path}")
 
     geoai_cmd.__name__ = f"geoai_{engine_name}_cmd"
     geoai_cmd.__doc__ = f"Run GeoAI {engine_name} inference."
@@ -80,120 +85,35 @@ app.add_typer(geoai_app, name="geoai")
 
 
 @app.command("run")
-def run_cmd(
-    config: Annotated[
-        Path,
-        typer.Option(
-            ...,
-            "--config",
-            "-c",
-            exists=True,
-            file_okay=True,
-            dir_okay=False,
-            readable=True,
-            help="Path to YAML config file",
-        ),
-    ],
-) -> None:
+def run_cmd(config: ConfigPath) -> None:
     """Run the geospatial modeling pipeline."""
     logger.info(f"TerraFlow run starting with config: {config}")
-    try:
-        run_pipeline(config)
-    except FileNotFoundError as e:
-        logger.error(f"File not found: {e}")
-        print(f"ERROR: {e}", file=sys.stderr)
-        raise SystemExit(1)
-    except ValueError as e:
-        logger.error(f"Configuration error: {e}")
-        print(f"ERROR: {e}", file=sys.stderr)
-        raise SystemExit(1)
-    except Exception as e:
-        logger.error(f"Pipeline failed: {e}", exc_info=True)
-        print(f"ERROR: Pipeline failed - {e}", file=sys.stderr)
-        raise SystemExit(1)
+    _invoke("Pipeline", lambda: run_pipeline(config))
     logger.info("TerraFlow run completed successfully")
 
 
 @app.command("sensitivity")
-def sensitivity_cmd(
-    config: Annotated[
-        Path,
-        typer.Option(
-            ...,
-            "--config",
-            "-c",
-            exists=True,
-            file_okay=True,
-            dir_okay=False,
-            readable=True,
-            help="Path to YAML config file",
-        ),
-    ],
-) -> None:
+def sensitivity_cmd(config: ConfigPath) -> None:
     """Run Sobol' and/or Morris sensitivity analysis."""
     from .sensitivity import run_sensitivity
 
-    try:
-        report_path = run_sensitivity(config)
-        logger.info(f"Sensitivity analysis complete. Report: {report_path}")
-    except ValueError as e:
-        logger.error(f"Sensitivity analysis configuration error: {e}")
-        print(f"ERROR: {e}", file=sys.stderr)
-        raise SystemExit(1)
-    except Exception as e:
-        logger.error(f"Sensitivity analysis failed: {e}", exc_info=True)
-        print(f"ERROR: Sensitivity analysis failed - {e}", file=sys.stderr)
-        raise SystemExit(1)
+    report_path = _invoke("Sensitivity analysis", lambda: run_sensitivity(config))
+    logger.info(f"Sensitivity analysis complete. Report: {report_path}")
 
 
 @app.command("validate")
-def validate_cmd(
-    config: Annotated[
-        Path,
-        typer.Option(
-            ...,
-            "--config",
-            "-c",
-            exists=True,
-            file_okay=True,
-            dir_okay=False,
-            readable=True,
-            help="Path to YAML config file",
-        ),
-    ],
-) -> None:
+def validate_cmd(config: ConfigPath) -> None:
     """Run model validation (spatial CV, Cohen's kappa, Moran's I)."""
     logger.info(f"TerraFlow validation starting with config: {config}")
-    try:
-        from .validation import run_validation
+    from .validation import run_validation
 
-        run_validation(config)
-    except ValueError as e:
-        logger.error(f"Configuration error: {e}")
-        print(f"ERROR: {e}", file=sys.stderr)
-        raise SystemExit(1)
-    except Exception as e:
-        logger.error(f"Validation failed: {e}", exc_info=True)
-        print(f"ERROR: Validation failed - {e}", file=sys.stderr)
-        raise SystemExit(1)
+    _invoke("Validation", lambda: run_validation(config))
     logger.info("TerraFlow validation completed successfully")
 
 
 @app.command("export")
 def export_cmd(
-    config: Annotated[
-        Path,
-        typer.Option(
-            ...,
-            "--config",
-            "-c",
-            exists=True,
-            file_okay=True,
-            dir_okay=False,
-            readable=True,
-            help="Path to YAML config file",
-        ),
-    ],
+    config: ConfigPath,
     format: Annotated[
         str,
         typer.Option(..., "--format", "-f", help="Export format (currently: h3)"),
@@ -205,27 +125,13 @@ def export_cmd(
 ) -> None:
     """Export pipeline results to an alternative format."""
     logger.info(f"TerraFlow export starting with config: {config}, format: {format}")
-    try:
-        from .export import run_export
+    from .export import run_export
 
-        output_path = run_export(config, resolution_override=resolution, format=format)
-        logger.info(f"Export complete: {output_path}")
-    except ValueError as e:
-        logger.error(f"Export configuration error: {e}")
-        print(f"ERROR: {e}", file=sys.stderr)
-        raise SystemExit(1)
-    except ImportError as e:
-        logger.error(f"Missing dependency: {e}")
-        print(f"ERROR: {e}", file=sys.stderr)
-        raise SystemExit(1)
-    except FileNotFoundError as e:
-        logger.error(f"File not found: {e}")
-        print(f"ERROR: {e}", file=sys.stderr)
-        raise SystemExit(1)
-    except Exception as e:
-        logger.error(f"Export failed: {e}", exc_info=True)
-        print(f"ERROR: Export failed - {e}", file=sys.stderr)
-        raise SystemExit(1)
+    output_path = _invoke(
+        "Export",
+        lambda: run_export(config, resolution_override=resolution, format=format),
+    )
+    logger.info(f"Export complete: {output_path}")
 
 
 def main() -> None:

@@ -369,6 +369,6 @@ def test_geoai_fingerprint_rejects_malformed_input_entry():
     with pytest.raises(ValueError, match=r"input_fingerprints\[0\]"):
         compute_geoai_fingerprint(
             cfg,
-            [{"sha256": "a" * 64, "size_bytes": 100, "path": "/tmp/x"}],
+            [{"sha256": "a" * 64, "size_bytes": 100, "path": "extra"}],
             model,
         )

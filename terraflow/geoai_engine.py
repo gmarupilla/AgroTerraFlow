@@ -147,9 +147,7 @@ def _run(
     ]
     model_meta = _model_metadata(engine)
 
-    fingerprint = compute_geoai_fingerprint(
-        config_dict, input_fingerprints, model_meta
-    )
+    fingerprint = compute_geoai_fingerprint(config_dict, input_fingerprints, model_meta)
     run_dir = Path(cfg.output_dir) / "runs" / fingerprint / "geoai"
     manifest_path = run_dir / "geoai_manifest.json"
 
@@ -209,9 +207,7 @@ def _do_fields(cfg: PipelineConfig, run_dir: Path) -> None:  # pragma: no cover
     raise NotImplementedError("geoai.ftw integration lands in #94")
 
 
-def _do_landcover(
-    cfg: PipelineConfig, run_dir: Path
-) -> None:  # pragma: no cover
+def _do_landcover(cfg: PipelineConfig, run_dir: Path) -> None:  # pragma: no cover
     _require_geoai()
     raise NotImplementedError("geoai.classify integration lands in #94")
 

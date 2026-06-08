@@ -12,6 +12,18 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 - `GeoAIConfig` Pydantic block accepted under `geoai:` in pipeline configs, with validation for engine name (`fields`/`landcover`/`canopy`), power-of-two `chip_size` (≥ 32), `confidence_threshold` in [0, 1], and positive `batch_size`.
 - Internal `terraflow.core.run_identity.compute_geoai_fingerprint()` for deterministic GeoAI-run identity. Hashes config, inputs (`{sha256, size_bytes}` shape now enforced), and `name`/`weights_sha256`/`geoai_major_minor`; optionally also `device` and `torch_major_minor`.
 - `terraflow.geoai_engine` module with `run_fields()`, `run_landcover()`, `run_canopy()` orchestrators (#92). Validates `config.geoai.engine`, fingerprints inputs + device/torch, writes artifacts to `<output_dir>/runs/<geoai_fingerprint>/geoai/`, emits `geoai_manifest.json` and `report.json`, seeds `torch.manual_seed` from the fingerprint, and skips inference on cache hits. Engine bodies are placeholders that land in #94.
+- `terraflow geoai {fields,landcover,canopy}` CLI subcommands wired via a Typer sub-app, sharing a single error-handling helper with the rest of the CLI for uniform exit codes and log labels (#93).
+- New `ADR-007: GeoAI Engine Adapter` (`docs/architecture/adr-007-geoai-engine.md`), GeoAI user guide (`docs/geoai.md`), API reference page (`docs/api/geoai_engine.md`), and demo notebook (`docs/notebooks/06_geoai_engine.ipynb`) covering the orchestrator, cache-hit behaviour, and fingerprint sensitivity (#95).
+- Annotated GeoAI configuration example block appended to `docs/config/examples.md` and a GeoAI section added to `docs/reproducibility.md` documenting the device + torch-minor fingerprint contributions and known CUDA-determinism limits (#96, #46).
+- Opt-in `.github/workflows/geoai-integration.yml` workflow gated on `terraflow/geoai_engine.py`, `tests/test_geoai_engine.py`, `terraflow/core/run_identity.py`, and the workflow file itself; installs the `[geoai,dev]` extras and runs the GeoAI + fingerprint tests under Python 3.12 (#97).
+- `paper/paper.md` now describes the v0.4.0 GeoAI engine and cites `geoai-py` via a new `wu2026geoai` entry in `paper/biblio.bib` (#94).
+- `terraflow.compute_geoai_fingerprint` and `terraflow.compute_run_fingerprint` re-exported at the package level for direct import.
+
+### Changed
+- `terraflow.cli` refactored: extracted a `_config_option()` annotated alias and an `_invoke()` exception-translation helper so every subcommand (`run`, `sensitivity`, `validate`, `export`, `geoai *`) shares one error ladder. Eliminates the SonarCloud duplication that gated PR #107.
+
+### Removed
+- AI usage disclosure section removed from `paper/paper.md`.
 
 ## [0.3.0] — 2026-04-23
 

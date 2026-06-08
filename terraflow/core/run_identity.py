@@ -169,9 +169,7 @@ def compute_run_fingerprint(
     return base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
 
 
-_GEOAI_REQUIRED_MODEL_KEYS = frozenset(
-    {"name", "weights_sha256", "geoai_major_minor"}
-)
+_GEOAI_REQUIRED_MODEL_KEYS = frozenset({"name", "weights_sha256", "geoai_major_minor"})
 _GEOAI_OPTIONAL_MODEL_KEYS = frozenset({"device", "torch_major_minor"})
 _GEOAI_INPUT_KEYS = frozenset({"sha256", "size_bytes"})
 
@@ -210,14 +208,10 @@ def compute_geoai_fingerprint(
             f"model_metadata missing required keys: {sorted(missing_model)}"
         )
     unknown_model = (
-        model_metadata.keys()
-        - _GEOAI_REQUIRED_MODEL_KEYS
-        - _GEOAI_OPTIONAL_MODEL_KEYS
+        model_metadata.keys() - _GEOAI_REQUIRED_MODEL_KEYS - _GEOAI_OPTIONAL_MODEL_KEYS
     )
     if unknown_model:
-        raise ValueError(
-            f"model_metadata has unexpected keys: {sorted(unknown_model)}"
-        )
+        raise ValueError(f"model_metadata has unexpected keys: {sorted(unknown_model)}")
 
     for idx, fp in enumerate(input_fingerprints):
         if set(fp.keys()) != _GEOAI_INPUT_KEYS:
