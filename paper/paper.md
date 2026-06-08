@@ -268,6 +268,20 @@ interpolation under a single provenance contract. Usage metrics
 (PyPI downloads, GitHub stars, citation graph via Zenodo DOI
 10.5281/zenodo.18490119) will be reported in future releases.
 
+# AI usage disclosure
+
+Generative AI tools were used as a coding assistant during
+implementation and during the drafting of this manuscript. Every
+AI-suggested change was reviewed and edited by the human authors
+before being committed, and core design decisions — the
+`DataCatalog` boundary contract, the run-fingerprint hashing scheme,
+the LOOCV-based variogram selection, the Monte-Carlo uncertainty
+propagation model, the artifact schema, and the GeoAI
+device/torch-minor fingerprint contract — were made by the human
+authors. Correctness of AI-assisted code is verified by the 289
+automated tests on the continuous-integration matrix (Python 3.10,
+3.11, 3.12) and by the 85 % minimum coverage floor.
+
 # Acknowledgements
 
 TerraFlow builds on the scientific Python ecosystem including

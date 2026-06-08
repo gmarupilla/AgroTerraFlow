@@ -1,0 +1,65 @@
+name: Feature request
+description: Propose a new feature, capability, or non-trivial change to TerraFlow.
+title: "[feat]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion. To help us evaluate it, please describe the
+        underlying *problem* first — the proposed solution is easier to discuss
+        once we share the same picture of what we're trying to make easier or
+        possible.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / use case
+      description: What are you trying to accomplish, and why is the current behaviour insufficient?
+      placeholder: |
+        I'm trying to run … on … and the pipeline currently …
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How would you like this to work? CLI flag, config field, new module — be as concrete as possible.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds you tried, other libraries that do this, why they don't fit.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Which subsystem(s) does this touch?
+      multiple: true
+      options:
+        - Pipeline (terraflow run)
+        - Sensitivity (terraflow sensitivity)
+        - Validation (terraflow validate)
+        - Export (terraflow export)
+        - GeoAI engine (terraflow geoai)
+        - Configuration / Pydantic schema
+        - Reproducibility / fingerprinting
+        - Docs / paper
+        - CI / packaging
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: extras
+    attributes:
+      label: Additional context
+      description: Citations, screenshots, links to upstream issues, prior art.
+    validations:
+      required: false
