@@ -326,3 +326,49 @@ def test_geoai_fingerprint_input_order_invariant():
     assert compute_geoai_fingerprint(cfg, inputs_a, model) == compute_geoai_fingerprint(
         cfg, inputs_b, model
     )
+
+
+def test_geoai_fingerprint_changes_when_device_changes():
+    cfg, inputs, model = _geoai_args()
+    cpu_model = dict(model, device="cpu", torch_major_minor="2.3")
+    cuda_model = dict(model, device="cuda", torch_major_minor="2.3")
+    fp_cpu = compute_geoai_fingerprint(cfg, inputs, cpu_model)
+    fp_cuda = compute_geoai_fingerprint(cfg, inputs, cuda_model)
+    assert fp_cpu != fp_cuda
+
+
+def test_geoai_fingerprint_changes_when_torch_minor_changes():
+    cfg, inputs, model = _geoai_args()
+    a = dict(model, device="cpu", torch_major_minor="2.3")
+    b = dict(model, device="cpu", torch_major_minor="2.4")
+    assert compute_geoai_fingerprint(cfg, inputs, a) != compute_geoai_fingerprint(
+        cfg, inputs, b
+    )
+
+
+def test_geoai_fingerprint_rejects_missing_required_model_key():
+    cfg, inputs, _ = _geoai_args()
+    bad = {"name": "ftw-v1", "weights_sha256": "b" * 64}  # missing geoai_major_minor
+    with pytest.raises(ValueError, match="missing required keys"):
+        compute_geoai_fingerprint(cfg, inputs, bad)
+
+
+def test_geoai_fingerprint_rejects_unknown_model_key():
+    cfg, inputs, model = _geoai_args()
+    bad = dict(model, foo="bar")
+    with pytest.raises(ValueError, match="unexpected keys"):
+        compute_geoai_fingerprint(cfg, inputs, bad)
+
+
+def test_geoai_fingerprint_rejects_malformed_input_entry():
+    cfg, _, model = _geoai_args()
+    # Missing size_bytes
+    with pytest.raises(ValueError, match=r"input_fingerprints\[0\]"):
+        compute_geoai_fingerprint(cfg, [{"sha256": "a" * 64}], model)
+    # Extra key
+    with pytest.raises(ValueError, match=r"input_fingerprints\[0\]"):
+        compute_geoai_fingerprint(
+            cfg,
+            [{"sha256": "a" * 64, "size_bytes": 100, "path": "extra"}],
+            model,
+        )

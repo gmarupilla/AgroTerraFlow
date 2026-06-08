@@ -1,4 +1,6 @@
 # User-specific stuff
+MASTER_PROMPT_*.md
+*.local.md
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/**/usage.statistics.xml

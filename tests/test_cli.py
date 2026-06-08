@@ -1,13 +1,17 @@
 """Unit tests for the CLI module."""
 
+import re
 import sys
 import textwrap
 from pathlib import Path
 from unittest.mock import patch
 
 import pytest
+from typer.testing import CliRunner
 
-from terraflow.cli import main
+from terraflow.cli import _invoke, app, main
+
+runner = CliRunner()
 
 
 def test_cli_missing_config_arg(capsys):
@@ -228,6 +232,59 @@ def test_cli_help_message(capsys):
     captured = capsys.readouterr()
     assert "run" in captured.out.lower()
     assert "sensitivity" in captured.out.lower()
+
+
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+
+
+def test_cli_geoai_help_outputs_render():
+    help_invocations = [
+        ["geoai", "--help"],
+        ["geoai", "fields", "--help"],
+        ["geoai", "landcover", "--help"],
+        ["geoai", "canopy", "--help"],
+    ]
+
+    for args in help_invocations:
+        result = runner.invoke(app, args)
+
+        assert result.exit_code == 0
+        clean = _ANSI_RE.sub("", result.output)
+        assert "--config" in clean or "fields" in clean
+
+
+@pytest.mark.parametrize(
+    "exc, expected_exit, expected_substr",
+    [
+        (ValueError("bad cfg"), 1, "bad cfg"),
+        (FileNotFoundError("no file"), 1, "no file"),
+        (ImportError("no module"), 1, "no module"),
+        (NotImplementedError("placeholder"), 2, "not yet implemented"),
+        (RuntimeError("boom"), 1, "Demo failed"),
+    ],
+)
+def test_invoke_translates_known_exceptions(
+    exc, expected_exit, expected_substr, capsys
+):
+    def fn():
+        raise exc
+
+    with pytest.raises(SystemExit) as exc_info:
+        _invoke("Demo", fn)
+    assert exc_info.value.code == expected_exit
+    captured = capsys.readouterr()
+    assert expected_substr in captured.err
+
+
+def test_invoke_returns_value_on_success():
+    assert _invoke("Demo", lambda: "ok") == "ok"
+
+
+def test_cli_geoai_bogus_command_returns_typer_error():
+    result = runner.invoke(app, ["geoai", "bogus", "-c", "x.yml"])
+
+    assert result.exit_code == 2
+    assert "no such command" in result.output.lower()
 
 
 def test_cli_value_error_from_pipeline(tmp_path: Path, capsys):

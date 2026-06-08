@@ -107,6 +107,48 @@ effective station set used for kriging are different objects. The
 averaging step is logged at INFO level with the before/after station
 counts.
 
+## GeoAI runs: a separate fingerprint
+
+Starting with v0.4.0, the optional `terraflow geoai` runners use their own
+`geoai_fingerprint` (computed by
+`terraflow.core.run_identity.compute_geoai_fingerprint`) that hashes:
+
+1. **The canonicalised YAML configuration** (same canonicaliser as the core
+   pipeline, so the `geoai:` block, `raster_path`, and `roi` all
+   participate).
+2. **The sorted SHA-256 + size of every input raster.**
+3. **A `model_metadata` payload**: `name`, `weights_sha256`,
+   `geoai_major_minor` (patch deliberately excluded so bug-fix releases of
+   `geoai-py` do not invalidate caches), plus the runtime-detected
+   `device` (`cpu` / `cuda` / `mps`) and `torch_major_minor`.
+
+Device and torch minor version *are* part of the GeoAI fingerprint because
+GPU kernels and torch-minor releases can shift the last few bits of
+inference outputs. Two consequences:
+
+- Re-running the same config on a different device legitimately yields a
+  *different* fingerprint and a fresh cache directory — outputs may differ
+  bit-for-bit.
+- `torch.manual_seed` is set from the fingerprint before each runner
+  invocation, so the seeded code path is deterministic. CUDA non-determinism
+  in unseeded kernels (e.g. atomic reductions) is the documented limit;
+  enable `torch.use_deterministic_algorithms(True)` in your environment if
+  you need stronger guarantees, at a performance cost.
+
+Each GeoAI run writes `<output_dir>/runs/<geoai_fingerprint>/geoai/{
+geoai_manifest.json, report.json, <engine artifacts>}`. The manifest
+captures the full payload listed above and is sufficient to recreate the
+cached run on the same hardware.
+
+`compute_geoai_fingerprint` treats `device` and `torch_major_minor` as
+**optional** keys in `model_metadata` — they are folded into the hash
+only when supplied. The in-tree `terraflow.geoai_engine._run` always
+populates them, so the CLI runners and the Python wrappers behave as
+documented above. Bypassing the engine module (e.g. calling
+`compute_geoai_fingerprint` directly from a custom adapter) and omitting
+those keys yields a different fingerprint than the engine's — pin both
+keys explicitly if you need cross-tool fingerprint agreement.
+
 ## How to cite a specific run
 
 For a publication, cite the run the way you would cite a software version:

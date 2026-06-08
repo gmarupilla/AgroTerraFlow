@@ -39,6 +39,7 @@ flowchart LR
 | **Sensitivity analysis** | Sobol' / Morris indices for model weights (`terraflow sensitivity`) |
 | **Uncertainty quantification** | Kriging Monte Carlo → score CIs (`score_ci_low` / `score_ci_high`) |
 | **Interop** | H3-indexed export for downstream tools (`terraflow export --format h3`) |
+| **GeoAI engines (optional)** | `terraflow geoai {fields,landcover,canopy}` runners with deterministic fingerprinted caching (`pip install terraflow-agro[geoai]`) |
 | **Distribution** | PyPI (`terraflow-agro`) + Homebrew (`gmarupilla/terraflow`) + Docker |
 | **Citation** | Citable via `CITATION.cff`; JOSS paper in preparation |
 
@@ -66,6 +67,14 @@ For kriging-based interpolation:
 ```bash
 pip install terraflow-agro pykrige
 ```
+
+For the optional GeoAI engines (field-boundary detection, landcover classification, canopy regression):
+
+```bash
+pip install "terraflow-agro[geoai]"
+```
+
+This installs `geoai-py` and `torch`; the GeoAI runners auto-detect CUDA or Apple Silicon MPS at runtime.
 
 See [Homebrew install docs](https://terraflow.marupilla.dev/install/homebrew/) for update/uninstall instructions and troubleshooting.
 
@@ -116,8 +125,11 @@ report.json        — QA stats and timings
 | `terraflow sensitivity -c config.yml` | Sobol' / Morris sensitivity indices for model weights |
 | `terraflow validate -c config.yml` | Spatial block CV, Cohen's kappa, Moran's I on residuals |
 | `terraflow export --format h3 -c config.yml` | H3-indexed export for interop with H3-native visualization tools (`pip install terraflow-agro[h3]`) |
+| `terraflow geoai fields -c config.yml` | Field-boundary detection via the optional GeoAI engine (`pip install terraflow-agro[geoai]`) |
+| `terraflow geoai landcover -c config.yml` | Landcover classification (GeoAI extra) |
+| `terraflow geoai canopy -c config.yml` | Canopy-height regression (GeoAI extra) |
 
-See [CLI docs](https://terraflow.marupilla.dev/cli/usage/) for full reference.
+See [CLI docs](https://terraflow.marupilla.dev/cli/usage/) and the [GeoAI guide](https://terraflow.marupilla.dev/guides/geoai/) for full reference.
 
 ## Climate interpolation
 

@@ -169,6 +169,11 @@ def compute_run_fingerprint(
     return base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
 
 
+_GEOAI_REQUIRED_MODEL_KEYS = frozenset({"name", "weights_sha256", "geoai_major_minor"})
+_GEOAI_OPTIONAL_MODEL_KEYS = frozenset({"device", "torch_major_minor"})
+_GEOAI_INPUT_KEYS = frozenset({"sha256", "size_bytes"})
+
+
 def compute_geoai_fingerprint(
     config_dict: dict,
     input_fingerprints: list[dict],
@@ -182,12 +187,39 @@ def compute_geoai_fingerprint(
       - ``geoai_major_minor`` (str): e.g. ``"0.1"`` (patch deliberately
         excluded so bug-fix releases of ``geoai`` do not invalidate caches).
 
+    And may optionally contain:
+      - ``device`` (str): ``"cpu"`` / ``"cuda"`` / ``"mps"`` — different devices
+        yield different floating-point and cuDNN-kernel results.
+      - ``torch_major_minor`` (str): e.g. ``"2.3"`` — minor torch bumps can
+        shift kernel implementations.
+
     Only ``major.minor`` of the ``geoai`` library is mixed into the hash:
     patch bumps almost never change model outputs, and silent output drift
     from a real weight swap is already caught by ``weights_sha256``. Using
     the full version here would needlessly invalidate the cache on every
     bug-fix release.
+
+    ``input_fingerprints`` entries must be dicts with exactly the keys
+    ``sha256`` and ``size_bytes``; extra or missing keys raise ``ValueError``.
     """
+    missing_model = _GEOAI_REQUIRED_MODEL_KEYS - model_metadata.keys()
+    if missing_model:
+        raise ValueError(
+            f"model_metadata missing required keys: {sorted(missing_model)}"
+        )
+    unknown_model = (
+        model_metadata.keys() - _GEOAI_REQUIRED_MODEL_KEYS - _GEOAI_OPTIONAL_MODEL_KEYS
+    )
+    if unknown_model:
+        raise ValueError(f"model_metadata has unexpected keys: {sorted(unknown_model)}")
+
+    for idx, fp in enumerate(input_fingerprints):
+        if set(fp.keys()) != _GEOAI_INPUT_KEYS:
+            raise ValueError(
+                f"input_fingerprints[{idx}] must have exactly keys "
+                f"{sorted(_GEOAI_INPUT_KEYS)}, got {sorted(fp.keys())}"
+            )
+
     config_hash = hashlib.sha256(canonicalize_config(config_dict)).hexdigest()
 
     inputs_payload = sorted(
@@ -198,14 +230,19 @@ def compute_geoai_fingerprint(
         key=lambda item: (item["sha256"], item["size_bytes"]),
     )
 
+    model_payload = {
+        "name": model_metadata["name"],
+        "weights_sha256": model_metadata["weights_sha256"],
+        "geoai_major_minor": model_metadata["geoai_major_minor"],
+    }
+    for opt_key in _GEOAI_OPTIONAL_MODEL_KEYS:
+        if opt_key in model_metadata:
+            model_payload[opt_key] = model_metadata[opt_key]
+
     payload = {
         "config": config_hash,
         "inputs": inputs_payload,
-        "model": {
-            "name": model_metadata["name"],
-            "weights_sha256": model_metadata["weights_sha256"],
-            "geoai_major_minor": model_metadata["geoai_major_minor"],
-        },
+        "model": model_payload,
     }
     payload_bytes = json.dumps(
         payload,

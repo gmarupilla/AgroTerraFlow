@@ -140,6 +140,7 @@ nav:
       - ADR-004 CRS Reprojection: architecture/adr-004-crs-reprojection.md
       - ADR-005 Kriging Interpolation: architecture/adr-005-kriging-interpolation.md
       - ADR-006 Homebrew Distribution: architecture/adr-006-homebrew-distribution.md
+      - ADR-007 GeoAI Engine: architecture/adr-007-geoai-engine.md
       - Boundaries: architecture/boundaries.md
       - Run Identity: architecture/run-identity.md
       - Artifact Contract: architecture/artifacts.md
@@ -152,6 +153,7 @@ nav:
       - Homebrew (macOS): install/homebrew.md
   - Guides:
       - H3 Export: h3-export.md
+      - GeoAI Engines: geoai.md
   - API Reference:
       - terraflow.core: api/core.md
       - terraflow.ingest: api/ingest.md
@@ -162,6 +164,7 @@ nav:
       - terraflow.sensitivity: api/sensitivity.md
       - terraflow.validation: api/validation.md
       - terraflow.export: api/export.md
+      - terraflow.geoai_engine: api/geoai_engine.md
   - Notebooks:
       - TerraFlow v0.2.0 Demo: notebooks/terraflow_v0_2_0_comprehensive_test.ipynb
       - Kriging and Uncertainty: notebooks/kriging_uncertainty_demo.ipynb
@@ -169,6 +172,7 @@ nav:
       - Sensitivity Analysis: notebooks/02_sensitivity_analysis.ipynb
       - Model Validation: notebooks/03_model_validation.ipynb
       - H3 Export: notebooks/04_h3_export.ipynb
+      - GeoAI Engine: notebooks/06_geoai_engine.ipynb
   - Development: DEVELOPMENT.md
   - Roadmap: ROADMAP.md
   - Contributing: contributing.md
