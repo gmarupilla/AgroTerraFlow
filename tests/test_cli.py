@@ -1,5 +1,6 @@
 """Unit tests for the CLI module."""
 
+import re
 import sys
 import textwrap
 from pathlib import Path
@@ -233,6 +234,9 @@ def test_cli_help_message(capsys):
     assert "sensitivity" in captured.out.lower()
 
 
+_ANSI_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
+
+
 def test_cli_geoai_help_outputs_render():
     help_invocations = [
         ["geoai", "--help"],
@@ -245,7 +249,8 @@ def test_cli_geoai_help_outputs_render():
         result = runner.invoke(app, args)
 
         assert result.exit_code == 0
-        assert "--config" in result.output or "fields" in result.output
+        clean = _ANSI_RE.sub("", result.output)
+        assert "--config" in clean or "fields" in clean
 
 
 def test_cli_geoai_bogus_command_returns_typer_error():
