@@ -7,7 +7,6 @@ date-released: "2026-06-08"
 license: MIT
 repository-code: "https://github.com/gmarupilla/AgroTerraFlow"
 url: "https://terraflow.marupilla.dev"
-doi: 10.5281/zenodo.18490119
 abstract: >
   TerraFlow is an open-source Python library for reproducible, auditable
   geospatial workflows in agricultural and environmental data science.

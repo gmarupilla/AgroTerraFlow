@@ -26,11 +26,6 @@ date: 8 June 2026
 bibliography: biblio.bib
 repository-code: 'https://github.com/gmarupilla/AgroTerraFlow'
 url: 'https://terraflow.marupilla.dev'
-repository-artifact: 'https://doi.org/10.5281/zenodo.18490119'
-identifiers:
-  - type: doi
-    value: 10.5281/zenodo.18490119
-    description: Zenodo archive (pre-JOSS publication)
 ---
 
 # Summary
@@ -265,22 +260,31 @@ We expect adoption among graduate courses and agronomy research
 groups that currently maintain ad-hoc scripted pipelines and that
 wish to compose foundation-model inference with classical climate
 interpolation under a single provenance contract. Usage metrics
-(PyPI downloads, GitHub stars, citation graph via Zenodo DOI
-10.5281/zenodo.18490119) will be reported in future releases.
+(PyPI downloads, GitHub stars, and the citation graph from the
+Zenodo archive minted on JOSS acceptance) will be reported in
+future releases.
 
 # AI usage disclosure
 
-Generative AI tools were used as a coding assistant during
-implementation and during the drafting of this manuscript. Every
-AI-suggested change was reviewed and edited by the human authors
-before being committed, and core design decisions — the
-`DataCatalog` boundary contract, the run-fingerprint hashing scheme,
-the LOOCV-based variogram selection, the Monte-Carlo uncertainty
-propagation model, the artifact schema, and the GeoAI
-device/torch-minor fingerprint contract — were made by the human
-authors. Correctness of AI-assisted code is verified by the 289
-automated tests on the continuous-integration matrix (Python 3.10,
-3.11, 3.12) and by the 85 % minimum coverage floor.
+The authors used Anthropic Claude — specifically the Claude Code
+assistant invoking the `claude-opus-4-7` model (with the 1 M-token
+context variant) for the v0.4.0 GeoAI engine and paper revisions,
+and earlier Claude Sonnet 4.x / Opus 4.x models for the v0.2.x – v0.3.0
+climate-pipeline work — as a coding assistant during software
+implementation, documentation authoring, and manuscript drafting.
+A second, OpenAI-hosted reviewer (the OpenAI Codex GitHub App, which
+runs the `gpt-codex` model in this repository's review automation)
+provided automated pull-request feedback. Every AI-suggested change was
+reviewed and edited by the human authors before being committed, and
+core design decisions — the `DataCatalog` boundary contract, the
+run-fingerprint hashing scheme, the LOOCV-based variogram selection,
+the Monte-Carlo uncertainty propagation model, the artifact schema,
+and the GeoAI device/torch-minor fingerprint contract — were made by
+the human authors. Correctness of AI-assisted code is verified by the
+project's 289 automated tests on the continuous-integration matrix
+(Python 3.10, 3.11, 3.12), the 85 % minimum coverage floor,
+SonarCloud static analysis (quality gate "passed" on the v0.4.0
+merge), and GitHub Dependency Review on every pull request.
 
 # Acknowledgements
 
