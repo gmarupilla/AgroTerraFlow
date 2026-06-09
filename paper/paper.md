@@ -46,21 +46,21 @@ cross-validation with Cohen's κ and Moran's I, and the optional
 `terraflow geoai` sub-app exposes pretrained field-boundary, landcover,
 and canopy-height models from the `geoai` foundation-model library
 [@wu2026geoai] as fingerprinted, cache-aware inference runners. Every
-analysis — climate interpolation, scoring, sensitivity, validation, and
-foundation-model inference — shares a single deterministic
-fingerprint, so identical inputs always produce the same directory name
-and bit-identical outputs within documented limits.
+run is identified by a deterministic content-addressable
+fingerprint (`run_fingerprint` for the climate pipeline,
+`geoai_fingerprint` for the GeoAI sub-app), so identical inputs
+produce the same directory name and bit-identical outputs within
+documented limits.
 
 ![TerraFlow architecture showing configuration, pipeline orchestration, ingestion, geospatial operations, modelling, and outputs.](figure1.jpeg){ width=85% }
 
 # Statement of need
 
-Agricultural and environmental suitability mapping increasingly composes
-two distinct toolchains: classical raster + climate-station workflows
+Agricultural and environmental suitability mapping increasingly
+composes two toolchains: classical raster + climate-station workflows
 (e.g. the USDA Cropland Data Layer [@usda_cdl] combined with point
 weather observations) and pretrained foundation-model inference for
-field-boundary delineation, landcover classification, and canopy-height
-regression. The two are usually stitched together in ad-hoc notebooks
+field-boundary delineation, landcover, and canopy-height regression. The two are usually stitched together in ad-hoc notebooks
 that re-implement ROI clipping, CRS alignment, station-to-cell
 interpolation, nodata accounting, inference orchestration, and export
 on every project. The consequence is a workflow-level reproducibility
@@ -97,8 +97,8 @@ Engine [@gorelick2017gee] enables planetary-scale analysis but requires
 internet access and a Google account, ruling it out for the air-gapped
 environments common in government and agricultural workflows. `QGIS`
 [@qgis] is interactive, not scripted. `rasterio` [@gillies2013rasterio]
-and `pandas` [@mckinney2010pandas] are indispensable building blocks
-without a top-level orchestration contract.
+and `pandas` [@mckinney2010pandas] are building blocks without
+top-level orchestration.
 
 The `geoai` library [@wu2026geoai] provides a uniform Python API to
 pretrained field-boundary, landcover, and canopy-height models, but —
@@ -221,9 +221,10 @@ invariants hold without requiring `torch` on the default CI runners.
 To the authors' knowledge TerraFlow is the only open package that
 composes Ordinary Kriging with LOOCV variogram selection,
 Monte-Carlo uncertainty propagation, Sobol' and Morris sensitivity
-analysis, spatial-block cross-validation, and pretrained
-foundation-model inference under a single deterministic provenance
-contract. The integration — not any one component — is the contribution.
+analysis, spatial-block cross-validation, and a fingerprinted
+orchestration contract for `geoai`-backed foundation-model inference
+under a single deterministic provenance scheme. The integration —
+not any one component — is the contribution.
 
 # AI usage disclosure
 
