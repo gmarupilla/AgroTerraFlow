@@ -9,7 +9,7 @@ tags:
 
 # Contributing
 
-Thanks for helping improve TerraFlow! Here are the basics for v0.2.0+.
+Thanks for helping improve TerraFlow! Here are the basics for v0.4.0+.
 
 ## Contribution Workflow
 

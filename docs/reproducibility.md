@@ -154,8 +154,8 @@ keys explicitly if you need cross-tool fingerprint agreement.
 For a publication, cite the run the way you would cite a software version:
 
 ```
-Results produced by TerraFlow v0.2.2
-(https://pypi.org/project/terraflow-agro/0.2.2),
+Results produced by TerraFlow v0.4.0
+(https://pypi.org/project/terraflow-agro/0.4.0),
 run_fingerprint=<hex>, inputs sha256:<raster>, <climate>.
 ```
 
@@ -165,7 +165,7 @@ payload can be pasted verbatim into supplementary materials.
 
 ## Reproducibility check-list for reviewers
 
-1. Install the exact version: `pip install terraflow-agro==0.2.2`.
+1. Install the exact version: `pip install terraflow-agro==0.4.0`.
 2. Recompute the input hashes: `sha256sum <raster.tif> <climate.csv>`.
 3. Point the config at those paths and run `terraflow run -c cfg.yml`.
 4. Verify that the resulting directory name under `runs/` matches the
