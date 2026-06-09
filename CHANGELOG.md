@@ -7,6 +7,11 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Changed
+- All seven notebooks under `docs/notebooks/` re-executed against v0.4.0 so the rendered docs site shows live output for every cell. `05_extended_variogram_mode.ipynb` (previously checked in unexecuted) and `06_geoai_engine.ipynb` (just created) now have execution counts and outputs; `terraflow_v0_2_0_comprehensive_test.ipynb` re-executed so the inline outputs and execution counts are in sync. `kriging_uncertainty_demo.ipynb` header bumped from v0.2.1 → v0.4.0; `terraflow_v0_2_0_comprehensive_test.ipynb` header now frames the notebook as a v0.2.0 → v0.4.0 backward-compatibility regression check.
+- `docs/notebooks/06_geoai_engine.ipynb` stub cell now patches the helper functions (`_device`, `_torch_major_minor`, `_geoai_major_minor`, `_seed_torch`) so the notebook executes cleanly without the `[geoai]` extra installed (previously only `_GEOAI_AVAILABLE` and `_do_fields` were patched, which left `torch.cuda.is_available()` to dereference `None`).
+- `docs/contributing.md` "for v0.2.0+" → "for v0.4.0+" and the citation example in `docs/reproducibility.md` updated from `terraflow-agro==0.2.2` to `terraflow-agro==0.4.0`.
+
 ### Fixed
 - `paper/biblio.bib` `wu2026geoai` entry replaced: it was a placeholder `@misc` with `note = "Manuscript in preparation for JOSS"` and a GitHub URL, but the GeoAI JOSS paper was actually **published 2026-02-03** as Wu, Q. (2026), *GeoAI: A Python package for integrating artificial intelligence with geospatial data analysis and visualization*, Journal of Open Source Software, 11(118), 9605, [doi:10.21105/joss.09605](https://doi.org/10.21105/joss.09605). The bib entry is now a proper `@article` with the real DOI, volume, issue, page, ISSN, and publisher. All five `[@wu2026geoai]` citations in `paper/paper.md` continue to resolve to the same key (no in-body text changes).
 - `paper/biblio.bib` `terraflow_zenodo` entry **removed**. It was uncited (no `[@terraflow_zenodo]` anywhere in `paper/paper.md`) and carried the same stale v0.1.5 DOI (`10.5281/zenodo.18490119`) and stale title that were already cleaned out of `CITATION.cff` and the paper frontmatter. The repository URL is the citation handle until JOSS mints the v0.4.0 archive on acceptance.
