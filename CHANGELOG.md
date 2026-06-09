@@ -9,6 +9,7 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Fixed
 - `paper/biblio.bib` `wu2026geoai` entry replaced: it was a placeholder `@misc` with `note = "Manuscript in preparation for JOSS"` and a GitHub URL, but the GeoAI JOSS paper was actually **published 2026-02-03** as Wu, Q. (2026), *GeoAI: A Python package for integrating artificial intelligence with geospatial data analysis and visualization*, Journal of Open Source Software, 11(118), 9605, [doi:10.21105/joss.09605](https://doi.org/10.21105/joss.09605). The bib entry is now a proper `@article` with the real DOI, volume, issue, page, ISSN, and publisher. All five `[@wu2026geoai]` citations in `paper/paper.md` continue to resolve to the same key (no in-body text changes).
+- `paper/biblio.bib` `terraflow_zenodo` entry **removed**. It was uncited (no `[@terraflow_zenodo]` anywhere in `paper/paper.md`) and carried the same stale v0.1.5 DOI (`10.5281/zenodo.18490119`) and stale title that were already cleaned out of `CITATION.cff` and the paper frontmatter. The repository URL is the citation handle until JOSS mints the v0.4.0 archive on acceptance.
 
 ### Added
 - `# AI usage disclosure` section in `paper/paper.md` (now a **required** section per the JOSS review criteria). The section discloses that AI tools were used as a coding assistant during implementation and manuscript drafting, that AI-assisted code is human-reviewed before commit, and that the 289 automated tests on Python 3.10/3.11/3.12 verify correctness (#111).
