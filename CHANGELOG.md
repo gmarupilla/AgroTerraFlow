@@ -7,6 +7,9 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Fixed
+- `paper/biblio.bib` `wu2026geoai` entry replaced: it was a placeholder `@misc` with `note = "Manuscript in preparation for JOSS"` and a GitHub URL, but the GeoAI JOSS paper was actually **published 2026-02-03** as Wu, Q. (2026), *GeoAI: A Python package for integrating artificial intelligence with geospatial data analysis and visualization*, Journal of Open Source Software, 11(118), 9605, [doi:10.21105/joss.09605](https://doi.org/10.21105/joss.09605). The bib entry is now a proper `@article` with the real DOI, volume, issue, page, ISSN, and publisher. All five `[@wu2026geoai]` citations in `paper/paper.md` continue to resolve to the same key (no in-body text changes).
+
 ### Added
 - `# AI usage disclosure` section in `paper/paper.md` (now a **required** section per the JOSS review criteria). The section discloses that AI tools were used as a coding assistant during implementation and manuscript drafting, that AI-assisted code is human-reviewed before commit, and that the 289 automated tests on Python 3.10/3.11/3.12 verify correctness (#111).
 - `.github/ISSUE_TEMPLATE/bug_report.yml` (YAML-form bug report including TerraFlow version, Python version, OS, config YAML, repro command, expected vs actual, optional `run_fingerprint`) and `feature_request.yml` (problem / proposal / alternatives / subsystem). `.github/ISSUE_TEMPLATE/config.yml` disables blank issues and surfaces the docs site, reproducibility page, security advisory flow, and contributing guide (#113).
