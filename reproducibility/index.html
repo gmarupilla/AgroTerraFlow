@@ -2075,7 +2075,7 @@
   <span class="md-ellipsis">
     
   
-    TerraFlow v0.2.0 Comprehensive Testing Notebook
+    TerraFlow Comprehensive Testing Notebook
   
 
     
@@ -2668,8 +2668,8 @@ those keys yields a different fingerprint than the engine's — pin both
 keys explicitly if you need cross-tool fingerprint agreement.</p>
 <h2 id="how-to-cite-a-specific-run">How to cite a specific run<a class="headerlink" href="#how-to-cite-a-specific-run" title="Permanent link">&para;</a></h2>
 <p>For a publication, cite the run the way you would cite a software version:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Results produced by TerraFlow v0.2.2
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>(https://pypi.org/project/terraflow-agro/0.2.2),
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Results produced by TerraFlow v0.4.0
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>(https://pypi.org/project/terraflow-agro/0.4.0),
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>run_fingerprint=&lt;hex&gt;, inputs sha256:&lt;raster&gt;, &lt;climate&gt;.
 </span></code></pre></div>
 <p>All three fields — the package version, the fingerprint, and the input
@@ -2677,7 +2677,7 @@ hashes — are recorded in the <code>manifest.json</code> of every run. The raw
 payload can be pasted verbatim into supplementary materials.</p>
 <h2 id="reproducibility-check-list-for-reviewers">Reproducibility check-list for reviewers<a class="headerlink" href="#reproducibility-check-list-for-reviewers" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Install the exact version: <code>pip install terraflow-agro==0.2.2</code>.</li>
+<li>Install the exact version: <code>pip install terraflow-agro==0.4.0</code>.</li>
 <li>Recompute the input hashes: <code>sha256sum &lt;raster.tif&gt; &lt;climate.csv&gt;</code>.</li>
 <li>Point the config at those paths and run <code>terraflow run -c cfg.yml</code>.</li>
 <li>Verify that the resulting directory name under <code>runs/</code> matches the

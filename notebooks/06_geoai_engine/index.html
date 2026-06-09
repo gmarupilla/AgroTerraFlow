@@ -1893,7 +1893,7 @@
   <span class="md-ellipsis">
     
   
-    TerraFlow v0.2.0 Comprehensive Testing Notebook
+    TerraFlow Comprehensive Testing Notebook
   
 
     
@@ -3119,7 +3119,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=e3b1d299">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=nb-06-intro">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -3132,7 +3132,7 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=6bdfea71">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=nb-06-h1">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -3142,13 +3142,13 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=18d3a0e4">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=nb-06-fixture">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [1]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-1">
@@ -3260,25 +3260,38 @@ print('Config written to', cfg_path)</div>
 </div>
 </div>
 </div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Config written to /var/folders/lw/h_v37nds21q4xf2_q24hhz8h0000gn/T/geoai_demo_kheps1wy/config.yml
+</pre>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=f5efb4c8">
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=nb-06-h2">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="2-stub-the-heavy-ml-deps">2. Stub the heavy ML deps<a class="anchor-link" href="#2-stub-the-heavy-ml-deps">¶</a></h2><p>Without the <code>[geoai]</code> extra, <code>_GEOAI_AVAILABLE</code> is <code>False</code> and runners raise an <code>ImportError</code> with the install hint. For the demo we patch that flag plus the engine body so the orchestrator can execute against the synthetic raster.</p>
+<h2 id="2-stub-the-heavy-ml-deps">2. Stub the heavy ML deps<a class="anchor-link" href="#2-stub-the-heavy-ml-deps">¶</a></h2><p>Without the <code>[geoai]</code> extra, <code>_GEOAI_AVAILABLE</code> is <code>False</code> and runners raise an <code>ImportError</code> with the install hint. For the demo we patch that flag plus the device / version helpers (which would otherwise call <code>torch.cuda.is_available()</code> on a <code>None</code> module) and the engine body, so the orchestrator can execute against the synthetic raster.</p>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=04d5fb37">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=nb-06-stub">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [2]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-2">
@@ -3294,27 +3307,52 @@ print('Config written to', cfg_path)</div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">terraflow</span><span class="w"> </span><span class="kn">import</span> <span class="n">geoai_engine</span>
 
 <span class="n">geoai_engine</span><span class="o">.</span><span class="n">_GEOAI_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
-<span class="n">geoai_engine</span><span class="o">.</span><span class="n">_do_fields</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">run_dir</span><span class="p">:</span> <span class="p">(</span>
-    <span class="p">(</span><span class="n">run_dir</span> <span class="o">/</span> <span class="s1">'fields.geojson'</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s1">'{"type": "FeatureCollection", "features": []}'</span><span class="p">),</span>
-    <span class="p">(</span><span class="n">run_dir</span> <span class="o">/</span> <span class="s1">'field_stats.parquet'</span><span class="p">)</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="sa">b</span><span class="s1">''</span><span class="p">),</span>
-<span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">'Stub installed; ready to run.'</span><span class="p">)</span>
+<span class="n">geoai_engine</span><span class="o">.</span><span class="n">_device</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="s1">'cpu'</span>
+<span class="n">geoai_engine</span><span class="o">.</span><span class="n">_torch_major_minor</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="s1">'2.0'</span>
+<span class="n">geoai_engine</span><span class="o">.</span><span class="n">_geoai_major_minor</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="s1">'0.1'</span>
+<span class="n">geoai_engine</span><span class="o">.</span><span class="n">_seed_torch</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">fingerprint</span><span class="p">:</span> <span class="kc">None</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_stub_fields</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">run_dir</span><span class="p">):</span>
+    <span class="p">(</span><span class="n">run_dir</span> <span class="o">/</span> <span class="s1">'fields.geojson'</span><span class="p">)</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="s1">'{"type": "FeatureCollection", "features": []}'</span><span class="p">)</span>
+    <span class="p">(</span><span class="n">run_dir</span> <span class="o">/</span> <span class="s1">'field_stats.parquet'</span><span class="p">)</span><span class="o">.</span><span class="n">write_bytes</span><span class="p">(</span><span class="sa">b</span><span class="s1">''</span><span class="p">)</span>
+
+<span class="n">geoai_engine</span><span class="o">.</span><span class="n">_do_fields</span> <span class="o">=</span> <span class="n">_stub_fields</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Stubs installed; ready to run.'</span><span class="p">)</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">from terraflow import geoai_engine
 
 geoai_engine._GEOAI_AVAILABLE = True
-geoai_engine._do_fields = lambda cfg, run_dir: (
-    (run_dir / 'fields.geojson').write_text('{"type": "FeatureCollection", "features": []}'),
-    (run_dir / 'field_stats.parquet').write_bytes(b''),
-)
-print('Stub installed; ready to run.')</div>
+geoai_engine._device = lambda: 'cpu'
+geoai_engine._torch_major_minor = lambda: '2.0'
+geoai_engine._geoai_major_minor = lambda: '0.1'
+geoai_engine._seed_torch = lambda fingerprint: None
+
+def _stub_fields(cfg, run_dir):
+    (run_dir / 'fields.geojson').write_text('{"type": "FeatureCollection", "features": []}')
+    (run_dir / 'field_stats.parquet').write_bytes(b'')
+
+geoai_engine._do_fields = _stub_fields
+print('Stubs installed; ready to run.')</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Stubs installed; ready to run.
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=6ff37ca5">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=nb-06-h3">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -3324,13 +3362,13 @@ print('Stub installed; ready to run.')</div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=119dfd58">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=nb-06-run-fields">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [3]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-3">
@@ -3353,6 +3391,7 @@ print('Stub installed; ready to run.')</div>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'</span><span class="se">\n</span><span class="s1">Manifest engine:'</span><span class="p">,</span> <span class="n">manifest</span><span class="p">[</span><span class="s1">'engine'</span><span class="p">])</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'Fingerprint:'</span><span class="p">,</span> <span class="n">manifest</span><span class="p">[</span><span class="s1">'geoai_fingerprint'</span><span class="p">][:</span><span class="mi">16</span><span class="p">],</span> <span class="s1">'...'</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s1">'Model device:'</span><span class="p">,</span> <span class="n">manifest</span><span class="p">[</span><span class="s1">'model'</span><span class="p">][</span><span class="s1">'device'</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'ROI applied:'</span><span class="p">,</span> <span class="n">manifest</span><span class="p">[</span><span class="s1">'roi_applied'</span><span class="p">])</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-3">run_dir = geoai_engine.run_fields(cfg_path)
 print('Run directory:', run_dir)
@@ -3363,14 +3402,38 @@ for p in sorted(run_dir.iterdir()):
 manifest = json.loads((run_dir / 'geoai_manifest.json').read_text())
 print('\nManifest engine:', manifest['engine'])
 print('Fingerprint:', manifest['geoai_fingerprint'][:16], '...')
-print('Model device:', manifest['model']['device'])</div>
+print('Model device:', manifest['model']['device'])
+print('ROI applied:', manifest['roi_applied'])</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Run directory: /var/folders/lw/h_v37nds21q4xf2_q24hhz8h0000gn/T/geoai_demo_kheps1wy/outputs/runs/SMDSBnGYzXWNOSt-V_m88iqKbid_sMpiJRfxccSU_H4/geoai
+Artifacts:
+ - field_stats.parquet (0 bytes)
+ - fields.geojson (45 bytes)
+ - geoai_manifest.json (1381 bytes)
+ - report.json (123 bytes)
+
+Manifest engine: fields
+Fingerprint: SMDSBnGYzXWNOSt- ...
+Model device: cpu
+ROI applied: False
+</pre>
 </div>
 </div>
 </div>
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=2ea9eec9">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=nb-06-h4">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -3380,13 +3443,13 @@ print('Model device:', manifest['model']['device'])</div>
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=6cabaf22">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=nb-06-cache">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
@@ -3424,9 +3487,36 @@ print('Engine body invocations across two runs:', call_count['n'], '(expected 0 
 </div>
 </div>
 </div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>INFO:terraflow:geoai cache hit — /var/folders/lw/h_v37nds21q4xf2_q24hhz8h0000gn/T/geoai_demo_kheps1wy/outputs/runs/SMDSBnGYzXWNOSt-V_m88iqKbid_sMpiJRfxccSU_H4/geoai
+</pre>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=070a92e7">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>INFO:terraflow:geoai cache hit — /var/folders/lw/h_v37nds21q4xf2_q24hhz8h0000gn/T/geoai_demo_kheps1wy/outputs/runs/SMDSBnGYzXWNOSt-V_m88iqKbid_sMpiJRfxccSU_H4/geoai
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Engine body invocations across two runs: 0 (expected 0 — cache hit)
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=nb-06-h5">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -3436,13 +3526,13 @@ print('Engine body invocations across two runs:', call_count['n'], '(expected 0 
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs" id="cell-id=141d9c0b">
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=nb-06-bump">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [5]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="CodeMirror cm-s-jupyter">
 <div class="zeroclipboard-container">
 <clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-5">
@@ -3474,9 +3564,24 @@ print('Different directories?', run_dir != run_dir_b)</div>
 </div>
 </div>
 </div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>Original run: /var/folders/lw/h_v37nds21q4xf2_q24hhz8h0000gn/T/geoai_demo_kheps1wy/outputs/runs/SMDSBnGYzXWNOSt-V_m88iqKbid_sMpiJRfxccSU_H4/geoai
+Threshold-bumped run: /var/folders/lw/h_v37nds21q4xf2_q24hhz8h0000gn/T/geoai_demo_kheps1wy/outputs/runs/4i8bBSj4d-WnJKplfk6SES3pSB2exGqUCHIQQKQ1njE/geoai
+Different directories? True
+</pre>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=2dd72b5f">
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=nb-06-end">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
