@@ -7,6 +7,9 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+- `docs/strategy/` directory scaffolding for the post-JOSS-rejection research-impact campaign (kicked off 2026-06-24 after editor closed [openjournals/joss-reviews#10686](https://github.com/openjournals/joss-reviews/issues/10686) for "paper too long" + "demonstrated research impact" pre-review screening). `docs/strategy/README.md` indexes per-Part outputs tracked in GitHub issues #123–#130 ([strategy] Parts 1–8); `docs/strategy/auto/README.md` + empty `metrics.csv` scaffold the outputs that scheduled Claude routines will write (adoption metrics, JOSS pulse, ecosystem watch, monthly reviews, Day-90 / Day-180 gate checks). Internal planning artifacts only — intentionally excluded from `mkdocs.yml` nav.
+
 ### Changed
 - All seven notebooks under `docs/notebooks/` re-executed against v0.4.0 so the rendered docs site shows live output for every cell. `05_extended_variogram_mode.ipynb` (previously checked in unexecuted) and `06_geoai_engine.ipynb` (just created) now have execution counts and outputs; `terraflow_v0_2_0_comprehensive_test.ipynb` re-executed so the inline outputs and execution counts are in sync. `kriging_uncertainty_demo.ipynb` header bumped from v0.2.1 → v0.4.0; `terraflow_v0_2_0_comprehensive_test.ipynb` header now frames the notebook as a v0.2.0 → v0.4.0 backward-compatibility regression check.
 - `docs/notebooks/06_geoai_engine.ipynb` stub cell now patches the helper functions (`_device`, `_torch_major_minor`, `_geoai_major_minor`, `_seed_torch`) so the notebook executes cleanly without the `[geoai]` extra installed (previously only `_GEOAI_AVAILABLE` and `_do_fields` were patched, which left `torch.cuda.is_available()` to dereference `None`).
