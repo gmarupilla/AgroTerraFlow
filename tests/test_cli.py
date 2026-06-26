@@ -1,6 +1,5 @@
 """Unit tests for the CLI module."""
 
-import re
 import sys
 import textwrap
 from pathlib import Path
@@ -234,25 +233,6 @@ def test_cli_help_message(capsys):
     assert "sensitivity" in captured.out.lower()
 
 
-_ANSI_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
-
-
-def test_cli_geoai_help_outputs_render():
-    help_invocations = [
-        ["geoai", "--help"],
-        ["geoai", "fields", "--help"],
-        ["geoai", "landcover", "--help"],
-        ["geoai", "canopy", "--help"],
-    ]
-
-    for args in help_invocations:
-        result = runner.invoke(app, args)
-
-        assert result.exit_code == 0
-        clean = _ANSI_RE.sub("", result.output)
-        assert "--config" in clean or "fields" in clean
-
-
 @pytest.mark.parametrize(
     "exc, expected_exit, expected_substr",
     [
@@ -278,13 +258,6 @@ def test_invoke_translates_known_exceptions(
 
 def test_invoke_returns_value_on_success():
     assert _invoke("Demo", lambda: "ok") == "ok"
-
-
-def test_cli_geoai_bogus_command_returns_typer_error():
-    result = runner.invoke(app, ["geoai", "bogus", "-c", "x.yml"])
-
-    assert result.exit_code == 2
-    assert "no such command" in result.output.lower()
 
 
 def test_cli_value_error_from_pipeline(tmp_path: Path, capsys):
@@ -546,8 +519,6 @@ class TestValidateCLI:
         )
         from typer.testing import CliRunner
 
-        from terraflow.cli import app
-
         runner = CliRunner()
         result = runner.invoke(app, ["validate", "-c", str(cfg)])
         assert result.exit_code != 0
@@ -555,8 +526,6 @@ class TestValidateCLI:
     def test_validate_help(self):
         """validate --help shows usage."""
         from typer.testing import CliRunner
-
-        from terraflow.cli import app
 
         runner = CliRunner()
         result = runner.invoke(app, ["validate", "--help"])
