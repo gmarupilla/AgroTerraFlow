@@ -21,10 +21,6 @@
          <lastmod>2026-06-26</lastmod>
     </url>
     <url>
-         <loc>https://terraflow.marupilla.dev/h3-export/</loc>
-         <lastmod>2026-06-26</lastmod>
-    </url>
-    <url>
          <loc>https://terraflow.marupilla.dev/quickstart/</loc>
          <lastmod>2026-06-26</lastmod>
     </url>
@@ -38,10 +34,6 @@
     </url>
     <url>
          <loc>https://terraflow.marupilla.dev/api/core/</loc>
-         <lastmod>2026-06-26</lastmod>
-    </url>
-    <url>
-         <loc>https://terraflow.marupilla.dev/api/export/</loc>
          <lastmod>2026-06-26</lastmod>
     </url>
     <url>
@@ -130,10 +122,6 @@
     </url>
     <url>
          <loc>https://terraflow.marupilla.dev/notebooks/03_model_validation/</loc>
-         <lastmod>2026-06-26</lastmod>
-    </url>
-    <url>
-         <loc>https://terraflow.marupilla.dev/notebooks/04_h3_export/</loc>
          <lastmod>2026-06-26</lastmod>
     </url>
     <url>
