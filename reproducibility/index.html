@@ -815,17 +815,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#geoai-runs-a-separate-fingerprint" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        GeoAI runs: a separate fingerprint
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#how-to-cite-a-specific-run" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1102,34 +1091,6 @@
     
   
     ADR-006 Homebrew Distribution
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../architecture/adr-007-geoai-engine/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ADR-007 GeoAI Engine
   
 
     
@@ -1615,34 +1576,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../geoai/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    GeoAI Engines
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -1972,36 +1905,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../api/geoai_engine/" class="md-nav__link">
-        
-  
-  
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m11.62 1 5.66 5.67-2.12 2.12-2.12-2.12-1.42 1.42 2.33 2.32-1.16 1.17.45.46a2.5 2.5 0 0 1 2.83.5l-3.53 3.53a2.5 2.5 0 0 1-.5-2.83l-.46-.45-1.17 1.16-2.32-2.33-1.42 1.42 2.12 2.12-2.12 2.12L1 11.62 3.14 9.5l2.12 2.12 1.41-1.41-2.83-2.83c-.78-.78-.78-2.05 0-2.83l.71-.71c.78-.78 2.05-.78 2.83 0l2.83 2.83 1.41-1.41L9.5 3.14zM18 14a4 4 0 0 1-4 4v-2a2 2 0 0 0 2-2zm4 0a8 8 0 0 1-8 8v-2a6 6 0 0 0 6-6z"/></svg>
-  
-  <span class="md-ellipsis">
-    
-  
-    terraflow.geoai_engine
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -2216,34 +2119,6 @@
     
   
     H3 Export Demo
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../notebooks/06_geoai_engine/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    GeoAI Engine — fields, landcover, canopy
   
 
     
@@ -2485,17 +2360,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#geoai-runs-a-separate-fingerprint" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        GeoAI runs: a separate fingerprint
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#how-to-cite-a-specific-run" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2627,45 +2491,6 @@ bit-identical, but it does mean the underlying input CSV and the
 effective station set used for kriging are different objects. The
 averaging step is logged at INFO level with the before/after station
 counts.</p>
-<h2 id="geoai-runs-a-separate-fingerprint">GeoAI runs: a separate fingerprint<a class="headerlink" href="#geoai-runs-a-separate-fingerprint" title="Permanent link">&para;</a></h2>
-<p>Starting with v0.4.0, the optional <code>terraflow geoai</code> runners use their own
-<code>geoai_fingerprint</code> (computed by
-<code>terraflow.core.run_identity.compute_geoai_fingerprint</code>) that hashes:</p>
-<ol>
-<li><strong>The canonicalised YAML configuration</strong> (same canonicaliser as the core
-   pipeline, so the <code>geoai:</code> block, <code>raster_path</code>, and <code>roi</code> all
-   participate).</li>
-<li><strong>The sorted SHA-256 + size of every input raster.</strong></li>
-<li><strong>A <code>model_metadata</code> payload</strong>: <code>name</code>, <code>weights_sha256</code>,
-   <code>geoai_major_minor</code> (patch deliberately excluded so bug-fix releases of
-   <code>geoai-py</code> do not invalidate caches), plus the runtime-detected
-   <code>device</code> (<code>cpu</code> / <code>cuda</code> / <code>mps</code>) and <code>torch_major_minor</code>.</li>
-</ol>
-<p>Device and torch minor version <em>are</em> part of the GeoAI fingerprint because
-GPU kernels and torch-minor releases can shift the last few bits of
-inference outputs. Two consequences:</p>
-<ul>
-<li>Re-running the same config on a different device legitimately yields a
-  <em>different</em> fingerprint and a fresh cache directory — outputs may differ
-  bit-for-bit.</li>
-<li><code>torch.manual_seed</code> is set from the fingerprint before each runner
-  invocation, so the seeded code path is deterministic. CUDA non-determinism
-  in unseeded kernels (e.g. atomic reductions) is the documented limit;
-  enable <code>torch.use_deterministic_algorithms(True)</code> in your environment if
-  you need stronger guarantees, at a performance cost.</li>
-</ul>
-<p>Each GeoAI run writes <code>&lt;output_dir&gt;/runs/&lt;geoai_fingerprint&gt;/geoai/{
-geoai_manifest.json, report.json, &lt;engine artifacts&gt;}</code>. The manifest
-captures the full payload listed above and is sufficient to recreate the
-cached run on the same hardware.</p>
-<p><code>compute_geoai_fingerprint</code> treats <code>device</code> and <code>torch_major_minor</code> as
-<strong>optional</strong> keys in <code>model_metadata</code> — they are folded into the hash
-only when supplied. The in-tree <code>terraflow.geoai_engine._run</code> always
-populates them, so the CLI runners and the Python wrappers behave as
-documented above. Bypassing the engine module (e.g. calling
-<code>compute_geoai_fingerprint</code> directly from a custom adapter) and omitting
-those keys yields a different fingerprint than the engine's — pin both
-keys explicitly if you need cross-tool fingerprint agreement.</p>
 <h2 id="how-to-cite-a-specific-run">How to cite a specific run<a class="headerlink" href="#how-to-cite-a-specific-run" title="Permanent link">&para;</a></h2>
 <p>For a publication, cite the run the way you would cite a software version:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Results produced by TerraFlow v0.4.0
