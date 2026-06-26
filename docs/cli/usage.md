@@ -133,17 +133,3 @@ Results are appended to the existing `report.json` under the `"validation"` key:
 
 See [`notebooks/03_model_validation.ipynb`](../notebooks/03_model_validation.ipynb) for a worked example.
 
-## H3 export
-
-Re-index pipeline output to H3 hexagonal cells for interop with DeckGL, Kepler.gl, and h3pandas. Requires the optional `[h3]` extra:
-
-```bash
-pip install terraflow-agro[h3]
-terraflow export --format h3 -c config.yml
-# or pass an explicit resolution override:
-terraflow export --format h3 -c config.yml --resolution 8
-```
-
-The output `h3_resolution_N.parquet` lands in the run directory alongside `features.parquet`. The H3 resolution participates in the run fingerprint, so different resolutions produce distinct cached artifacts.
-
-See [`notebooks/04_h3_export.ipynb`](../notebooks/04_h3_export.ipynb) and the [H3 export guide](../h3-export.md) for a worked example.

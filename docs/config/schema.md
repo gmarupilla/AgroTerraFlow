@@ -25,7 +25,6 @@ It is validated with Pydantic v2 and rejects unknown fields. Geographic coordina
 | `climate` | object | Climate data handling configuration (optional, defaults to spatial interpolation). |
 | `sensitivity` | object | Optional Sobol' / Morris sensitivity analysis block (consumed by `terraflow sensitivity`). |
 | `validation` | object | Optional spatial-block CV / Cohen's kappa block (consumed by `terraflow validate`). |
-| `export` | object | Optional H3 export block (consumed by `terraflow export --format h3`). |
 | `max_cells` | integer | Maximum cells sampled from the ROI (default: 500). |
 
 ## ROI (bbox)

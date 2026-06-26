@@ -38,7 +38,6 @@ flowchart LR
 | **Spatial validation** | Spatial-block CV with Cohen's κ + Moran's I on residuals (`terraflow validate`) |
 | **Sensitivity analysis** | Sobol' / Morris indices for model weights (`terraflow sensitivity`) |
 | **Uncertainty quantification** | Kriging Monte Carlo → score CIs (`score_ci_low` / `score_ci_high`) |
-| **Interop** | H3-indexed export for downstream tools (`terraflow export --format h3`) |
 | **Distribution** | PyPI (`terraflow-agro`) + Homebrew (`gmarupilla/terraflow`) + Docker |
 | **Citation** | Citable via `CITATION.cff`; JOSS paper in preparation |
 
@@ -115,7 +114,6 @@ report.json        — QA stats and timings
 | `terraflow run -c config.yml` | Run the full pipeline |
 | `terraflow sensitivity -c config.yml` | Sobol' / Morris sensitivity indices for model weights |
 | `terraflow validate -c config.yml` | Spatial block CV, Cohen's kappa, Moran's I on residuals |
-| `terraflow export --format h3 -c config.yml` | H3-indexed export for interop with H3-native visualization tools (`pip install terraflow-agro[h3]`) |
 
 See [CLI docs](https://terraflow.marupilla.dev/cli/usage/) for full reference.
 

@@ -47,14 +47,12 @@ brew untap gmarupilla/terraflow   # optional: remove the tap entirely
 
 ## Optional Extras
 
-The `[h3]` and `[viz]` extras are not available via the Homebrew formula because
-Homebrew virtualenvs are isolated. To use H3 export or Plotly visualizations,
-install via pip instead:
+The `[viz]` extra is not available via the Homebrew formula because
+Homebrew virtualenvs are isolated. To use Plotly visualizations, install
+via pip instead:
 
 ```bash
-pip install "terraflow-agro[h3]"        # H3 hexagonal export
 pip install "terraflow-agro[viz]"       # Plotly visualization support
-pip install "terraflow-agro[h3,viz]"    # both
 ```
 
 ## Troubleshooting
