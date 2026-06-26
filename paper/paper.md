@@ -1,5 +1,5 @@
 ---
-title: "TerraFlow: A Reproducible, Uncertainty-Aware Geospatial Workflow for Agricultural Suitability Modelling and Foundation-Model Inference"
+title: "TerraFlow: A Reproducible, Uncertainty-Aware Geospatial Workflow for Agricultural Suitability Modelling"
 tags:
   - Python
   - geospatial
@@ -7,8 +7,6 @@ tags:
   - kriging
   - sensitivity analysis
   - reproducibility
-  - geoai
-  - foundation models
 authors:
   - name: Gnaneswara Marupilla
     orcid: 0000-0002-6030-8707
@@ -42,53 +40,39 @@ weighted suitability score, and writes `features.parquet`,
 directory. Three companion sub-commands extend the same contract:
 `terraflow sensitivity` and `terraflow validate` produce Sobol' and
 Morris indices [@herman2017salib; @saltelli2008global] and spatial-block
-cross-validation with Cohen's κ and Moran's I, and the optional
-`terraflow geoai` sub-app exposes pretrained field-boundary, landcover,
-and canopy-height models from the `geoai` foundation-model library
-[@wu2026geoai] as fingerprinted, cache-aware inference runners. Every
-run is identified by a deterministic content-addressable
-fingerprint (`run_fingerprint` for the climate pipeline,
-`geoai_fingerprint` for the GeoAI sub-app), so identical inputs
-produce the same directory name and bit-identical outputs within
+cross-validation with Cohen's κ and Moran's I. Every run is identified
+by a deterministic content-addressable `run_fingerprint`, so identical
+inputs produce the same directory name and bit-identical outputs within
 documented limits.
 
 ![TerraFlow architecture showing configuration, pipeline orchestration, ingestion, geospatial operations, modelling, and outputs.](figure1.jpeg){ width=85% }
 
 # Statement of need
 
-Agricultural and environmental suitability mapping increasingly
-composes two toolchains: classical raster + climate-station workflows
-(e.g. the USDA Cropland Data Layer [@usda_cdl] combined with point
-weather observations) and pretrained foundation-model inference for
-field-boundary delineation, landcover, and canopy-height regression. The two are usually stitched together in ad-hoc notebooks
-that re-implement ROI clipping, CRS alignment, station-to-cell
-interpolation, nodata accounting, inference orchestration, and export
-on every project. The consequence is a workflow-level reproducibility
-gap: results depend on file paths, package versions, random seeds, and
-— for ML inference — accelerator devices and torch versions that drift
-silently between runs; interpolation uncertainty and parameter
-sensitivity are rarely quantified; reviewers cannot regenerate a
-specific figure from a specific configuration and specific input bytes;
-and the climate-modelling and deep-learning halves of a single study
-operate under incompatible notions of "the same run".
+Agricultural and environmental suitability mapping typically combines a
+raster (e.g. the USDA Cropland Data Layer [@usda_cdl]) with point
+weather observations. Practitioners stitch these together in ad-hoc
+notebooks that re-implement ROI clipping, CRS alignment, station-to-cell
+interpolation, nodata accounting, and export on every project. The
+consequence is a workflow-level reproducibility gap: results depend on
+file paths, package versions, and random seeds that drift silently
+between runs; interpolation uncertainty and parameter sensitivity are
+rarely quantified; and reviewers cannot regenerate a specific figure
+from a specific configuration and specific input bytes.
 
 TerraFlow closes this gap with a single configuration-driven pipeline
 that fingerprints every run from the canonicalised YAML config plus
 SHA-256 content hashes of every input; supports Ordinary Kriging with
 leave-one-out variogram selection and propagates per-cell kriging
-standard deviation into Monte-Carlo confidence intervals; ships
+standard deviation into Monte-Carlo confidence intervals; and ships
 sensitivity analysis and spatial-block validation as first-class
-subcommands whose outputs share the run directory; and wraps the
-`geoai` library [@wu2026geoai] under `terraflow geoai
-{fields,landcover,canopy}` so foundation-model inference participates
-in the same fingerprint, manifest, and cache-hit semantics as the
-climate pipeline.
+subcommands whose outputs share the run directory.
 
 # State of the field
 
 Several tools cover parts of this pipeline but none cover it end-to-end
-with provenance, uncertainty, and pretrained-model inference as
-first-class concerns. `rasterstats` [@rasterstats] computes zonal
+with provenance and uncertainty as first-class concerns.
+`rasterstats` [@rasterstats] computes zonal
 statistics from raster-vector pairs but offers neither CRS
 normalisation nor climate interpolation nor provenance. `rioxarray` /
 `xarray` [@rioxarray; @hoyer2017xarray] provide N-dimensional raster
@@ -100,19 +84,10 @@ environments common in government and agricultural workflows. `QGIS`
 and `pandas` [@mckinney2010pandas] are building blocks without
 top-level orchestration.
 
-The `geoai` library [@wu2026geoai] provides a uniform Python API to
-pretrained field-boundary, landcover, and canopy-height models, but —
-by design — leaves run identity, configuration validation,
-output-directory conventions, and cache invalidation to the caller.
-Wrapping `geoai` inference in ad-hoc scripts with no link back to
-climate-modelling provenance defeats end-to-end reproducibility.
-
 We built TerraFlow rather than contributing to these libraries because
-reproducibility, uncertainty propagation, and the integration of
-classical interpolation with foundation-model inference are
-architectural concerns that span ingest, clipping, interpolation,
-scoring, ML inference, and export, and cannot be bolted onto a
-statistics, tiling, or model-zoo library without a top-level
+reproducibility and uncertainty propagation are architectural concerns
+that span ingest, clipping, interpolation, scoring, and export, and
+cannot be bolted onto a statistics or tiling library without a top-level
 orchestration contract.
 
 # Software design
@@ -141,26 +116,6 @@ are schema-versioned (the pipeline invalidates a cached run on stale
 mtimes and absolute paths so the same content hashes produce the same
 fingerprint across machines and filesystem copies.
 
-**GeoAI engine adapter.** `geoai_engine` wraps the `geoai` library
-[@wu2026geoai] behind three orchestrators — `run_fields`,
-`run_landcover`, `run_canopy` — exposed as the `terraflow geoai`
-sub-app. Each runner validates the `geoai:` config block against a
-Pydantic schema (engine name, power-of-two chip size ≥ 32, confidence
-threshold in [0, 1], positive batch size), then computes a
-`geoai_fingerprint` over the canonicalised config, sorted input
-SHA-256 hashes, and a `model_metadata` payload covering the model
-name, weights SHA-256, `geoai` library `major.minor`, the detected
-device (`cpu`/`cuda`/`mps`), and the installed `torch` `major.minor`.
-Because device and torch minor version participate in the hash, the
-same configuration on a different accelerator yields a different
-cache directory — surfacing what would otherwise be silent output
-drift in foundation-model inference. `torch.manual_seed` is set
-deterministically from the fingerprint, and the runner skips
-inference on a manifest cache hit. Outputs land at
-`<output_dir>/runs/<geoai_fingerprint>/geoai/`. The library is an
-opt-in extra (`pip install "terraflow-agro[geoai]"`); the default
-install remains lightweight.
-
 ![TerraFlow pipeline: configuration is canonicalised, input files are hashed, and outputs land under a content-addressable run directory.](figure2.jpeg){ width=85% }
 
 # Research impact statement
@@ -169,26 +124,23 @@ TerraFlow addresses a workflow-level reproducibility gap in
 agricultural and environmental geospatial modelling: the gap between
 *input* fingerprinting (which several existing tools already provide)
 and *workflow* fingerprinting that covers the climate-interpolation
-strategy, score-model parameters, sensitivity-analysis settings,
-spatial-validation reference set, and — critically — the
-foundation-model device and library version. This gap matters most
-where audit-quality reproduction is part of the deliverable:
+strategy, score-model parameters, sensitivity-analysis settings, and
+spatial-validation reference set. This gap matters most where
+audit-quality reproduction is part of the deliverable:
 precision-agriculture decision support, food-security and climate
 adaptation planning, and agronomy education where students must
 reproduce a published result before extending it.
 
-The contract is enforced by a substantial validation surface:
-**289 automated tests** across the climate, sensitivity, validation,
-export, and GeoAI modules; an **85 % coverage floor** (current 87 %);
-a type-checked CI matrix on Python 3.10–3.12; and a Dockerfile whose
-smoke test runs the demo with `docker run --network none` and asserts
-that `features.parquet`, `manifest.json`, and `report.json` land under
-the mounted output directory **without any network access**. The
+The contract is enforced by a substantial validation surface across the
+climate, sensitivity, validation, and export modules; an **85 % coverage
+floor**; a type-checked CI matrix on Python 3.10–3.12; and a Dockerfile
+whose smoke test runs the demo with `docker run --network none` and
+asserts that `features.parquet`, `manifest.json`, and `report.json` land
+under the mounted output directory **without any network access**. The
 fingerprint contract is documented byte-by-byte on a dedicated
-reproducibility page, including the GeoAI device-and-torch-minor
-extension and known sources of non-determinism (`scipy` variogram-fit
-drift across versions, `qhull` triangulation tie-breaking,
-BLAS-dependent summation order).
+reproducibility page, including known sources of non-determinism
+(`scipy` variogram-fit drift across versions, `qhull` triangulation
+tie-breaking, BLAS-dependent summation order).
 
 To make these guarantees concrete, we report the metrics produced by
 a single end-to-end run of the bundled demo on `examples/demo_config.yml`.
@@ -213,47 +165,39 @@ cells:
 Every number above is reproducible from `make get-demo-data &&
 terraflow run -c examples/demo_config.yml` plus the two companion
 subcommands; the published `run_fingerprint` is verifiable without
-shared compute infrastructure. The GeoAI engine ships with the same
-contract, backed by a 12-test mocked-engine suite that patches the
-heavy ML dependencies so the cache-hit and fingerprint-sensitivity
-invariants hold without requiring `torch` on the default CI runners.
+shared compute infrastructure.
 
 To the authors' knowledge TerraFlow is the only open package that
-composes Ordinary Kriging with LOOCV variogram selection,
-Monte-Carlo uncertainty propagation, Sobol' and Morris sensitivity
-analysis, spatial-block cross-validation, and a fingerprinted
-orchestration contract for `geoai`-backed foundation-model inference
-under a single deterministic provenance scheme. The integration —
-not any one component — is the contribution.
+composes Ordinary Kriging with LOOCV variogram selection, Monte-Carlo
+uncertainty propagation, Sobol' and Morris sensitivity analysis, and
+spatial-block cross-validation under a single deterministic provenance
+scheme. The integration — not any one component — is the contribution.
 
 # AI usage disclosure
 
 The authors used Anthropic Claude — specifically the Claude Code
-assistant invoking the `claude-opus-4-7` model for v0.4.0 GeoAI and
-paper revisions, and earlier Claude Sonnet 4.x / Opus 4.x for the
-v0.2.x – v0.3.0 climate-pipeline work — as a coding assistant during
-software implementation, documentation, and manuscript drafting. The
-OpenAI Codex GitHub App (`gpt-codex` model) provided automated
-pull-request feedback. Every AI-suggested change was reviewed and
-edited by the human authors before being committed. Core design
-decisions — the `DataCatalog` boundary contract, the run-fingerprint
-hashing scheme, LOOCV variogram selection, Monte-Carlo uncertainty
-propagation, the artifact schema, and the GeoAI device/torch-minor
-fingerprint contract — were made by the human authors. AI-assisted
-code is verified by the project's 289 automated tests on the
-Python 3.10/3.11/3.12 CI matrix, the 85 % coverage floor, SonarCloud
-static analysis, and GitHub Dependency Review on every pull request.
+assistant invoking the `claude-opus-4-7` model for paper revisions, and
+earlier Claude Sonnet 4.x / Opus 4.x for the v0.2.x – v0.3.0
+climate-pipeline work — as a coding assistant during software
+implementation, documentation, and manuscript drafting. The OpenAI Codex
+GitHub App (`gpt-codex` model) provided automated pull-request feedback.
+Every AI-suggested change was reviewed and edited by the human authors
+before being committed. Core design decisions — the `DataCatalog`
+boundary contract, the run-fingerprint hashing scheme, LOOCV variogram
+selection, Monte-Carlo uncertainty propagation, and the artifact schema
+— were made by the human authors. AI-assisted code is verified by the
+project's automated tests on the Python 3.10/3.11/3.12 CI matrix, the
+85 % coverage floor, SonarCloud static analysis, and GitHub Dependency
+Review on every pull request.
 
 # Acknowledgements
 
 TerraFlow builds on the scientific Python ecosystem including
 `rasterio` [@gillies2013rasterio], `pandas` [@mckinney2010pandas],
 `pykrige`, SALib [@herman2017salib], scikit-learn, Pydantic
-[@pydantic], Shapely [@shapely], `rasterstats` [@rasterstats],
-Apache Arrow [@pyarrow], and — for the optional GeoAI engine — the
-`geoai` library [@wu2026geoai] and `torch`. Sample raster data
-originates from the USDA National Agricultural Statistics Service
-Cropland Data Layer [@usda_cdl], which is in the public domain
-(17 U.S.C. § 105).
+[@pydantic], Shapely [@shapely], `rasterstats` [@rasterstats], and
+Apache Arrow [@pyarrow]. Sample raster data originates from the USDA
+National Agricultural Statistics Service Cropland Data Layer
+[@usda_cdl], which is in the public domain (17 U.S.C. § 105).
 
 # References

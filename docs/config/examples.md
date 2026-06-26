@@ -104,38 +104,3 @@ max_cells: 250
 
 See [Climate Configuration](schema.md#climate-configuration) for full field reference.
 
-## With the optional GeoAI engine
-
-Append a `geoai:` block to opt in to one of the `terraflow geoai` runners.
-Requires `pip install "terraflow-agro[geoai]"`; see the
-[GeoAI guide](../geoai.md) and [ADR-007](../architecture/adr-007-geoai-engine.md).
-
-```yaml
-raster_path: "data/sentinel2_subset.tif"
-climate_csv: "data/climate.csv"
-output_dir: "outputs"
-roi:
-  type: bbox
-  xmin: -120.5
-  ymin: 34.0
-  xmax: -118.0
-  ymax: 35.5
-model_params:
-  v_min: 0.0
-  v_max: 1.0
-  t_min: 10.0
-  t_max: 35.0
-  r_min: 100.0
-  r_max: 800.0
-  w_v: 0.4
-  w_t: 0.3
-  w_r: 0.3
-geoai:
-  engine: fields            # fields | landcover | canopy — must match the runner
-  chip_size: 256            # power of two, >= 32 (backbone stride constraint)
-  confidence_threshold: 0.5 # 0.0..1.0
-  batch_size: 8
-```
-
-Run with: `terraflow geoai fields -c config.yml`.
-

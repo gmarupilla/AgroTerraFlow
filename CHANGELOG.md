@@ -7,6 +7,9 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Removed
+- GeoAI engine: `terraflow/geoai_engine.py`, `terraflow geoai {fields,landcover,canopy}` CLI sub-app, `GeoAIConfig` Pydantic block, `compute_geoai_fingerprint`, ADR-007, `docs/geoai.md`, `docs/api/geoai_engine.md`, `06_geoai_engine.ipynb`, `tests/test_geoai_engine.py`, `[geoai]` extra (`geoai-py` + `torch`), and `geoai-integration.yml` workflow. Engine bodies were `NotImplementedError` stubs; the module did not earn Methods-section citations (downstream users go to `geoai-py` directly). Strategy decision in issue #123/#134 — reintroduce as a separate `terraflow-geoai` package post-JOSS if interest materializes. Paper, README, CITATION.cff, mkdocs nav, and reproducibility docs updated to drop GeoAI mentions; `wu2026geoai` removed from `paper/biblio.bib`.
+
 ### Changed
 - All seven notebooks under `docs/notebooks/` re-executed against v0.4.0 so the rendered docs site shows live output for every cell. `05_extended_variogram_mode.ipynb` (previously checked in unexecuted) and `06_geoai_engine.ipynb` (just created) now have execution counts and outputs; `terraflow_v0_2_0_comprehensive_test.ipynb` re-executed so the inline outputs and execution counts are in sync. `kriging_uncertainty_demo.ipynb` header bumped from v0.2.1 → v0.4.0; `terraflow_v0_2_0_comprehensive_test.ipynb` header now frames the notebook as a v0.2.0 → v0.4.0 backward-compatibility regression check.
 - `docs/notebooks/06_geoai_engine.ipynb` stub cell now patches the helper functions (`_device`, `_torch_major_minor`, `_geoai_major_minor`, `_seed_torch`) so the notebook executes cleanly without the `[geoai]` extra installed (previously only `_GEOAI_AVAILABLE` and `_do_fields` were patched, which left `torch.cuda.is_available()` to dereference `None`).

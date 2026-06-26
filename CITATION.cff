@@ -16,10 +16,7 @@ abstract: >
   uncertainty propagation, global sensitivity analysis (Sobol' / Morris),
   spatial block cross-validation, and provenance-tracked artifact export.
   Every run produces a deterministic content-addressed fingerprint enabling
-  independent verification of results. Beginning with v0.4.0, an optional
-  GeoAI engine (terraflow geoai {fields,landcover,canopy}) wraps the
-  opengeos/geoai foundation-model library behind the same fingerprint,
-  manifest, and cache-hit contract used by the climate pipeline.
+  independent verification of results.
 keywords:
   - geospatial
   - agriculture
@@ -31,9 +28,6 @@ keywords:
   - kriging
   - sensitivity-analysis
   - uncertainty-quantification
-  - geoai
-  - foundation-models
-  - pytorch
 authors:
   - family-names: Marupilla
     given-names: Gnaneswara

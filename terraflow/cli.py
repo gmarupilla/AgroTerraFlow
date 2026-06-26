@@ -17,11 +17,6 @@ app = typer.Typer(
     add_completion=False,
 )
 
-geoai_app = typer.Typer(
-    help="Run optional GeoAI field, landcover, and canopy engines.",
-    add_completion=False,
-)
-
 
 def _config_option() -> Any:
     return typer.Option(
@@ -63,29 +58,6 @@ def _invoke(name: str, fn: Callable[[], Any]) -> Any:
         logger.error(f"{name} failed: {e}", exc_info=True)
         print(f"ERROR: {name} failed - {e}", file=sys.stderr)
         raise SystemExit(1) from e
-
-
-def _geoai_cmd_factory(engine_name: str, runner_attr: str) -> Callable[[Path], None]:
-    label = f"GeoAI {engine_name}"
-
-    def geoai_cmd(config: ConfigPath) -> None:
-        """Run a GeoAI engine."""
-        logger.info(f"TerraFlow {label} starting with config: {config}")
-        from . import geoai_engine
-
-        runner = getattr(geoai_engine, runner_attr)
-        output_path = _invoke(label, lambda: runner(config))
-        logger.info(f"{label} complete: {output_path}")
-
-    geoai_cmd.__name__ = f"geoai_{engine_name}_cmd"
-    geoai_cmd.__doc__ = f"Run GeoAI {engine_name} inference."
-    return geoai_cmd
-
-
-geoai_app.command("fields")(_geoai_cmd_factory("fields", "run_fields"))
-geoai_app.command("landcover")(_geoai_cmd_factory("landcover", "run_landcover"))
-geoai_app.command("canopy")(_geoai_cmd_factory("canopy", "run_canopy"))
-app.add_typer(geoai_app, name="geoai")
 
 
 @app.command("run")

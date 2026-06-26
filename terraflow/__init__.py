@@ -8,8 +8,8 @@ This package provides utilities to:
 - Run an end-to-end, configurable pipeline
 """
 
-from .config import GeoAIConfig, PipelineConfig, load_config
-from .core.run_identity import compute_geoai_fingerprint, compute_run_fingerprint
+from .config import PipelineConfig, load_config
+from .core.run_identity import compute_run_fingerprint
 from .export import to_h3
 from .pipeline import run_pipeline
 from .stats import (
@@ -24,9 +24,7 @@ from .stats import (
 from .validation import run_validation
 
 __all__ = [
-    "GeoAIConfig",
     "PipelineConfig",
-    "compute_geoai_fingerprint",
     "compute_run_fingerprint",
     "load_config",
     "run_pipeline",
