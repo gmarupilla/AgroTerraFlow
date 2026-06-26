@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use TerraFlow in your research, please cite it as below."
 type: software
-title: "TerraFlow: A Reproducible, Uncertainty-Aware Geospatial Workflow for Agricultural Suitability Modelling and Foundation-Model Inference"
+title: "TerraFlow: A Reproducible, Uncertainty-Aware Geospatial Workflow for Agricultural Suitability Modelling"
 version: 0.4.0
 date-released: "2026-06-08"
 license: MIT
