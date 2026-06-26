@@ -87,29 +87,6 @@ def validate_cmd(config: ConfigPath) -> None:
     logger.info("TerraFlow validation completed successfully")
 
 
-@app.command("export")
-def export_cmd(
-    config: ConfigPath,
-    format: Annotated[
-        str,
-        typer.Option(..., "--format", "-f", help="Export format (currently: h3)"),
-    ],
-    resolution: Annotated[
-        int | None,
-        typer.Option("--resolution", "-r", help="H3 resolution override (0-15)"),
-    ] = None,
-) -> None:
-    """Export pipeline results to an alternative format."""
-    logger.info(f"TerraFlow export starting with config: {config}, format: {format}")
-    from .export import run_export
-
-    output_path = _invoke(
-        "Export",
-        lambda: run_export(config, resolution_override=resolution, format=format),
-    )
-    logger.info(f"Export complete: {output_path}")
-
-
 def main() -> None:
     """Entry point for the terraflow CLI."""
     app()

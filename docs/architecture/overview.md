@@ -42,7 +42,6 @@ pipeline.py → write artifacts to output_dir/runs/<fingerprint>/
 | `pipeline.py` | Orchestration — fingerprint → load → clip → interpolate → score → write |
 | `sensitivity.py` | Sobol' / Morris via SALib — triggered by `terraflow sensitivity` |
 | `validation.py` | Spatial block CV, Cohen's kappa, Moran's I — triggered by `terraflow validate` |
-| `export.py` | H3 hexagonal re-index — triggered by `terraflow export --format h3` |
 | `core/run_identity.py` | Deterministic SHA256 fingerprint of canonicalized config + input files |
 
 ## Output Artifacts
@@ -56,7 +55,6 @@ All artifacts land under `<output_dir>/runs/<run_fingerprint>/`:
 | `report.json` | v1 | Coverage fractions, raster/climate stats, score stats, timings; `kriging_loocv`, `kriging_diagnostics`, `uncertainty`, and `validation` blocks appended when the relevant features are enabled |
 | `results.csv` | — | Same data as `features.parquet` in CSV format (backward compatibility) |
 | `sensitivity_report.json` | — | Sobol' and/or Morris indices per `ModelParams` weight (written by `terraflow sensitivity`) |
-| `h3_resolution_N.parquet` | — | H3-indexed features at resolution N (written by `terraflow export --format h3`) |
 
 ## Key Invariants
 
