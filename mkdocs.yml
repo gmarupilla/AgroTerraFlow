@@ -155,6 +155,10 @@ nav:
       - terraflow.ingest: api/ingest.md
       - terraflow.geo: api/geo.md
       - terraflow.climate: api/climate.md
+      - terraflow.cmip6: api/cmip6.md
+      - terraflow.temporal: api/temporal.md
+      - terraflow.hazard: api/hazard.md
+      - terraflow.climate_impact: api/climate_impact.md
       - terraflow.model: api/model.md
       - terraflow.stats: api/stats.md
       - terraflow.sensitivity: api/sensitivity.md

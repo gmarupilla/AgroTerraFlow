@@ -44,7 +44,7 @@ flowchart LR
 | **Sensitivity analysis** | Sobol' / Morris indices for model weights (`terraflow sensitivity`) |
 | **Uncertainty quantification** | Kriging Monte Carlo → score CIs (`score_ci_low` / `score_ci_high`) |
 | **Distribution** | PyPI (`terraflow-agro`) + Homebrew (`gmarupilla/terraflow`) + Docker |
-| **Citation** | Citable via `CITATION.cff`; JOSS paper in preparation |
+| **Citation** | Citable via `CITATION.cff` and Zenodo DOI [10.5281/zenodo.21070362](https://doi.org/10.5281/zenodo.21070362); JOSS paper resubmission pending adoption signal |
 
 ---
 
@@ -199,7 +199,16 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Citation
 
-If you use TerraFlow in your research, please cite our JOSS paper (manuscript in preparation).
+If you use TerraFlow in your research, please cite the archived Zenodo
+release:
+
+> Marupilla, G. (2026). *TerraFlow: A Reproducible Framework for
+> Climate-Impact Assessment of Agricultural Suitability* (v0.5.0).
+> Zenodo. https://doi.org/10.5281/zenodo.21070362
+
+`CITATION.cff` carries the canonical metadata. A companion JOSS paper is
+drafted and will be resubmitted once external adoption signal materialises;
+see the postmortem at https://github.com/openjournals/joss-reviews/issues/10686.
 
 ## License
 

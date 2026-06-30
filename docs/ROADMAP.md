@@ -9,7 +9,7 @@ tags:
 
 # TerraFlow Roadmap
 
-This roadmap tracks completed phases and current state. v0.5.0 (2026-06-30) refocused the surface on the climate-impact flagship: removed GeoAI + H3 wrappers, narrowed validation to spatial-block CV, and shipped scenario × hazard fan-out with CMIP6 NetCDF support. Package restructure into `terraflow.io.*` + `terraflow.climate.*` sub-packages is planned for v0.6.0 (issue #148).
+This roadmap tracks completed phases and current state. v0.5.0 (2026-06-30) refocused the surface on the climate-impact flagship: removed GeoAI + H3 wrappers, narrowed validation to spatial-block CV, and shipped scenario × hazard fan-out with CMIP6 NetCDF support. The next release (v0.6.0) makes CMIP6 ingestion first-class in the pipeline (`climate.cmip6_scenarios:` config block, unit conversion, NetCDF SHA-256 in `manifest.json`); package restructure into `terraflow.io.*` + `terraflow.climate.*` sub-packages slips to v0.7.0 (issue #148).
 
 JOSS pre-review submitted 2026-06-08, rejected 2026-06-24 on impact criteria. **Resubmission gated on adoption signal**, not code (see internal strategy repo).
 
