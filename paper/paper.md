@@ -69,9 +69,12 @@ depend on file paths, package versions, and random seeds that drift
 silently between runs; interpolation uncertainty and parameter
 sensitivity are rarely quantified; and reviewers cannot regenerate a
 specific figure from a specific configuration and specific input bytes.
-TerraFlow's roadmap adds CMIP6 NetCDF ingest for projected-climate
-scenarios in v0.5.0, but the reproducibility gap exists today on the
-historical pipeline alone.
+v0.5.0 closes one half of this gap: a config-level scenario × hazard
+fan-out now ingests CMIP6 NetCDF inputs and folds each file's SHA-256
+into the run fingerprint, so projected-climate analyses inherit the
+same reproducibility contract as the historical pipeline. The other
+half — adoption-driven validation of those projections against
+domain-specific benchmarks — is in progress.
 
 TerraFlow closes this gap with a single configuration-driven pipeline
 that fingerprints every run from the canonicalised YAML config plus
