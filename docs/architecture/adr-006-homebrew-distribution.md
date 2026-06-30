@@ -87,7 +87,7 @@ This runs in parallel with `publish-pypi.yml` — neither depends on the other.
 **Neutral:**
 - Users must run `brew tap gmarupilla/terraflow` once before installing (not required
   for Core formulae, but universally understood by Homebrew users)
-- Optional extras (`[h3]`, `[viz]`) are not available via the formula; pip must be
+- Optional extras (`[viz]`, `[cmip6]`) are not available via the formula; pip must be
   used for those (documented in `docs/install/homebrew.md`)
 
 **Future:**

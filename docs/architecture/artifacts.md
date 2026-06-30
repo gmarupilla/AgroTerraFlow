@@ -89,7 +89,7 @@ treat `manifest.json` as the authoritative provenance source.
 {
   "schema_version": "1",
   "run_fingerprint": "<base64url-sha256>",
-  "code_version": "0.2.0",
+  "code_version": "0.5.0",
   "git_sha": "<optional>",
   "created_at_utc": "2026-02-22T12:00:00+00:00",
   "config": { "<full YAML config as parsed dict>" },
