@@ -9,19 +9,21 @@ tags:
 
 # TerraFlow Roadmap
 
-This roadmap mirrors `.planning/ROADMAP.md` (the single source of truth for in-flight work). The work from here to JOSS submission is additive: close two reviewer-visible gaps in the foundation (CRS errors, kriging diagnostics), add three analytical modules (sensitivity, validation, H3 export) as post-pipeline adapters, then finalize the paper with quantitative results drawn from those modules.
+This roadmap tracks completed phases and current state. v0.5.0 (2026-06-30) refocused the surface on the climate-impact flagship: removed GeoAI + H3 wrappers, narrowed validation to spatial-block CV, and shipped scenario × hazard fan-out with CMIP6 NetCDF support. Package restructure into `terraflow.io.*` + `terraflow.climate.*` sub-packages is planned for v0.6.0 (issue #148).
 
-JOSS submission target: **2026-05-25**.
+JOSS pre-review submitted 2026-06-08, rejected 2026-06-24 on impact criteria. **Resubmission gated on adoption signal**, not code (see internal strategy repo).
 
 ## Phase Status
 
 | Phase | Plans | Status | Completed |
 |-------|-------|--------|-----------|
-| 1. Foundation Hardening | mostly delivered in 0.2.x — 0.3.0 | Released | 2026-04-23 (v0.3.0) |
-| 2. Sensitivity Analysis | 3/3 | Complete | 2026-03-28 |
-| 3. Model Validation | 3/3 | Complete | 2026-03-31 |
-| 4. H3 Export | 3/3 | Complete | 2026-04-04 |
-| 5. Paper and JOSS Submission | in flight | Active | — |
+| 1. Foundation Hardening | delivered | Released | 2026-04-23 (v0.3.0) |
+| 2. Sensitivity Analysis | 3/3 | Released | 2026-04-23 (v0.3.0) |
+| 3. Model Validation | narrowed to spatial-block CV | Released | 2026-06-30 (v0.5.0) |
+| 4. H3 Export | cut | Removed | 2026-06-30 (v0.5.0; PR #135) |
+| 5. GeoAI Engine | cut | Removed | 2026-06-30 (v0.5.0; PR #134) |
+| 6. Climate-impact assessment | shipped | Released | 2026-06-30 (v0.5.0; issue #138) |
+| 7. JOSS Resubmission | pending adoption signal | Blocked | — |
 
 ## Phase 1 — Foundation Hardening
 
@@ -40,24 +42,25 @@ Close the CRS error and kriging diagnostic gaps that block JOSS reviewer accepta
 
 Sobol' first-order / total-order indices and Morris elementary effects for `ModelParams` weights via SALib. Invoked with `terraflow sensitivity -c config.yml`. Results written to `sensitivity_report.json`.
 
-## Phase 3 — Model Validation ✓
+## Phase 3 — Model Validation (narrowed in v0.5.0) ✓
 
-Spatial block cross-validation (Roberts et al. 2017), Cohen's kappa, and Moran's I on residuals. Invoked with `terraflow validate -c config.yml`. Results appended to `report.json` under the `validation` key.
+Spatial-block cross-validation (Roberts et al. 2017) via `terraflow validate -c config.yml`; results appended to `report.json` under the `validation` key. Cohen's κ and Moran's I wrappers were removed in v0.5.0 (PR #142 / issue #136) — call `sklearn.metrics.cohen_kappa_score` and `esda.Moran` directly on `features.parquet`. See [Migration v0.4 → v0.5](migration-v0.4-to-v0.5.md).
 
-## Phase 4 — H3 Export ✓
+## Phase 4 — H3 Export (cut) ✗
 
-Optional H3-indexed output for interop with H3-native toolchains. `terraflow export --format h3 -c config.yml` writes `h3_resolution_N.parquet` to the run directory. `h3-py` is an optional dep installed via `pip install terraflow-agro[h3]`.
+Removed in v0.5.0 (PR #135 / issue #135). The module was a thin `h3-py` + pandas wrapper; downstream users now call `h3-py` directly on `features.parquet` (five-line recipe in the migration guide).
 
-## Phase 5 — Paper and JOSS Submission (Active)
+## Phase 5 — GeoAI Engine (cut) ✗
 
-**Goal:** the paper contains quantitative results drawn from the prior phases, packaging meets JOSS reviewer requirements, and the repository passes an end-to-end smoke test without network access.
+Removed in v0.5.0 (PR #134 / issue #134). Engine bodies were `NotImplementedError` stubs and downstream citations went to `geoai-py`, not TerraFlow. A separate `terraflow-geoai` package is parked post-JOSS pending demand signal.
 
-Active work:
+## Phase 6 — Climate-impact assessment ✓
 
-- `paper/paper.md` reproducibility section — quantitative results table populated from a full demo run (v0.3.0).
-- `paper/biblio.bib` — SALib (Herman & Usher 2017), Saltelli et al. (2008), Cressie (1993) entries with DOIs (v0.3.0).
-- `make docker-smoke` — Docker pipeline runs with `--network none`, asserted in CI via `docker-smoke-offline` job (v0.3.0).
-- Final pass on submission date and version string sync between `paper/paper.md` and the PyPI release.
+Shipped in v0.5.0 (issue #138, PRs #144–#150). Multi-scenario climate driver (historical + CMIP6 SSP windows) × seven WMO/ETCCDI-aligned hazard indicators (annual mean, seasonal mean, growing-degree days, frost days, heat-stress days, precipitation percentiles, simplified Thornthwaite SPEI). Writes a sibling `climate_features.parquet` alongside `features.parquet`; the historical artifact contract is unchanged. See `examples/demo_config_climate_impact.yml` and notebook `docs/notebooks/07_climate_impact_crop_suitability.ipynb`.
+
+## Phase 7 — JOSS Resubmission (blocked on adoption)
+
+JOSS pre-review (#10686) rejected 2026-06-24 with the note: "If/when in the future this software is used more widely, please resubmit." The fix is calendar-time adoption work (university outreach, AGU Fall poster, blog posts, CGIAR / AgMIP contact), not code. Resubmission gate criteria and outreach planning live in the internal strategy repo (see `project_post_coding_adoption_plan` memory).
 
 ## v2 Ideas
 
