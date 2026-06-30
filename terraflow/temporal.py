@@ -19,8 +19,7 @@ filtering yield ``NaN`` rather than raising — this lets downstream kriging
 LOOCV handle missing stations cleanly.
 
 Hazard-specific kinds (``growing_degree_days``, ``frost_days``,
-``heat_stress_days``, ``spei``) raise ``NotImplementedError`` and point
-at the hazard module that lands in #138d.
+``heat_stress_days``, ``spei``) dispatch into :mod:`terraflow.hazard`.
 """
 
 from __future__ import annotations
@@ -36,10 +35,6 @@ STATION_ID_COL = "station_id"
 DATE_COL = "date"
 TEMPERATURE_COL = "temperature_c"
 PRECIPITATION_COL = "precipitation_mm"
-
-_HAZARD_KINDS: frozenset[str] = frozenset(
-    {"growing_degree_days", "frost_days", "heat_stress_days", "spei"}
-)
 
 
 def filter_scenario(df: pd.DataFrame, scenario: Scenario) -> pd.DataFrame:
@@ -100,12 +95,33 @@ def aggregate_per_station(
             f"got columns: {sorted(df.columns)}"
         )
 
-    if rule.kind in _HAZARD_KINDS:
-        raise NotImplementedError(
-            f"temporal_aggregation kind={rule.kind!r} is implemented in "
-            f"terraflow.hazard (#138d) — that module lands after the "
-            f"engine framework in #138b."
-        )
+    if rule.kind == "growing_degree_days":
+        from .hazard import growing_degree_days
+
+        assert rule.base_temp_c is not None
+        result = growing_degree_days(df, base_temp_c=rule.base_temp_c)
+        return result.rename(f"growing_degree_days__base{rule.base_temp_c:g}")
+
+    if rule.kind == "frost_days":
+        from .hazard import frost_days
+
+        assert rule.threshold_c is not None
+        result = frost_days(df, threshold_c=rule.threshold_c)
+        return result.rename(f"frost_days__t{rule.threshold_c:g}")
+
+    if rule.kind == "heat_stress_days":
+        from .hazard import heat_stress_days
+
+        assert rule.threshold_c is not None
+        result = heat_stress_days(df, threshold_c=rule.threshold_c)
+        return result.rename(f"heat_stress_days__t{rule.threshold_c:g}")
+
+    if rule.kind == "spei":
+        from .hazard import spei
+
+        assert rule.timescale_months is not None
+        result = spei(df, timescale_months=rule.timescale_months)
+        return result.rename(f"spei__ts{rule.timescale_months}")
 
     if rule.kind == "annual_mean":
         return _aggregate_annual_mean(df).rename("annual_mean")
