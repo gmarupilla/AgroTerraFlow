@@ -13,11 +13,11 @@ A `run_fingerprint` is a deterministic SHA-256 hex digest computed from:
    booleans/floats normalised). This means every field — `raster_path`,
    `raster_band`, `max_cells`, every `model_params` weight, the complete
    `climate` block (including `interpolation_method` and `variogram_mode`),
-   the `roi` block, and any optional `sensitivity` / `validation` / `export`
+   the `roi` block, and any optional `sensitivity` / `validation`
    config — contributes to the fingerprint.
 2. **The SHA-256 content hash of the input raster** (GeoTIFF bytes).
 3. **The SHA-256 content hash of the climate CSV** (file bytes).
-4. **The optional reference CSV hash** for `terraflow validate`, when present.
+4. **The SHA-256 content hash of `climate.timeseries_csv`**, when set (long-format station daily data for the climate-impact path).
 
 The fingerprint is the directory name under `<output_dir>/runs/` where all
 artifacts land. Identical inputs and config ⇒ identical fingerprint ⇒ the
