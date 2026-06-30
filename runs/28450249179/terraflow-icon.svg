@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="TerraFlow">
+  <defs>
+    <!-- Background gradient: rich forest top → deep earth bottom -->
+    <linearGradient id="bg-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#1e5c3a"/>
+      <stop offset="100%" stop-color="#0d2818"/>
+    </linearGradient>
+
+    <!-- Land-fill gradient: mid-green fading to transparent at top -->
+    <linearGradient id="land-grad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#2d6a4f" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#2d6a4f" stop-opacity="1"/>
+    </linearGradient>
+
+    <!-- Pin glow -->
+    <radialGradient id="pin-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Clip all content to rounded-square shape -->
+    <clipPath id="shape-clip">
+      <rect width="64" height="64" rx="14"/>
+    </clipPath>
+  </defs>
+
+  <!-- ── Background ─────────────────────────────── -->
+  <rect width="64" height="64" rx="14" fill="url(#bg-grad)"/>
+
+  <!-- ── Everything clipped to the rounded square ─ -->
+  <g clip-path="url(#shape-clip)">
+
+    <!-- Subtle inner highlight along top edge -->
+    <rect width="64" height="2" y="0" fill="white" opacity="0.07"/>
+
+    <!-- ── Terrain contour lines (bottom → top, dark → light) ──── -->
+
+    <!-- Filled land mass -->
+    <path d="M -4 56  Q 12 48  32 52  Q 52 56  68 48  L 68 72  L -4 72 Z"
+          fill="url(#land-grad)"/>
+
+    <!-- Contour 1 – lowest, thickest -->
+    <path d="M -4 50  Q 12 42  32 46  Q 52 50  68 42"
+          fill="none"
+          stroke="#2d8a55"
+          stroke-width="2.8"
+          stroke-linecap="round"
+          opacity="0.9"/>
+
+    <!-- Contour 2 – middle, medium -->
+    <path d="M -4 38  Q 12 30  32 34  Q 52 38  68 30"
+          fill="none"
+          stroke="#40a86e"
+          stroke-width="2.2"
+          stroke-linecap="round"/>
+
+    <!-- Contour 3 – upper, lighter -->
+    <path d="M 2 26  Q 16 18  32 22  Q 50 26  66 18"
+          fill="none"
+          stroke="#60c48a"
+          stroke-width="1.8"
+          stroke-linecap="round"/>
+
+    <!-- Contour 4 – highest, finest -->
+    <path d="M 8 14  Q 20 8  34 10  Q 50 12  62 6"
+          fill="none"
+          stroke="#86d6a8"
+          stroke-width="1.2"
+          stroke-linecap="round"
+          opacity="0.65"/>
+
+    <!-- ── Map location pin (teardrop) ────────────────────────── -->
+    <!--
+      Two mirror-image cubic beziers:
+        right curve: (32,17) → ctrl (41,17),(41,34) → tip (32,38)
+        left  curve: tip (32,38) → ctrl (23,34),(23,17) → (32,17)
+      Widest point ≈ ±7px at y≈26; tip sits on the middle contour.
+    -->
+    <!-- Soft drop-shadow under the tip -->
+    <ellipse cx="32" cy="39" rx="5" ry="1.8" fill="black" opacity="0.14"/>
+    <!-- Pin body -->
+    <path d="M 32 17
+             C 41 17, 41 34, 32 38
+             C 23 34, 23 17, 32 17 Z"
+          fill="white" opacity="0.94"/>
+    <!-- Inner viewing hole -->
+    <circle cx="32" cy="25" r="3.8" fill="#0d2818"/>
+    <!-- Specular highlight: top-left of the balloon -->
+    <circle cx="29.5" cy="21.5" r="1.6" fill="white" opacity="0.42"/>
+
+  </g>
+
+  <!-- ── Subtle outer border so it pops on white backgrounds ── -->
+  <rect width="64" height="64" rx="14"
+        fill="none"
+        stroke="white"
+        stroke-width="1"
+        stroke-opacity="0.08"/>
+</svg>
