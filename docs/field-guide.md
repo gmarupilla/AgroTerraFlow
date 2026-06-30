@@ -29,7 +29,7 @@ flowchart LR
     A[Land Cover Map] --> D[TerraFlow Pipeline]
     B[Climate Data] --> D
     C[Configuration] --> D
-    D --> E[results.csv]
+    D --> E[features.parquet<br/>+ results.csv]
     E --> F[Excel/QGIS]
     E --> G[Interactive Map]
     

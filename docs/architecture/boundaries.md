@@ -30,9 +30,11 @@ flowchart TD
         I --> J[Artifact Generation]
     end
     
-    J --> K[results.csv]
-    J --> L[fingerprint.json]
-    J --> M[results.html]
+    J --> K[features.parquet]
+    J --> L[manifest.json]
+    J --> M[report.json]
+    J --> N[climate_features.parquet<br/>v0.5.0; when configured]
+    J --> O[results.csv<br/>backward-compat]
     
     style Ingest fill:#00b0ff,stroke:#0091ea,color:#fff
     style Core fill:#2d8a55,stroke:#1e5c3a,color:#fff
