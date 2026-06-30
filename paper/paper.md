@@ -31,13 +31,14 @@ url: 'https://terraflow.marupilla.dev'
 # Summary
 
 TerraFlow is an open-source Python library for **reproducible
-climate-impact assessment of agricultural suitability** — including
-climate-induced crop hazards (drought, flood, heat stress, growing-degree-day
-shifts) under historical and projected future climate. It turns a
-land-cover raster, a climate dataset (weather-station observations or
-CMIP6 NetCDF scenarios), and a YAML configuration into a scored per-cell
-suitability table with complete, machine-readable provenance and per-cell
-uncertainty intervals. A single `terraflow run` clips the raster to a
+climate-impact assessment of agricultural suitability**. It turns a
+land-cover raster, weather-station observations, and a YAML configuration
+into a scored per-cell suitability table with complete, machine-readable
+provenance and per-cell uncertainty intervals. The locked product
+direction adds climate-induced crop hazards (drought, flood, heat stress,
+growing-degree-day shifts) under historical and projected future climate
+(CMIP6 SSP scenarios) in the next release; the configuration schema is
+already in place and the ingest + engine ships sequentially in v0.5.0. A single `terraflow run` clips the raster to a
 region of interest, reprojects it to WGS84, spatially interpolates
 station climate to cell centroids (linear, inverse-distance, or Ordinary
 Kriging with automatic variogram selection), computes a normalised
@@ -58,18 +59,19 @@ planning, and conservation siting as adjacent expansion chapters.
 
 Climate-impact projections for agricultural suitability sit at the
 intersection of three data sources — land-cover rasters (e.g. the USDA
-Cropland Data Layer [@usda_cdl]), point weather observations or
-CMIP6 climate scenarios, and crop-specific physiological thresholds.
-Practitioners stitch these together in ad-hoc notebooks that
-re-implement ROI clipping, CRS alignment, station-to-cell interpolation,
-nodata accounting, scenario aggregation, and export on every project.
-The consequence is a workflow-level reproducibility gap that is
-especially acute for *climate-impact* questions: results depend on
-file paths, package versions, random seeds, and — for projected climate
-— the specific CMIP6 variant and time slice that drift silently between
-runs; interpolation uncertainty and parameter sensitivity are rarely
-quantified; and reviewers cannot regenerate a specific figure from a
-specific configuration and specific input bytes.
+Cropland Data Layer [@usda_cdl]), point weather observations, and
+crop-specific physiological thresholds. Practitioners stitch these
+together in ad-hoc notebooks that re-implement ROI clipping, CRS
+alignment, station-to-cell interpolation, nodata accounting, and export
+on every project. The consequence is a workflow-level reproducibility
+gap that is especially acute for *climate-impact* questions: results
+depend on file paths, package versions, and random seeds that drift
+silently between runs; interpolation uncertainty and parameter
+sensitivity are rarely quantified; and reviewers cannot regenerate a
+specific figure from a specific configuration and specific input bytes.
+TerraFlow's roadmap adds CMIP6 NetCDF ingest for projected-climate
+scenarios in v0.5.0, but the reproducibility gap exists today on the
+historical pipeline alone.
 
 TerraFlow closes this gap with a single configuration-driven pipeline
 that fingerprints every run from the canonicalised YAML config plus
