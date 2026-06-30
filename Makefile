@@ -43,7 +43,7 @@ install: venv
 	$(UV) pip install --python $(PYTHON) -e .
 
 dev: venv
-	$(UV) pip install --python $(PYTHON) -e ".[dev]"
+	$(UV) pip install --python $(PYTHON) -e ".[dev,cmip6]"
 
 # ---------------------------
 # Testing & Running
