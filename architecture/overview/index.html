@@ -2477,7 +2477,12 @@
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>                 ↓
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>model.py → suitability_score() + suitability_label()
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>                 ↓
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>pipeline.py → write artifacts to output_dir/runs/&lt;fingerprint&gt;/
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>pipeline.py → write features.parquet, manifest.json, report.json
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>                 ↓
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>climate_impact.py → (auto-invoked when temporal_aggregations + scenarios)
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>                    temporal.py × hazard.py → kriging to cells
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>                 ↓
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>pipeline.py → write climate_features.parquet to same run directory
 </span></code></pre></div>
 <h2 id="module-map">Module Map<a class="headerlink" href="#module-map" title="Permanent link">&para;</a></h2>
 <table>
@@ -2490,11 +2495,11 @@
 <tbody>
 <tr>
 <td><code>cli.py</code></td>
-<td>Typer CLI — <code>run</code>, <code>sensitivity</code>, <code>validate</code>, <code>export</code> subcommands</td>
+<td>Typer CLI — <code>run</code>, <code>sensitivity</code>, <code>validate</code> subcommands</td>
 </tr>
 <tr>
 <td><code>config.py</code></td>
-<td>Pydantic v2 models — <code>PipelineConfig</code>, <code>ModelParams</code>, <code>ROI</code>, <code>SensitivityConfig</code>, <code>ValidationConfig</code>, <code>ExportConfig</code></td>
+<td>Pydantic v2 models — <code>PipelineConfig</code>, <code>ModelParams</code>, <code>ROI</code>, <code>ClimateConfig</code> (<code>temporal_aggregations</code>, <code>scenarios</code>, <code>timeseries_csv</code>), <code>TemporalAggregation</code>, <code>Scenario</code>, <code>SensitivityConfig</code>, <code>ValidationConfig</code></td>
 </tr>
 <tr>
 <td><code>ingest.py</code></td>
@@ -2509,12 +2514,28 @@
 <td><code>ClimateInterpolator</code> — linear / kriging / IDW; LOOCV variogram selection</td>
 </tr>
 <tr>
+<td><code>climate_impact.py</code></td>
+<td><code>run_climate_impact_features</code> — auto-invoked from <code>pipeline.run_pipeline</code> when <code>temporal_aggregations</code> + <code>scenarios</code> are set; writes <code>climate_features.parquet</code></td>
+</tr>
+<tr>
+<td><code>temporal.py</code></td>
+<td>Multi-temporal aggregation engine — outer-product over rules × scenarios</td>
+</tr>
+<tr>
+<td><code>hazard.py</code></td>
+<td>WMO/ETCCDI-aligned indicators — <code>growing_degree_days</code>, <code>frost_days</code>, <code>heat_stress_days</code>, simplified Thornthwaite <code>spei</code></td>
+</tr>
+<tr>
+<td><code>cmip6.py</code></td>
+<td>CMIP6 NetCDF ingest behind <code>[cmip6]</code> optional extra — handles non-Gregorian calendars</td>
+</tr>
+<tr>
 <td><code>model.py</code></td>
 <td><code>suitability_score()</code>, <code>suitability_label()</code>, <code>suitability_score_array()</code></td>
 </tr>
 <tr>
 <td><code>pipeline.py</code></td>
-<td>Orchestration — fingerprint → load → clip → interpolate → score → write</td>
+<td>Orchestration — fingerprint → load → clip → interpolate → score → write; auto-invokes <code>climate_impact</code> when configured</td>
 </tr>
 <tr>
 <td><code>sensitivity.py</code></td>
@@ -2522,7 +2543,7 @@
 </tr>
 <tr>
 <td><code>validation.py</code></td>
-<td>Spatial block CV — triggered by <code>terraflow validate</code></td>
+<td>Spatial-block CV only (Cohen's κ + Moran's I removed in v0.5.0) — triggered by <code>terraflow validate</code></td>
 </tr>
 <tr>
 <td><code>core/run_identity.py</code></td>
@@ -2547,9 +2568,14 @@
 <td><code>run_id, cell_id, lat, lon, v_index, mean_temp, total_rain, score, label</code> (+ kriging std + CI columns when configured)</td>
 </tr>
 <tr>
+<td><code>climate_features.parquet</code></td>
+<td>v1</td>
+<td>(v0.5.0) Cell-indexed; one column per <code>&lt;rule&gt;__&lt;scenario&gt;</code> pair. Only written when <code>temporal_aggregations</code> + <code>scenarios</code> are set. Merge with <code>features.parquet</code> on <code>cell_id</code>.</td>
+</tr>
+<tr>
 <td><code>manifest.json</code></td>
 <td>v1</td>
-<td>Config snapshot, input fingerprints, code version, git SHA</td>
+<td>Config snapshot, input fingerprints (raster + climate CSV + <code>timeseries_csv</code> when set), code version, git SHA</td>
 </tr>
 <tr>
 <td><code>report.json</code></td>
@@ -2580,7 +2606,7 @@
 <p>The <code>run_fingerprint</code> is a SHA256 over:
 1. Canonicalized (key-sorted) YAML config
 2. A stable ROI geometry hash (bbox dict or GeoJSON file hash)
-3. SHA256 fingerprints of all input files (raster + CSV)</p>
+3. SHA256 fingerprints of all input files (raster + climate CSV + <code>timeseries_csv</code> when set for the climate-impact path)</p>
 <p>This makes each run directory immutable. Re-running with identical inputs is a no-op; changing any input or config parameter produces a new directory.</p>
 <h2 id="geospatial-correctness">Geospatial Correctness<a class="headerlink" href="#geospatial-correctness" title="Permanent link">&para;</a></h2>
 <ul>

@@ -2394,9 +2394,11 @@
         I --&gt; J[Artifact Generation]
     end
 
-    J --&gt; K[results.csv]
-    J --&gt; L[fingerprint.json]
-    J --&gt; M[results.html]
+    J --&gt; K[features.parquet]
+    J --&gt; L[manifest.json]
+    J --&gt; M[report.json]
+    J --&gt; N[climate_features.parquet&lt;br/&gt;v0.5.0; when configured]
+    J --&gt; O[results.csv&lt;br/&gt;backward-compat]
 
     style Ingest fill:#00b0ff,stroke:#0091ea,color:#fff
     style Core fill:#2d8a55,stroke:#1e5c3a,color:#fff
