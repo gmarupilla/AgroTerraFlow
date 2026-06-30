@@ -2480,6 +2480,10 @@ without re-scoring (<strong>no-op rerun</strong>).</p>
 <td>Filesystem copy / CI clone → same fingerprint</td>
 <td>mtime excluded from hash</td>
 </tr>
+<tr>
+<td>Random cell sampling reproducible across runs</td>
+<td><code>numpy.random.default_rng(seed)</code> initialised with first 64 bits of <code>sha256(run_fingerprint)</code> (<code>pipeline.py</code>)</td>
+</tr>
 </tbody>
 </table>
 <hr />
@@ -2488,11 +2492,6 @@ without re-scoring (<strong>no-op rerun</strong>).</p>
 <li>The fingerprint covers <strong>declared</strong> input files (raster, climate CSV, ROI
   GeoJSON) only.  If a pipeline step reads additional files not listed in the
   config, those are not tracked.</li>
-<li>Random cell sampling (<code>max_cells &lt; n_valid_cells</code>) means the <strong>cell set
-  may differ between runs even with the same fingerprint</strong> — because
-  <code>random.sample</code> is seeded by Python's default PRNG, not by the fingerprint.
-  For fully deterministic cell selection, seed the PRNG via the config
-  (planned for a future release; tracked in ROADMAP).</li>
 </ul>
 
 
