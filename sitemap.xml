@@ -21,6 +21,10 @@
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
+         <loc>https://terraflow.marupilla.dev/migration-v0.4-to-v0.5/</loc>
+         <lastmod>2026-06-30</lastmod>
+    </url>
+    <url>
          <loc>https://terraflow.marupilla.dev/quickstart/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
@@ -113,6 +117,10 @@
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
+         <loc>https://terraflow.marupilla.dev/guides/satellite-inputs/</loc>
+         <lastmod>2026-06-30</lastmod>
+    </url>
+    <url>
          <loc>https://terraflow.marupilla.dev/install/homebrew/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
@@ -126,6 +134,10 @@
     </url>
     <url>
          <loc>https://terraflow.marupilla.dev/notebooks/05_extended_variogram_mode/</loc>
+         <lastmod>2026-06-30</lastmod>
+    </url>
+    <url>
+         <loc>https://terraflow.marupilla.dev/notebooks/07_climate_impact_crop_suitability/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
