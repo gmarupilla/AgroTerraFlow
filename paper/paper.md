@@ -1,9 +1,11 @@
 ---
-title: "TerraFlow: A Reproducible, Uncertainty-Aware Geospatial Workflow for Agricultural Suitability Modelling"
+title: "TerraFlow: A Reproducible Framework for Climate-Impact Assessment of Agricultural Suitability"
 tags:
   - Python
   - geospatial
   - agriculture
+  - climate impact
+  - crop suitability
   - kriging
   - sensitivity analysis
   - reproducibility
@@ -28,37 +30,48 @@ url: 'https://terraflow.marupilla.dev'
 
 # Summary
 
-TerraFlow is an open-source Python library that turns a raster (e.g. a
-land-cover GeoTIFF), a table of weather-station observations, and a YAML
-configuration into a scored per-cell suitability table with complete,
-machine-readable provenance. A single `terraflow run` clips the raster
-to a region of interest, reprojects it to WGS84, spatially interpolates
+TerraFlow is an open-source Python library for **reproducible
+climate-impact assessment of agricultural suitability**. It turns a
+land-cover raster, weather-station observations, and a YAML configuration
+into a scored per-cell suitability table with complete, machine-readable
+provenance and per-cell uncertainty intervals. The locked product
+direction adds climate-induced crop hazards (drought, flood, heat stress,
+growing-degree-day shifts) under historical and projected future climate
+(CMIP6 SSP scenarios) in the next release; the configuration schema is
+already in place and the ingest + engine ships sequentially in v0.5.0. A single `terraflow run` clips the raster to a
+region of interest, reprojects it to WGS84, spatially interpolates
 station climate to cell centroids (linear, inverse-distance, or Ordinary
 Kriging with automatic variogram selection), computes a normalised
 weighted suitability score, and writes `features.parquet`,
 `manifest.json`, and `report.json` to a content-addressable run
-directory. Three companion sub-commands extend the same contract:
+directory. Companion sub-commands extend the same contract:
 `terraflow sensitivity` and `terraflow validate` produce Sobol' and
 Morris indices [@herman2017salib; @saltelli2008global] and spatial-block
-cross-validation. Every run is identified
-by a deterministic content-addressable `run_fingerprint`, so identical
-inputs produce the same directory name and bit-identical outputs within
-documented limits.
+cross-validation. Every run is identified by a deterministic
+content-addressable `run_fingerprint`, so identical inputs produce the
+same directory name and bit-identical outputs within documented limits.
+The same workflow methodology extends to habitat suitability, land-use
+planning, and conservation siting as adjacent expansion chapters.
 
 ![TerraFlow architecture showing configuration, pipeline orchestration, ingestion, geospatial operations, modelling, and outputs.](figure1.jpeg){ width=85% }
 
 # Statement of need
 
-Agricultural and environmental suitability mapping typically combines a
-raster (e.g. the USDA Cropland Data Layer [@usda_cdl]) with point
-weather observations. Practitioners stitch these together in ad-hoc
-notebooks that re-implement ROI clipping, CRS alignment, station-to-cell
-interpolation, nodata accounting, and export on every project. The
-consequence is a workflow-level reproducibility gap: results depend on
-file paths, package versions, and random seeds that drift silently
-between runs; interpolation uncertainty and parameter sensitivity are
-rarely quantified; and reviewers cannot regenerate a specific figure
-from a specific configuration and specific input bytes.
+Climate-impact projections for agricultural suitability sit at the
+intersection of three data sources — land-cover rasters (e.g. the USDA
+Cropland Data Layer [@usda_cdl]), point weather observations, and
+crop-specific physiological thresholds. Practitioners stitch these
+together in ad-hoc notebooks that re-implement ROI clipping, CRS
+alignment, station-to-cell interpolation, nodata accounting, and export
+on every project. The consequence is a workflow-level reproducibility
+gap that is especially acute for *climate-impact* questions: results
+depend on file paths, package versions, and random seeds that drift
+silently between runs; interpolation uncertainty and parameter
+sensitivity are rarely quantified; and reviewers cannot regenerate a
+specific figure from a specific configuration and specific input bytes.
+TerraFlow's roadmap adds CMIP6 NetCDF ingest for projected-climate
+scenarios in v0.5.0, but the reproducibility gap exists today on the
+historical pipeline alone.
 
 TerraFlow closes this gap with a single configuration-driven pipeline
 that fingerprints every run from the canonicalised YAML config plus

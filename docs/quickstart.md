@@ -17,7 +17,9 @@ Everything you need to go from zero to a working suitability map — what it is,
 
 TerraFlow is a command-line tool that answers one question:
 
-> **"Given a piece of land, how suitable is it for a particular crop or use — right now, given the current climate?"**
+> **"Given a piece of land, how suitable is it for a particular crop — under current climate, and (in v0.5.0) under projected future climate (CMIP6 SSP scenarios)?"**
+
+That climate-impact framing is the flagship. As of v0.4.x the pipeline ingests weather-station observations via CSV; CMIP6 NetCDF scenario ingest lands in the v0.5.0 sprint (issue #138 sub-tasks). The same workflow methodology extends to habitat suitability, land-use planning, and conservation siting.
 
 It takes three inputs:
 

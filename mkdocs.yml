@@ -1,5 +1,5 @@
 site_name: TerraFlow
-site_description: Reproducible geospatial modeling with spatial climate interpolation — config-driven, fingerprinted, and spatially aware.
+site_description: Reproducible climate-impact assessment of agricultural suitability — config-driven, fingerprinted, uncertainty-aware.
 site_url: https://terraflow.marupilla.dev/
 repo_url: https://github.com/gmarupilla/AgroTerraFlow
 repo_name: gmarupilla/AgroTerraFlow
