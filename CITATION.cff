@@ -4,6 +4,7 @@ type: software
 title: "TerraFlow: A Reproducible Framework for Climate-Impact Assessment of Agricultural Suitability"
 version: 0.5.0
 date-released: "2026-06-30"
+doi: 10.5281/zenodo.21070362
 license: MIT
 repository-code: "https://github.com/gmarupilla/AgroTerraFlow"
 url: "https://terraflow.marupilla.dev"
