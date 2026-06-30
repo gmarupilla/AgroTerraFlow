@@ -37,11 +37,23 @@
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
+         <loc>https://terraflow.marupilla.dev/api/climate_impact/</loc>
+         <lastmod>2026-06-30</lastmod>
+    </url>
+    <url>
+         <loc>https://terraflow.marupilla.dev/api/cmip6/</loc>
+         <lastmod>2026-06-30</lastmod>
+    </url>
+    <url>
          <loc>https://terraflow.marupilla.dev/api/core/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
          <loc>https://terraflow.marupilla.dev/api/geo/</loc>
+         <lastmod>2026-06-30</lastmod>
+    </url>
+    <url>
+         <loc>https://terraflow.marupilla.dev/api/hazard/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
@@ -58,6 +70,10 @@
     </url>
     <url>
          <loc>https://terraflow.marupilla.dev/api/stats/</loc>
+         <lastmod>2026-06-30</lastmod>
+    </url>
+    <url>
+         <loc>https://terraflow.marupilla.dev/api/temporal/</loc>
          <lastmod>2026-06-30</lastmod>
     </url>
     <url>
