@@ -208,6 +208,16 @@ def resolve_run_dir(config_path: Path | str) -> Path:
             if not _p.is_absolute():
                 config_dict[_key] = str((config_dir / _p).resolve())
 
+    # Nested climate paths must also be normalized so they survive a
+    # config loaded from a different working directory (#138f).
+    _climate_block = config_dict.get("climate")
+    if isinstance(_climate_block, dict):
+        for _ckey in ("timeseries_csv",):
+            if _climate_block.get(_ckey) is not None:
+                _p = Path(str(_climate_block[_ckey]))
+                if not _p.is_absolute():
+                    _climate_block[_ckey] = str((config_dir / _p).resolve())
+
     cfg: PipelineConfig = build_config(config_dict)
     roi_hash = _resolve_roi_hash(config_dict, config_dir)
     input_paths = _collect_input_paths(config_dict, config_dir)
@@ -596,6 +606,16 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
             _p = Path(str(config_dict[_key]))
             if not _p.is_absolute():
                 config_dict[_key] = str((config_dir / _p).resolve())
+
+    # Nested climate paths must also be normalized so they survive a
+    # config loaded from a different working directory (#138f).
+    _climate_block = config_dict.get("climate")
+    if isinstance(_climate_block, dict):
+        for _ckey in ("timeseries_csv",):
+            if _climate_block.get(_ckey) is not None:
+                _p = Path(str(_climate_block[_ckey]))
+                if not _p.is_absolute():
+                    _climate_block[_ckey] = str((config_dir / _p).resolve())
 
     cfg: PipelineConfig = build_config(config_dict)
     logger.info(f"Loaded config from {config_path}")

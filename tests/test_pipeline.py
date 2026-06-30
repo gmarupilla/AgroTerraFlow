@@ -821,3 +821,59 @@ def test_run_pipeline_cache_requires_climate_features_for_climate_impact_config(
     cf_mtime_after = (run_dir / "climate_features.parquet").stat().st_mtime_ns
     assert cf_mtime_after >= cf_mtime_before  # regenerated
     assert df_second.attrs["run_fingerprint"] == df_first.attrs["run_fingerprint"]
+
+
+def test_run_pipeline_climate_impact_relative_timeseries_csv(
+    tmp_path: Path,
+    synthetic_raster: Path,
+    synthetic_climate_csv: Path,
+    monkeypatch,
+):
+    """#138f Codex P2: a relative ``climate.timeseries_csv`` must resolve
+    against the config's directory, not the process cwd. Run the pipeline
+    from an unrelated cwd to confirm."""
+    cfg_dir = tmp_path / "cfgs"
+    cfg_dir.mkdir()
+    ts_csv = _write_climate_impact_timeseries(cfg_dir / "ts.csv")
+    out_dir = tmp_path / "outputs"
+
+    cfg_content = textwrap.dedent(f"""
+        raster_path: "{synthetic_raster}"
+        climate_csv: "{synthetic_climate_csv}"
+        output_dir: "{out_dir}"
+        roi:
+          type: bbox
+          xmin: -101.0
+          ymin: 39.0
+          xmax: -99.0
+          ymax: 41.0
+        model_params:
+          v_min: 0.0
+          v_max: 25.0
+          t_min: 0.0
+          t_max: 40.0
+          r_min: 0.0
+          r_max: 300.0
+          w_v: 0.4
+          w_t: 0.3
+          w_r: 0.3
+        climate:
+          timeseries_csv: "{ts_csv.name}"      # RELATIVE — must resolve via cfg dir
+          interpolation_method: linear
+          temporal_aggregations:
+            - kind: annual_mean
+          scenarios:
+            - name: historical
+              period: [1991, 1991]
+        max_cells: 5
+        """)
+    cfg_file = cfg_dir / "cfg.yml"
+    cfg_file.write_text(cfg_content, encoding="utf-8")
+
+    elsewhere = tmp_path / "unrelated_cwd"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    df = run_pipeline(cfg_file)
+    run_dir = Path(df.attrs["run_dir"])
+    assert (run_dir / "climate_features.parquet").exists()
