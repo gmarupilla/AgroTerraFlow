@@ -101,5 +101,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Run offline docker smoke
+      - name: Run offline docker smoke (historical pipeline)
         run: make docker-smoke
+
+      - name: Run offline docker smoke (climate-impact pipeline)
+        # Exercises the flagship #138 path end-to-end with --network none:
+        # synthetic timeseries + temporal_aggregations + scenarios → the
+        # new climate_features.parquet sibling artifact must appear.
+        run: make docker-smoke-climate-impact
