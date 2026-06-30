@@ -31,9 +31,9 @@ Supported `kind` values (declared on `ClimateConfig.temporal_aggregations`):
 |---|---|---|
 | `annual_mean` | — | Long-run mean of `temperature_c`. |
 | `seasonal_mean` | `months: [1..12]` | Mean over selected calendar months. |
-| `growing_degree_days` | `base_temp_c: float` | Sum of `max(0, T - base)` per year, mean over window. Implementation in `terraflow.hazard`. |
-| `frost_days` | `threshold_c: float` | Count of days at-or-below threshold. WMO ETCCDI FD0 when threshold = 0. |
-| `heat_stress_days` | `threshold_c: float` | Count of days at-or-above threshold. WMO ETCCDI TX35 when threshold = 35. |
+| `growing_degree_days` | `base_temp_c: float` | **Cumulative** sum of `max(0, T - base)` across every row in the scenario window — divide by year count for annualised GDD. Implementation in `terraflow.hazard`. |
+| `frost_days` | `threshold_c: float` | **Window-cumulative** count of days at-or-below threshold. WMO ETCCDI FD0 (when threshold = 0) is per-year — divide by year count for the canonical annual value. |
+| `heat_stress_days` | `threshold_c: float` | **Window-cumulative** count of days at-or-above threshold. WMO ETCCDI TX35 (when threshold = 35) is per-year — divide by year count for the canonical annual value. |
 | `precip_percentile` | `percentile: 0..100` | Nth percentile of daily precipitation. |
 | `spei` | `timescale_months: int > 0` | Simplified Thornthwaite SPEI at the final month of the input window. Implementation in `terraflow.hazard`. |
 

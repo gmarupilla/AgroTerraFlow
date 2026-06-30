@@ -29,8 +29,15 @@ import cost.
 
 - `cmip6_metadata(path)` — SHA-256 + size + CMIP6 global attrs
   (variant_label, source_id, experiment_id, institution_id, table_id).
-  Folded into the run fingerprint by the pipeline so different CMIP6
-  variants of the same SSP scenario yield distinct cache directories.
+  Exposed as a public helper so callers can fold NetCDF provenance into
+  their own manifest. The main `terraflow run` pipeline does **not** yet
+  ingest NetCDFs directly — users today convert each NetCDF to a long-format
+  station CSV via `cmip6_to_station_timeseries(...)` and the CSV's
+  SHA-256 enters the run fingerprint via the existing
+  `_collect_input_paths` path. First-class `climate.cmip6_scenarios:`
+  config support (per-NetCDF SHA-256 + unit conversion + calendar handling
+  inside the pipeline) ships in v0.6.0 — see
+  [issue #148](https://github.com/gmarupilla/AgroTerraFlow/issues/148).
 - `load_cmip6_scenario(path, variable, period)` — opens a NetCDF lazily
   and slices the time axis by an inclusive `(year_min, year_max)` window.
   Handles non-Gregorian calendars (`365_day`, `noleap`, `360_day`) via the

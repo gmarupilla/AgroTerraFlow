@@ -15,12 +15,22 @@ Backs four of the `TemporalAggregation.kind` values that
 
 ## Overview
 
-- `growing_degree_days(df, base_temp_c)` — per-station sum of
-  `max(0, T_d - base)` over each year, averaged across the input window.
-- `frost_days(df, threshold_c)` — per-station count of days where
-  `T ≤ threshold`. WMO ETCCDI **FD0** when threshold = 0 °C.
-- `heat_stress_days(df, threshold_c)` — per-station count of days where
-  `T ≥ threshold`. WMO ETCCDI **TX35** when threshold = 35 °C.
+- `growing_degree_days(df, base_temp_c)` — per-station **cumulative**
+  sum of `max(0, T_d - base)` across every row in the
+  (scenario-filtered) DataFrame. Note: this is a window-cumulative total,
+  not a per-year average — a 30-year scenario window yields ~30× the
+  value of a 1-year window. Divide by `(year_max - year_min + 1)` if you
+  need an annualised GDD.
+- `frost_days(df, threshold_c)` — per-station **cumulative** count of
+  days where `T ≤ threshold` across every row in the (scenario-filtered)
+  DataFrame. Maps to WMO ETCCDI **FD0** when threshold = 0 °C, but note
+  the WMO definition is per-year — TerraFlow's implementation returns the
+  window total. Divide by the window's year count for the canonical
+  annual FD0.
+- `heat_stress_days(df, threshold_c)` — per-station **cumulative** count
+  of days where `T ≥ threshold` across every row in the (scenario-filtered)
+  DataFrame. Maps to WMO ETCCDI **TX35** when threshold = 35 °C; same
+  per-year vs window-total caveat as `frost_days` above.
 - `spei(df, timescale_months)` — simplified Thornthwaite-PET-based
   Standardised Precipitation-Evapotranspiration Index at the final month
   of the input window.
