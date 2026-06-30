@@ -1816,7 +1816,7 @@
   <span class="md-ellipsis">
     
   
-    Model Validation Demo
+    Model Validation Demo (v0.5.0+)
   
 
     
@@ -2114,10 +2114,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#phase-3-model-validation" class="md-nav__link">
+  <a href="#phase-3-model-validation-narrowed-in-v050" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 3 — Model Validation ✓
+        Phase 3 — Model Validation (narrowed in v0.5.0) ✓
       
     </span>
   </a>
@@ -2125,10 +2125,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#phase-4-h3-export" class="md-nav__link">
+  <a href="#phase-4-h3-export-cut" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 4 — H3 Export ✓
+        Phase 4 — H3 Export (cut) ✗
       
     </span>
   </a>
@@ -2136,10 +2136,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#phase-5-paper-and-joss-submission-active" class="md-nav__link">
+  <a href="#phase-5-geoai-engine-cut" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 5 — Paper and JOSS Submission (Active)
+        Phase 5 — GeoAI Engine (cut) ✗
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-6-climate-impact-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 6 — Climate-impact assessment ✓
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-7-joss-resubmission-blocked-on-adoption" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 7 — JOSS Resubmission (blocked on adoption)
       
     </span>
   </a>
@@ -2278,10 +2300,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#phase-3-model-validation" class="md-nav__link">
+  <a href="#phase-3-model-validation-narrowed-in-v050" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 3 — Model Validation ✓
+        Phase 3 — Model Validation (narrowed in v0.5.0) ✓
       
     </span>
   </a>
@@ -2289,10 +2311,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#phase-4-h3-export" class="md-nav__link">
+  <a href="#phase-4-h3-export-cut" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 4 — H3 Export ✓
+        Phase 4 — H3 Export (cut) ✗
       
     </span>
   </a>
@@ -2300,10 +2322,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#phase-5-paper-and-joss-submission-active" class="md-nav__link">
+  <a href="#phase-5-geoai-engine-cut" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Phase 5 — Paper and JOSS Submission (Active)
+        Phase 5 — GeoAI Engine (cut) ✗
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-6-climate-impact-assessment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 6 — Climate-impact assessment ✓
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#phase-7-joss-resubmission-blocked-on-adoption" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 7 — JOSS Resubmission (blocked on adoption)
       
     </span>
   </a>
@@ -2382,8 +2426,8 @@
 
 
 <h1 id="terraflow-roadmap">TerraFlow Roadmap<a class="headerlink" href="#terraflow-roadmap" title="Permanent link">&para;</a></h1>
-<p>This roadmap mirrors <code>.planning/ROADMAP.md</code> (the single source of truth for in-flight work). The work from here to JOSS submission is additive: close two reviewer-visible gaps in the foundation (CRS errors, kriging diagnostics), add three analytical modules (sensitivity, validation, H3 export) as post-pipeline adapters, then finalize the paper with quantitative results drawn from those modules.</p>
-<p>JOSS submission target: <strong>2026-05-25</strong>.</p>
+<p>This roadmap tracks completed phases and current state. v0.5.0 (2026-06-30) refocused the surface on the climate-impact flagship: removed GeoAI + H3 wrappers, narrowed validation to spatial-block CV, and shipped scenario × hazard fan-out with CMIP6 NetCDF support. Package restructure into <code>terraflow.io.*</code> + <code>terraflow.climate.*</code> sub-packages is planned for v0.6.0 (issue #148).</p>
+<p>JOSS pre-review submitted 2026-06-08, rejected 2026-06-24 on impact criteria. <strong>Resubmission gated on adoption signal</strong>, not code (see internal strategy repo).</p>
 <h2 id="phase-status">Phase Status<a class="headerlink" href="#phase-status" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -2397,32 +2441,44 @@
 <tbody>
 <tr>
 <td>1. Foundation Hardening</td>
-<td>mostly delivered in 0.2.x — 0.3.0</td>
+<td>delivered</td>
 <td>Released</td>
 <td>2026-04-23 (v0.3.0)</td>
 </tr>
 <tr>
 <td>2. Sensitivity Analysis</td>
 <td>3/3</td>
-<td>Complete</td>
-<td>2026-03-28</td>
+<td>Released</td>
+<td>2026-04-23 (v0.3.0)</td>
 </tr>
 <tr>
 <td>3. Model Validation</td>
-<td>3/3</td>
-<td>Complete</td>
-<td>2026-03-31</td>
+<td>narrowed to spatial-block CV</td>
+<td>Released</td>
+<td>2026-06-30 (v0.5.0)</td>
 </tr>
 <tr>
 <td>4. H3 Export</td>
-<td>3/3</td>
-<td>Complete</td>
-<td>2026-04-04</td>
+<td>cut</td>
+<td>Removed</td>
+<td>2026-06-30 (v0.5.0; PR #135)</td>
 </tr>
 <tr>
-<td>5. Paper and JOSS Submission</td>
-<td>in flight</td>
-<td>Active</td>
+<td>5. GeoAI Engine</td>
+<td>cut</td>
+<td>Removed</td>
+<td>2026-06-30 (v0.5.0; PR #134)</td>
+</tr>
+<tr>
+<td>6. Climate-impact assessment</td>
+<td>shipped</td>
+<td>Released</td>
+<td>2026-06-30 (v0.5.0; issue #138)</td>
+</tr>
+<tr>
+<td>7. JOSS Resubmission</td>
+<td>pending adoption signal</td>
+<td>Blocked</td>
 <td>—</td>
 </tr>
 </tbody>
@@ -2440,19 +2496,16 @@
 </ul>
 <h2 id="phase-2-sensitivity-analysis">Phase 2 — Sensitivity Analysis ✓<a class="headerlink" href="#phase-2-sensitivity-analysis" title="Permanent link">&para;</a></h2>
 <p>Sobol' first-order / total-order indices and Morris elementary effects for <code>ModelParams</code> weights via SALib. Invoked with <code>terraflow sensitivity -c config.yml</code>. Results written to <code>sensitivity_report.json</code>.</p>
-<h2 id="phase-3-model-validation">Phase 3 — Model Validation ✓<a class="headerlink" href="#phase-3-model-validation" title="Permanent link">&para;</a></h2>
-<p>Spatial block cross-validation (Roberts et al. 2017), Cohen's kappa, and Moran's I on residuals. Invoked with <code>terraflow validate -c config.yml</code>. Results appended to <code>report.json</code> under the <code>validation</code> key.</p>
-<h2 id="phase-4-h3-export">Phase 4 — H3 Export ✓<a class="headerlink" href="#phase-4-h3-export" title="Permanent link">&para;</a></h2>
-<p>Optional H3-indexed output for interop with H3-native toolchains. <code>terraflow export --format h3 -c config.yml</code> writes <code>h3_resolution_N.parquet</code> to the run directory. <code>h3-py</code> is an optional dep installed via <code>pip install terraflow-agro[h3]</code>.</p>
-<h2 id="phase-5-paper-and-joss-submission-active">Phase 5 — Paper and JOSS Submission (Active)<a class="headerlink" href="#phase-5-paper-and-joss-submission-active" title="Permanent link">&para;</a></h2>
-<p><strong>Goal:</strong> the paper contains quantitative results drawn from the prior phases, packaging meets JOSS reviewer requirements, and the repository passes an end-to-end smoke test without network access.</p>
-<p>Active work:</p>
-<ul>
-<li><code>paper/paper.md</code> reproducibility section — quantitative results table populated from a full demo run (v0.3.0).</li>
-<li><code>paper/biblio.bib</code> — SALib (Herman &amp; Usher 2017), Saltelli et al. (2008), Cressie (1993) entries with DOIs (v0.3.0).</li>
-<li><code>make docker-smoke</code> — Docker pipeline runs with <code>--network none</code>, asserted in CI via <code>docker-smoke-offline</code> job (v0.3.0).</li>
-<li>Final pass on submission date and version string sync between <code>paper/paper.md</code> and the PyPI release.</li>
-</ul>
+<h2 id="phase-3-model-validation-narrowed-in-v050">Phase 3 — Model Validation (narrowed in v0.5.0) ✓<a class="headerlink" href="#phase-3-model-validation-narrowed-in-v050" title="Permanent link">&para;</a></h2>
+<p>Spatial-block cross-validation (Roberts et al. 2017) via <code>terraflow validate -c config.yml</code>; results appended to <code>report.json</code> under the <code>validation</code> key. Cohen's κ and Moran's I wrappers were removed in v0.5.0 (PR #142 / issue #136) — call <code>sklearn.metrics.cohen_kappa_score</code> and <code>esda.Moran</code> directly on <code>features.parquet</code>. See <a href="../migration-v0.4-to-v0.5/">Migration v0.4 → v0.5</a>.</p>
+<h2 id="phase-4-h3-export-cut">Phase 4 — H3 Export (cut) ✗<a class="headerlink" href="#phase-4-h3-export-cut" title="Permanent link">&para;</a></h2>
+<p>Removed in v0.5.0 (PR #135 / issue #135). The module was a thin <code>h3-py</code> + pandas wrapper; downstream users now call <code>h3-py</code> directly on <code>features.parquet</code> (five-line recipe in the migration guide).</p>
+<h2 id="phase-5-geoai-engine-cut">Phase 5 — GeoAI Engine (cut) ✗<a class="headerlink" href="#phase-5-geoai-engine-cut" title="Permanent link">&para;</a></h2>
+<p>Removed in v0.5.0 (PR #134 / issue #134). Engine bodies were <code>NotImplementedError</code> stubs and downstream citations went to <code>geoai-py</code>, not TerraFlow. A separate <code>terraflow-geoai</code> package is parked post-JOSS pending demand signal.</p>
+<h2 id="phase-6-climate-impact-assessment">Phase 6 — Climate-impact assessment ✓<a class="headerlink" href="#phase-6-climate-impact-assessment" title="Permanent link">&para;</a></h2>
+<p>Shipped in v0.5.0 (issue #138, PRs #144–#150). Multi-scenario climate driver (historical + CMIP6 SSP windows) × seven WMO/ETCCDI-aligned hazard indicators (annual mean, seasonal mean, growing-degree days, frost days, heat-stress days, precipitation percentiles, simplified Thornthwaite SPEI). Writes a sibling <code>climate_features.parquet</code> alongside <code>features.parquet</code>; the historical artifact contract is unchanged. See <code>examples/demo_config_climate_impact.yml</code> and notebook <code>docs/notebooks/07_climate_impact_crop_suitability.ipynb</code>.</p>
+<h2 id="phase-7-joss-resubmission-blocked-on-adoption">Phase 7 — JOSS Resubmission (blocked on adoption)<a class="headerlink" href="#phase-7-joss-resubmission-blocked-on-adoption" title="Permanent link">&para;</a></h2>
+<p>JOSS pre-review (#10686) rejected 2026-06-24 with the note: "If/when in the future this software is used more widely, please resubmit." The fix is calendar-time adoption work (university outreach, AGU Fall poster, blog posts, CGIAR / AgMIP contact), not code. Resubmission gate criteria and outreach planning live in the internal strategy repo (see <code>project_post_coding_adoption_plan</code> memory).</p>
 <h2 id="v2-ideas">v2 Ideas<a class="headerlink" href="#v2-ideas" title="Permanent link">&para;</a></h2>
 <p>These are not planned for v1 (not on the JOSS critical path) but are worth tracking:</p>
 <ul>

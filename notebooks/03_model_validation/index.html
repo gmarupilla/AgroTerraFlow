@@ -27,7 +27,7 @@
     
     
       
-        <title>Model Validation Demo - TerraFlow</title>
+        <title>Model Validation Demo (v0.5.0+) - TerraFlow</title>
       
     
     
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#model-validation-demo" class="md-skip">
+        <a href="#model-validation-demo-v050" class="md-skip">
           Skip to content
         </a>
       
@@ -121,7 +121,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Model Validation Demo
+              Model Validation Demo (v0.5.0+)
             
           </span>
         </div>
@@ -1830,7 +1830,7 @@
   <span class="md-ellipsis">
     
   
-    Model Validation Demo
+    Model Validation Demo (v0.5.0+)
   
 
     
@@ -1848,7 +1848,7 @@
   <span class="md-ellipsis">
     
   
-    Model Validation Demo
+    Model Validation Demo (v0.5.0+)
   
 
     
@@ -1876,10 +1876,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#interpreting-results" class="md-nav__link">
+  <a href="#1-build-synthetic-inputs-run-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Interpreting Results
+        1. Build synthetic inputs + run pipeline
       
     </span>
   </a>
@@ -1887,10 +1887,43 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
+  <a href="#2-spatial-block-cross-validation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        References
+        2. Spatial block cross-validation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-cohens-external-v050-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Cohen's κ — external (v0.5.0 pattern)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-morans-i-on-residuals-external-v050-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Moran's I on residuals — external (v0.5.0 pattern)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-these-wrappers-were-cut" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why these wrappers were cut
       
     </span>
   </a>
@@ -2171,10 +2204,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#interpreting-results" class="md-nav__link">
+  <a href="#1-build-synthetic-inputs-run-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Interpreting Results
+        1. Build synthetic inputs + run pipeline
       
     </span>
   </a>
@@ -2182,10 +2215,43 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
+  <a href="#2-spatial-block-cross-validation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        References
+        2. Spatial block cross-validation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-cohens-external-v050-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Cohen's κ — external (v0.5.0 pattern)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-morans-i-on-residuals-external-v050-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Moran's I on residuals — external (v0.5.0 pattern)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-these-wrappers-were-cut" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why these wrappers were cut
       
     </span>
   </a>
@@ -2933,24 +2999,39 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </style>
 <!-- End of mermaid configuration --><div class="jupyter-wrapper">
 <div class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a1b2c3d4-0001-0001-0001-000000000001">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=944cfca9">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h1 id="model-validation-demo">Model Validation Demo<a class="anchor-link" href="#model-validation-demo">¶</a></h1><p>This notebook demonstrates TerraFlow's model validation workflow, including:</p>
-<ul>
-<li>Spatial block cross-validation with buffer zones (Roberts et al. 2017)</li>
-<li>Cohen's kappa against a reference dataset</li>
-<li>Moran's I on score residuals</li>
-<li>Validation block in report.json</li>
-</ul>
+<h1 id="model-validation-demo-v050">Model Validation Demo (v0.5.0+)<a class="anchor-link" href="#model-validation-demo-v050">¶</a></h1><p>TerraFlow ships <strong>spatial-block cross-validation</strong> (Roberts et al. 2017) as the
+primary validation surface. The Cohen's κ and Moran's I wrappers that lived in
+<code>terraflow.validation</code> through v0.4.x were removed in v0.5.0 — they didn't earn
+Methods-section citations (downstream papers cited <code>sklearn</code> / <code>esda</code>, not
+TerraFlow). This notebook shows:</p>
+<ol>
+<li>How to invoke spatial-block CV via <code>terraflow validate</code>.</li>
+<li>How to compute Cohen's κ via <code>sklearn.metrics.cohen_kappa_score</code> directly on the run's <code>features.parquet</code>.</li>
+<li>How to compute Moran's I via <code>esda.Moran</code> on score residuals.</li>
+</ol>
+<p>All three patterns are documented in <a href="../migration-v0.4-to-v0.5.md">Migration v0.4 → v0.5</a>.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=69957d7f">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="1-build-synthetic-inputs-run-pipeline">1. Build synthetic inputs + run pipeline<a class="anchor-link" href="#1-build-synthetic-inputs-run-pipeline">¶</a></h2>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=a1b2c3d4-0001-0001-0001-000000000002">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=b3e5c02e">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -2968,164 +3049,95 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">textwrap</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span><span class="o">,</span><span class="w"> </span><span class="nn">tempfile</span><span class="o">,</span><span class="w"> </span><span class="nn">textwrap</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">rasterio</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">rasterio.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">from_origin</span>
-
 <span class="kn">from</span><span class="w"> </span><span class="nn">terraflow.pipeline</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_pipeline</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">terraflow.validation</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_validation</span>
 
-<span class="c1"># ── Synthetic inputs ─────────────────────────────────────────────────────────</span>
 <span class="n">tmp</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">())</span>
-
-<span class="c1"># Synthetic 5×5 raster in EPSG:4326</span>
-<span class="n">raster_path</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">/</span> <span class="s2">"raster.tif"</span>
-<span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float32"</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">raster_path</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">/</span> <span class="s1">'raster.tif'</span>
+<span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">'float32'</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span>
-    <span class="n">raster_path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">"GTiff"</span><span class="p">,</span>
-    <span class="n">height</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">"float32"</span><span class="p">,</span>
-    <span class="n">crs</span><span class="o">=</span><span class="s2">"EPSG:4326"</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">from_origin</span><span class="p">(</span><span class="o">-</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">40.0</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span>
+    <span class="n">raster_path</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s1">'GTiff'</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">dtype</span><span class="o">=</span><span class="s1">'float32'</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="s1">'EPSG:4326'</span><span class="p">,</span>
+    <span class="n">transform</span><span class="o">=</span><span class="n">from_origin</span><span class="p">(</span><span class="o">-</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">40.0</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">),</span>
 <span class="p">)</span> <span class="k">as</span> <span class="n">ds</span><span class="p">:</span>
     <span class="n">ds</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
-<span class="c1"># Synthetic climate CSV</span>
-<span class="n">climate_path</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">/</span> <span class="s2">"climate.csv"</span>
+<span class="n">climate_path</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">/</span> <span class="s1">'climate.csv'</span>
 <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-    <span class="s2">"lat"</span><span class="p">:</span>        <span class="p">[</span><span class="mf">40.0</span><span class="p">,</span>  <span class="mf">40.01</span><span class="p">,</span>  <span class="mf">40.02</span><span class="p">],</span>
-    <span class="s2">"lon"</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mf">100.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">99.99</span><span class="p">,</span> <span class="o">-</span><span class="mf">99.98</span><span class="p">],</span>
-    <span class="s2">"mean_temp"</span><span class="p">:</span>  <span class="p">[</span><span class="mf">18.0</span><span class="p">,</span>   <span class="mf">19.0</span><span class="p">,</span>   <span class="mf">20.0</span><span class="p">],</span>
-    <span class="s2">"total_rain"</span><span class="p">:</span> <span class="p">[</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">120.0</span><span class="p">,</span>  <span class="mf">140.0</span><span class="p">],</span>
+    <span class="s1">'lat'</span><span class="p">:</span>        <span class="p">[</span><span class="mf">40.0</span><span class="p">,</span>  <span class="mf">40.01</span><span class="p">,</span>  <span class="mf">40.02</span><span class="p">],</span>
+    <span class="s1">'lon'</span><span class="p">:</span>        <span class="p">[</span><span class="o">-</span><span class="mf">100.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">99.99</span><span class="p">,</span> <span class="o">-</span><span class="mf">99.98</span><span class="p">],</span>
+    <span class="s1">'mean_temp'</span><span class="p">:</span>  <span class="p">[</span><span class="mf">18.0</span><span class="p">,</span>   <span class="mf">19.0</span><span class="p">,</span>   <span class="mf">20.0</span><span class="p">],</span>
+    <span class="s1">'total_rain'</span><span class="p">:</span> <span class="p">[</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">120.0</span><span class="p">,</span>  <span class="mf">140.0</span><span class="p">],</span>
 <span class="p">})</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">climate_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-<span class="c1"># Synthetic reference labels (lat/lon within ROI)</span>
-<span class="n">ref_path</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">/</span> <span class="s2">"reference.csv"</span>
-<span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
-    <span class="s2">"lat"</span><span class="p">:</span>   <span class="p">[</span><span class="mf">39.97</span><span class="p">,</span> <span class="mf">39.98</span><span class="p">,</span> <span class="mf">39.99</span><span class="p">,</span> <span class="mf">40.00</span><span class="p">,</span> <span class="mf">40.01</span><span class="p">],</span>
-    <span class="s2">"lon"</span><span class="p">:</span>   <span class="p">[</span><span class="o">-</span><span class="mf">100.03</span><span class="p">,</span> <span class="o">-</span><span class="mf">100.01</span><span class="p">,</span> <span class="o">-</span><span class="mf">99.99</span><span class="p">,</span> <span class="o">-</span><span class="mf">99.97</span><span class="p">,</span> <span class="o">-</span><span class="mf">99.95</span><span class="p">],</span>
-    <span class="s2">"label"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"low"</span><span class="p">,</span> <span class="s2">"medium"</span><span class="p">,</span> <span class="s2">"high"</span><span class="p">,</span> <span class="s2">"high"</span><span class="p">,</span> <span class="s2">"medium"</span><span class="p">],</span>
-<span class="p">})</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">ref_path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">config_path</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">/</span> <span class="s1">'config.yml'</span>
+<span class="n">config_path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="sa">f</span><span class="s1">'''</span>
+<span class="s1">    raster_path: </span><span class="si">{</span><span class="n">raster_path</span><span class="si">}</span>
+<span class="s1">    climate_csv: </span><span class="si">{</span><span class="n">climate_path</span><span class="si">}</span>
+<span class="s1">    output_dir: </span><span class="si">{</span><span class="n">tmp</span><span class="si">}</span><span class="s1">/outputs</span>
+<span class="s1">    roi: </span><span class="se">{{</span><span class="s1"> type: bbox, xmin: -101.0, ymin: 39.0, xmax: -99.0, ymax: 41.0 </span><span class="se">}}</span>
+<span class="s1">    model_params: </span><span class="se">{{</span><span class="s1"> v_min: 0.0, v_max: 25.0, t_min: 0.0, t_max: 40.0,</span>
+<span class="s1">                    r_min: 0.0, r_max: 300.0, w_v: 0.4, w_t: 0.3, w_r: 0.3 </span><span class="se">}}</span>
+<span class="s1">    max_cells: 50</span>
+<span class="s1">    validation:</span>
+<span class="s1">      n_blocks_side: 2</span>
+<span class="s1">      buffer_deg: 0.01</span>
+<span class="s1">'''</span><span class="p">))</span>
 
-<span class="c1"># Config with validation section</span>
-<span class="n">config_path</span> <span class="o">=</span> <span class="n">tmp</span> <span class="o">/</span> <span class="s2">"config.yml"</span>
-<span class="n">config_path</span><span class="o">.</span><span class="n">write_text</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">dedent</span><span class="p">(</span><span class="sa">f</span><span class="s2">"""</span><span class="se">\</span>
-<span class="s2">    raster_path: </span><span class="si">{</span><span class="n">raster_path</span><span class="si">}</span>
-<span class="s2">    climate_csv: </span><span class="si">{</span><span class="n">climate_path</span><span class="si">}</span>
-<span class="s2">    output_dir: </span><span class="si">{</span><span class="n">tmp</span><span class="si">}</span><span class="s2">/outputs</span>
-<span class="s2">    roi:</span>
-<span class="s2">      type: bbox</span>
-<span class="s2">      xmin: -101.0</span>
-<span class="s2">      ymin: 39.0</span>
-<span class="s2">      xmax: -99.0</span>
-<span class="s2">      ymax: 41.0</span>
-<span class="s2">    model_params:</span>
-<span class="s2">      v_min: 0.0</span>
-<span class="s2">      v_max: 25.0</span>
-<span class="s2">      t_min: 0.0</span>
-<span class="s2">      t_max: 40.0</span>
-<span class="s2">      r_min: 0.0</span>
-<span class="s2">      r_max: 300.0</span>
-<span class="s2">      w_v: 0.4</span>
-<span class="s2">      w_t: 0.3</span>
-<span class="s2">      w_r: 0.3</span>
-<span class="s2">    max_cells: 50</span>
-<span class="s2">    validation:</span>
-<span class="s2">      n_blocks_side: 2</span>
-<span class="s2">      buffer_deg: 0.01</span>
-<span class="s2">      reference_csv: </span><span class="si">{</span><span class="n">ref_path</span><span class="si">}</span>
-<span class="s2">"""</span><span class="p">))</span>
-
-<span class="c1"># Run pipeline to produce features.parquet, then validate</span>
 <span class="n">df</span> <span class="o">=</span> <span class="n">run_pipeline</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Pipeline complete: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span><span class="si">}</span><span class="s2"> cells, run_id=</span><span class="si">{</span><span class="n">df</span><span class="p">[</span><span class="s1">'run_id'</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-
-<span class="n">report_path</span> <span class="o">=</span> <span class="n">run_validation</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Updated report: </span><span class="si">{</span><span class="n">report_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<span class="n">run_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">'run_dir'</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">'run_dir:'</span><span class="p">,</span> <span class="n">run_dir</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-1">import json
-import tempfile
-import textwrap
+<div class="clipboard-copy-txt" id="cell-1">import json, tempfile, textwrap
 from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import rasterio
 from rasterio.transform import from_origin
-
 from terraflow.pipeline import run_pipeline
 from terraflow.validation import run_validation
 
-# ── Synthetic inputs ─────────────────────────────────────────────────────────
 tmp = Path(tempfile.mkdtemp())
-
-# Synthetic 5×5 raster in EPSG:4326
-raster_path = tmp / "raster.tif"
-arr = np.arange(25, dtype="float32").reshape(5, 5)
+raster_path = tmp / 'raster.tif'
+arr = np.arange(25, dtype='float32').reshape(5, 5)
 with rasterio.open(
-    raster_path, "w", driver="GTiff",
-    height=5, width=5, count=1, dtype="float32",
-    crs="EPSG:4326", transform=from_origin(-100.0, 40.0, 0.01, 0.01),
+    raster_path, 'w', driver='GTiff', height=5, width=5, count=1,
+    dtype='float32', crs='EPSG:4326',
+    transform=from_origin(-100.0, 40.0, 0.01, 0.01),
 ) as ds:
     ds.write(arr, 1)
 
-# Synthetic climate CSV
-climate_path = tmp / "climate.csv"
+climate_path = tmp / 'climate.csv'
 pd.DataFrame({
-    "lat":        [40.0,  40.01,  40.02],
-    "lon":        [-100.0, -99.99, -99.98],
-    "mean_temp":  [18.0,   19.0,   20.0],
-    "total_rain": [100.0, 120.0,  140.0],
+    'lat':        [40.0,  40.01,  40.02],
+    'lon':        [-100.0, -99.99, -99.98],
+    'mean_temp':  [18.0,   19.0,   20.0],
+    'total_rain': [100.0, 120.0,  140.0],
 }).to_csv(climate_path, index=False)
 
-# Synthetic reference labels (lat/lon within ROI)
-ref_path = tmp / "reference.csv"
-pd.DataFrame({
-    "lat":   [39.97, 39.98, 39.99, 40.00, 40.01],
-    "lon":   [-100.03, -100.01, -99.99, -99.97, -99.95],
-    "label": ["low", "medium", "high", "high", "medium"],
-}).to_csv(ref_path, index=False)
-
-# Config with validation section
-config_path = tmp / "config.yml"
-config_path.write_text(textwrap.dedent(f"""\
+config_path = tmp / 'config.yml'
+config_path.write_text(textwrap.dedent(f'''
     raster_path: {raster_path}
     climate_csv: {climate_path}
     output_dir: {tmp}/outputs
-    roi:
-      type: bbox
-      xmin: -101.0
-      ymin: 39.0
-      xmax: -99.0
-      ymax: 41.0
-    model_params:
-      v_min: 0.0
-      v_max: 25.0
-      t_min: 0.0
-      t_max: 40.0
-      r_min: 0.0
-      r_max: 300.0
-      w_v: 0.4
-      w_t: 0.3
-      w_r: 0.3
+    roi: {{ type: bbox, xmin: -101.0, ymin: 39.0, xmax: -99.0, ymax: 41.0 }}
+    model_params: {{ v_min: 0.0, v_max: 25.0, t_min: 0.0, t_max: 40.0,
+                    r_min: 0.0, r_max: 300.0, w_v: 0.4, w_t: 0.3, w_r: 0.3 }}
     max_cells: 50
     validation:
       n_blocks_side: 2
       buffer_deg: 0.01
-      reference_csv: {ref_path}
-"""))
+'''))
 
-# Run pipeline to produce features.parquet, then validate
 df = run_pipeline(config_path)
-print(f"Pipeline complete: {len(df)} cells, run_id={df['run_id'].iloc[0]}")
-
-report_path = run_validation(config_path)
-print(f"Updated report: {report_path}")
-</div>
+run_dir = Path(df.attrs['run_dir'])
+print('run_dir:', run_dir)</div>
 </div>
 </div>
 </div>
@@ -3137,14 +3149,14 @@ print(f"Updated report: {report_path}")
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>INFO:terraflow:Loaded config from /var/folders/h_/_bjpnb894kgf18frynwf6bww0000gn/T/tmp51f29au5/config.yml
+<pre>INFO:terraflow:Loaded config from /var/folders/lw/h_v37nds21q4xf2_q24hhz8h0000gn/T/tmpm5xw9jkb/config.yml
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>INFO:terraflow:Computed run fingerprint LE4QHd2w_bFCsKWgP4GjlhcPTeRZp7dEJs7PPOdRgMY (config=9c91f32d9396a3cf1a02349bc1fb4378b6f1c5fda2a24ee53e732cb390d234e3, inputs=2)
+<pre>INFO:terraflow:Computed run fingerprint 2YOlX6x-yV8Ffp-5xpEk6_QhtwG-4-ydksUnEiA0KMc (config=b942a8b7ec0cc565d4bb30d577fa7af626929b13b7da2ccb1d7473ce3d1647b4, inputs=2)
 </pre>
 </div>
 </div>
@@ -3158,14 +3170,14 @@ print(f"Updated report: {report_path}")
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>INFO:terraflow:Loaded raster from /var/folders/h_/_bjpnb894kgf18frynwf6bww0000gn/T/tmp51f29au5/raster.tif
+<pre>INFO:terraflow:Loaded raster from /var/folders/lw/h_v37nds21q4xf2_q24hhz8h0000gn/T/tmpm5xw9jkb/raster.tif
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>INFO:terraflow:Loaded climate CSV from /var/folders/h_/_bjpnb894kgf18frynwf6bww0000gn/T/tmp51f29au5/climate.csv with 3 rows
+<pre>INFO:terraflow:Loaded climate CSV from /var/folders/lw/h_v37nds21q4xf2_q24hhz8h0000gn/T/tmpm5xw9jkb/climate.csv with 3 rows
 </pre>
 </div>
 </div>
@@ -3186,14 +3198,14 @@ print(f"Updated report: {report_path}")
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>INFO:terraflow:Loaded raster: /var/folders/h_/_bjpnb894kgf18frynwf6bww0000gn/T/tmp51f29au5/raster.tif (CRS: EPSG:4326)
+<pre>INFO:terraflow:Loaded raster: /var/folders/lw/h_v37nds21q4xf2_q24hhz8h0000gn/T/tmpm5xw9jkb/raster.tif (CRS: EPSG:4326)
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>INFO:terraflow:Loaded climate data: /var/folders/h_/_bjpnb894kgf18frynwf6bww0000gn/T/tmp51f29au5/climate.csv
+<pre>INFO:terraflow:Loaded climate data: /var/folders/lw/h_v37nds21q4xf2_q24hhz8h0000gn/T/tmpm5xw9jkb/climate.csv
 </pre>
 </div>
 </div>
@@ -3207,7 +3219,7 @@ print(f"Updated report: {report_path}")
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>INFO:terraflow.climate:ClimateInterpolator initialised: strategy='spatial', interpolation_method='linear', records=3, variables=['mean_temp', 'total_rain']
+<pre>INFO:terraflow.climate:ClimateInterpolator initialised: strategy='spatial', interpolation_method='linear', variogram_mode='standard', records=3, variables=['mean_temp', 'total_rain']
 </pre>
 </div>
 </div>
@@ -3230,10 +3242,10 @@ print(f"Updated report: {report_path}")
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
 <pre>INFO:terraflow.climate:Linear interpolation failed (QH6154 Qhull precision error: Initial simplex is flat (facet 2 is coplanar with the interior point)
 
-While executing:  | qhull d Qt Qc Qbb Qz Q12
-Options selected for Qhull 2019.1.r 2019/06/21:
-  run-id 1123646479  delaunay  Qtriangulate  Qcoplanar-keep  Qbbound-last
-  Qz-infinity-point  Q12-allow-wide  _pre-merge  _zero-centrum  Qinterior-keep
+While executing:  | qhull d Qz Qc Qbb Q12 Qt
+Options selected for Qhull 2020.2.r 2020/08/31:
+  run-id 97641640  delaunay  Qz-infinity-point  Qcoplanar-keep  Qbbound-last
+  Q12-allow-wide  Qtriangulate  _pre-merge  _zero-centrum  Qinterior-keep
   Pgood  _max-width 0.02  Error-roundoff 1.4e-13  _one-merge 9.7e-13
   Visible-distance 2.8e-13  U-max-coplanar 2.8e-13  Width-outside 5.5e-13
   _wide-facet 1.7e-12  _maxoutside 1.1e-12
@@ -3244,7 +3256,7 @@ computation has overflowed.
 Qhull could not construct a clearly convex simplex from points:
 - p3(v4):    40 -1e+02 1e+02
 - p1(v3):    40 -1e+02   0.1
-- p2(v2):    40 -1e+02     0
+- p2(v2):    40 -1e+02 -1.9e-14
 - p0(v1):    40 -1e+02  0.21
 
 The center point is coplanar with a facet, or a vertex is coplanar
@@ -3255,9 +3267,9 @@ to the center point are as follows:
 center point    40.01   -99.99    25.08
 
 facet p1 p2 p0 distance= -1.1e-08
-facet p3 p2 p0 distance= -6.3e-16
-facet p3 p1 p0 distance= 2.5e-15
-facet p3 p1 p2 distance= -1.2e-14
+facet p3 p2 p0 distance= -3.2e-15
+facet p3 p1 p0 distance= -6.7e-15
+facet p3 p1 p2 distance= -1.5e-14
 
 These points either have a maximum or minimum x-coordinate, or
 they maximize the determinant for k coordinates.  Trial points
@@ -3266,7 +3278,7 @@ are first selected from points that maximize a coordinate.
 The min and max coordinates for each dimension are:
   0:        40     40.02  difference= 0.02
   1:      -100  -2.225e-308  difference=  100
-  2:         0       100  difference=  100
+  2:  -1.876e-14       100  difference=  100
 
 If the input should be full dimensional, you have several options that
 may determine an initial simplex:
@@ -3294,10 +3306,10 @@ If the input is lower dimensional:
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
 <pre>INFO:terraflow.climate:Linear interpolation failed (QH6154 Qhull precision error: Initial simplex is flat (facet 2 is coplanar with the interior point)
 
-While executing:  | qhull d Qt Qc Qbb Qz Q12
-Options selected for Qhull 2019.1.r 2019/06/21:
-  run-id 1123646479  delaunay  Qtriangulate  Qcoplanar-keep  Qbbound-last
-  Qz-infinity-point  Q12-allow-wide  _pre-merge  _zero-centrum  Qinterior-keep
+While executing:  | qhull d Qz Qc Qbb Q12 Qt
+Options selected for Qhull 2020.2.r 2020/08/31:
+  run-id 97641640  delaunay  Qz-infinity-point  Qcoplanar-keep  Qbbound-last
+  Q12-allow-wide  Qtriangulate  _pre-merge  _zero-centrum  Qinterior-keep
   Pgood  _max-width 0.02  Error-roundoff 1.4e-13  _one-merge 9.7e-13
   Visible-distance 2.8e-13  U-max-coplanar 2.8e-13  Width-outside 5.5e-13
   _wide-facet 1.7e-12  _maxoutside 1.1e-12
@@ -3308,7 +3320,7 @@ computation has overflowed.
 Qhull could not construct a clearly convex simplex from points:
 - p3(v4):    40 -1e+02 1e+02
 - p1(v3):    40 -1e+02   0.1
-- p2(v2):    40 -1e+02     0
+- p2(v2):    40 -1e+02 -1.9e-14
 - p0(v1):    40 -1e+02  0.21
 
 The center point is coplanar with a facet, or a vertex is coplanar
@@ -3319,9 +3331,9 @@ to the center point are as follows:
 center point    40.01   -99.99    25.08
 
 facet p1 p2 p0 distance= -1.1e-08
-facet p3 p2 p0 distance= -6.3e-16
-facet p3 p1 p0 distance= 2.5e-15
-facet p3 p1 p2 distance= -1.2e-14
+facet p3 p2 p0 distance= -3.2e-15
+facet p3 p1 p0 distance= -6.7e-15
+facet p3 p1 p2 distance= -1.5e-14
 
 These points either have a maximum or minimum x-coordinate, or
 they maximize the determinant for k coordinates.  Trial points
@@ -3330,7 +3342,7 @@ are first selected from points that maximize a coordinate.
 The min and max coordinates for each dimension are:
   0:        40     40.02  difference= 0.02
   1:      -100  -2.225e-308  difference=  100
-  2:         0       100  difference=  100
+  2:  -1.876e-14       100  difference=  100
 
 If the input should be full dimensional, you have several options that
 may determine an initial simplex:
@@ -3370,46 +3382,33 @@ If the input is lower dimensional:
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>INFO:terraflow:Artifacts written to /var/folders/h_/_bjpnb894kgf18frynwf6bww0000gn/T/tmp51f29au5/outputs/runs/LE4QHd2w_bFCsKWgP4GjlhcPTeRZp7dEJs7PPOdRgMY (fingerprint=LE4QHd2w_bFCsKWgP4GjlhcPTeRZp7dEJs7PPOdRgMY, cells=25, total=0.17s)
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>INFO:terraflow:Running validation on /var/folders/h_/_bjpnb894kgf18frynwf6bww0000gn/T/tmp51f29au5/outputs/runs/LE4QHd2w_bFCsKWgP4GjlhcPTeRZp7dEJs7PPOdRgMY
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>/Users/chandhini/akhil/TerraFlow/terraflow/validation.py:313: UserWarning: Reference points are up to 1.4 degrees distance from nearest cell — possible extent mismatch. Ensure reference CSV uses WGS84 degrees and covers the same region as the pipeline output.
-  kappa = _compute_kappa(df, reference_df)
-INFO:terraflow:Cohen's kappa computed from 5 reference points: 0.0000
-</pre>
-</div>
-</div>
-<div class="jp-OutputArea-child">
-<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
-<pre>INFO:terraflow:Validation block written to /var/folders/h_/_bjpnb894kgf18frynwf6bww0000gn/T/tmp51f29au5/outputs/runs/LE4QHd2w_bFCsKWgP4GjlhcPTeRZp7dEJs7PPOdRgMY/report.json
+<pre>INFO:terraflow:Artifacts written to /var/folders/lw/h_v37nds21q4xf2_q24hhz8h0000gn/T/tmpm5xw9jkb/outputs/runs/2YOlX6x-yV8Ffp-5xpEk6_QhtwG-4-ydksUnEiA0KMc (fingerprint=2YOlX6x-yV8Ffp-5xpEk6_QhtwG-4-ydksUnEiA0KMc, cells=25, total=0.05s)
 </pre>
 </div>
 </div>
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>Pipeline complete: 25 cells, run_id=LE4QHd2w_bFCsKWgP4GjlhcPTeRZp7dEJs7PPOdRgMY
-Updated report: /var/folders/h_/_bjpnb894kgf18frynwf6bww0000gn/T/tmp51f29au5/outputs/runs/LE4QHd2w_bFCsKWgP4GjlhcPTeRZp7dEJs7PPOdRgMY/report.json
+<pre>run_dir: /var/folders/lw/h_v37nds21q4xf2_q24hhz8h0000gn/T/tmpm5xw9jkb/outputs/runs/2YOlX6x-yV8Ffp-5xpEk6_QhtwG-4-ydksUnEiA0KMc
 </pre>
 </div>
 </div>
 </div>
 </div>
 </div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=6a0f2460">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="2-spatial-block-cross-validation">2. Spatial block cross-validation<a class="anchor-link" href="#2-spatial-block-cross-validation">¶</a></h2><p>Run via the public API. Results land in <code>report.json</code> under the <code>validation</code> key — block-level scores + buffer-aware fold construction (Roberts et al. 2017).</p>
+</div>
+</div>
+</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=a1b2c3d4-0001-0001-0001-000000000003">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=3b9112ec">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -3427,23 +3426,13 @@ Updated report: /var/folders/h_/_bjpnb894kgf18frynwf6bww0000gn/T/tmp51f29au5/out
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
-
-<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">report_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-    <span class="n">report</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-
-<span class="n">val</span> <span class="o">=</span> <span class="n">report</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"validation"</span><span class="p">,</span> <span class="p">{})</span>
-<span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">val</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">report_path</span> <span class="o">=</span> <span class="n">run_validation</span><span class="p">(</span><span class="n">config_path</span><span class="p">)</span>
+<span class="n">report</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">report_path</span><span class="p">)</span><span class="o">.</span><span class="n">read_text</span><span class="p">(</span><span class="n">encoding</span><span class="o">=</span><span class="s1">'utf-8'</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">report</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'validation'</span><span class="p">,</span> <span class="p">{}),</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="nb">str</span><span class="p">))</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-2">import json
-
-with open(report_path) as f:
-    report = json.load(f)
-
-val = report.get("validation", {})
-for key, value in val.items():
-    print(f"{key}: {value}")</div>
+<div class="clipboard-copy-txt" id="cell-2">report_path = run_validation(config_path)
+report = json.loads(Path(report_path).read_text(encoding='utf-8'))
+print(json.dumps(report.get('validation', {}), indent=2, default=str))</div>
 </div>
 </div>
 </div>
@@ -3454,19 +3443,31 @@ for key, value in val.items():
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>INFO:terraflow:Running validation on /var/folders/lw/h_v37nds21q4xf2_q24hhz8h0000gn/T/tmpm5xw9jkb/outputs/runs/2YOlX6x-yV8Ffp-5xpEk6_QhtwG-4-ydksUnEiA0KMc
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr" tabindex="0">
+<pre>INFO:terraflow:Validation block written to /var/folders/lw/h_v37nds21q4xf2_q24hhz8h0000gn/T/tmpm5xw9jkb/outputs/runs/2YOlX6x-yV8Ffp-5xpEk6_QhtwG-4-ydksUnEiA0KMc/report.json
+</pre>
+</div>
+</div>
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>method: spatial_block_cv
-citation: Roberts et al. 2017, Ecography
-n_blocks_side: 2
-buffer_deg: 0.01
-n_folds: 4
-mean_fold_accuracy: 0.8472222222222222
-cohen_kappa: 0.0
-morans_i_residuals: -0.03518103862225815
-kriging_loocv_rmse: None
-reference_dataset: /var/folders/h_/_bjpnb894kgf18frynwf6bww0000gn/T/tmp51f29au5/reference.csv
-n_reference_points: 5
-note: model has no free parameters; fold accuracy reflects spatial label consistency, not fit generalization
+<pre>{
+  "method": "spatial_block_cv",
+  "citation": "Roberts et al. 2017, Ecography",
+  "n_blocks_side": 2,
+  "buffer_deg": 0.01,
+  "n_folds": 4,
+  "mean_fold_accuracy": 0.8194444444444444,
+  "kriging_loocv_rmse": null,
+  "note": "model has no free parameters; fold accuracy reflects spatial label consistency, not fit generalization"
+}
 </pre>
 </div>
 </div>
@@ -3474,21 +3475,18 @@ note: model has no free parameters; fold accuracy reflects spatial label consist
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a1b2c3d4-0001-0001-0001-000000000004">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=d5c6a72e">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="interpreting-results">Interpreting Results<a class="anchor-link" href="#interpreting-results">¶</a></h2><p><strong>Mean fold accuracy:</strong> Measures how consistently the suitability labels hold across spatial blocks. Because TerraFlow's model has no free parameters (scores are deterministic given config), fold accuracy reflects spatial label distribution consistency rather than model generalization.</p>
-<p><strong>Cohen's kappa:</strong> Measures agreement between TerraFlow's classification and the reference dataset, corrected for chance. Values: &lt;0 = less than chance, 0 = chance, 0.2-0.4 = fair, 0.4-0.6 = moderate, 0.6-0.8 = substantial, 0.8-1.0 = near-perfect.</p>
-<p><strong>Moran's I:</strong> Measures spatial autocorrelation in score residuals. Positive values indicate spatial clustering of similar residuals; values near 0 indicate spatial randomness.</p>
-<p><strong>Kriging LOOCV RMSE:</strong> Per-variable leave-one-out cross-validation error for kriging interpolation, computed during the pipeline run (not by validation).</p>
+<h2 id="3-cohens-external-v050-pattern">3. Cohen's κ — external (v0.5.0 pattern)<a class="anchor-link" href="#3-cohens-external-v050-pattern">¶</a></h2><p>Removed from <code>terraflow.validation</code> in v0.5.0. Compute directly via <code>sklearn.metrics.cohen_kappa_score</code> against any reference label set. Below: a synthetic reference DataFrame matched to the run's <code>features.parquet</code>.</p>
 </div>
 </div>
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
-<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=a1b2c3d4-0001-0001-0001-000000000005">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=a78a0dcc">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
@@ -3506,21 +3504,19 @@ note: model has no free parameters; fold accuracy reflects spatial label consist
 </div>
 </clipboard-copy>
 </div>
-<div class="highlight-ipynb hl-python"><pre><span></span><span class="n">loocv</span> <span class="o">=</span> <span class="n">report</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"kriging_loocv"</span><span class="p">)</span>
-<span class="k">if</span> <span class="n">loocv</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"Kriging LOOCV RMSE:"</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">rmse</span> <span class="ow">in</span> <span class="n">loocv</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">var</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">rmse</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">"No kriging LOOCV data (kriging was not used in this run)"</span><span class="p">)</span>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.metrics</span><span class="w"> </span><span class="kn">import</span> <span class="n">cohen_kappa_score</span>
+<span class="n">features</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">run_dir</span> <span class="o">/</span> <span class="s1">'features.parquet'</span><span class="p">)</span>
+<span class="n">rng</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+<span class="n">ref_labels</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s1">'low'</span><span class="p">,</span><span class="s1">'medium'</span><span class="p">,</span><span class="s1">'high'</span><span class="p">],</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">features</span><span class="p">))</span>
+<span class="n">kappa</span> <span class="o">=</span> <span class="n">cohen_kappa_score</span><span class="p">(</span><span class="n">ref_labels</span><span class="p">,</span> <span class="n">features</span><span class="p">[</span><span class="s1">'label'</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">'cohen_kappa (synthetic reference): </span><span class="si">{</span><span class="n">kappa</span><span class="si">:</span><span class="s1">.3f</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </pre></div>
-<div class="clipboard-copy-txt" id="cell-3">loocv = report.get("kriging_loocv")
-if loocv:
-    print("Kriging LOOCV RMSE:")
-    for var, rmse in loocv.items():
-        print(f"  {var}: {rmse:.6f}")
-else:
-    print("No kriging LOOCV data (kriging was not used in this run)")</div>
+<div class="clipboard-copy-txt" id="cell-3">from sklearn.metrics import cohen_kappa_score
+features = pd.read_parquet(run_dir / 'features.parquet')
+rng = np.random.default_rng(7)
+ref_labels = rng.choice(['low','medium','high'], size=len(features))
+kappa = cohen_kappa_score(ref_labels, features['label'].to_numpy())
+print(f'cohen_kappa (synthetic reference): {kappa:.3f}')</div>
 </div>
 </div>
 </div>
@@ -3532,7 +3528,7 @@ else:
 <div class="jp-OutputArea-child">
 <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
-<pre>No kriging LOOCV data (kriging was not used in this run)
+<pre>cohen_kappa (synthetic reference): 0.062
 </pre>
 </div>
 </div>
@@ -3540,16 +3536,89 @@ else:
 </div>
 </div>
 </div>
-<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=a1b2c3d4-0001-0001-0001-000000000006">
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=df8dc111">
 <div class="jp-Cell-inputWrapper" tabindex="0">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="references">References<a class="anchor-link" href="#references">¶</a></h2><ul>
-<li>Roberts, D.R. et al. (2017). Cross-validation strategies for data with temporal, spatial, hierarchical, or phylogenetic structure. <em>Ecography</em>, 40(8), 913-929.</li>
-<li>Cliff, A.D. &amp; Ord, J.K. (1981). <em>Spatial Processes: Models and Applications</em>. Pion.</li>
-</ul>
+<h2 id="4-morans-i-on-residuals-external-v050-pattern">4. Moran's I on residuals — external (v0.5.0 pattern)<a class="anchor-link" href="#4-morans-i-on-residuals-external-v050-pattern">¶</a></h2><p>Removed from <code>terraflow.validation</code> in v0.5.0. Spatial autocorrelation of <em>residuals</em> is the meaningful diagnostic — autocorrelation of the raw <code>score</code> reflects the suitability surface itself, not the model error.</p>
+<p>Below: integer-code both the predicted labels (from <code>features.parquet</code>) and the synthetic reference set, then compute residuals = predicted − reference and pass those to <code>esda.Moran</code> with a k-NN spatial weights matrix.</p>
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell">
+<div class="jp-Cell jp-CodeCell jp-Notebook-cell" id="cell-id=56d03787">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In [4]:</div><div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+<div class="CodeMirror cm-s-jupyter">
+<div class="zeroclipboard-container">
+<clipboard-copy ,="" aria-label="Copy to Clipboard" for="cell-4">
+<div>
+<span class="notice" hidden="">Copied!</span>
+<svg aria-hidden="true" class="clipboard-copy-icon" data-view-component="true" height="20" version="1.1" viewbox="0 0 16 16" width="20">
+<path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 010 1.5h-1.5a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-1.5a.75.75 0 011.5 0v1.5A1.75 1.75 0 019.25 16h-7.5A1.75 1.75 0 010 14.25v-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+<path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0114.25 11h-7.5A1.75 1.75 0 015 9.25v-7.5zm1.75-.25a.25.25 0 00-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 00.25-.25v-7.5a.25.25 0 00-.25-.25h-7.5z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+</clipboard-copy>
+</div>
+<div class="highlight-ipynb hl-python"><pre><span></span><span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">esda</span><span class="o">,</span><span class="w"> </span><span class="nn">libpysal</span>
+    <span class="n">label_to_int</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'low'</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">'medium'</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">'high'</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+    <span class="n">pred_int</span> <span class="o">=</span> <span class="n">features</span><span class="p">[</span><span class="s1">'label'</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">label_to_int</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    <span class="n">ref_int</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">ref_labels</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">label_to_int</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    <span class="n">residuals</span> <span class="o">=</span> <span class="n">pred_int</span> <span class="o">-</span> <span class="n">ref_int</span>  <span class="c1"># integer-coded prediction error per cell</span>
+    <span class="n">coords</span> <span class="o">=</span> <span class="n">features</span><span class="p">[[</span><span class="s1">'lon'</span><span class="p">,</span> <span class="s1">'lat'</span><span class="p">]]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">libpysal</span><span class="o">.</span><span class="n">weights</span><span class="o">.</span><span class="n">KNN</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">features</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">transform</span> <span class="o">=</span> <span class="s1">'r'</span>
+    <span class="n">mi</span> <span class="o">=</span> <span class="n">esda</span><span class="o">.</span><span class="n">Moran</span><span class="p">(</span><span class="n">residuals</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Moran's I on residuals: </span><span class="si">{</span><span class="n">mi</span><span class="o">.</span><span class="n">I</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> (p_norm=</span><span class="si">{</span><span class="n">mi</span><span class="o">.</span><span class="n">p_norm</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'esda + libpysal not installed. Install with: pip install esda libpysal'</span><span class="p">)</span>
+</pre></div>
+<div class="clipboard-copy-txt" id="cell-4">try:
+    import esda, libpysal
+    label_to_int = {'low': 0, 'medium': 1, 'high': 2}
+    pred_int = features['label'].map(label_to_int).to_numpy()
+    ref_int = pd.Series(ref_labels).map(label_to_int).to_numpy()
+    residuals = pred_int - ref_int  # integer-coded prediction error per cell
+    coords = features[['lon', 'lat']].to_numpy()
+    w = libpysal.weights.KNN.from_array(coords, k=min(8, len(features) - 1))
+    w.transform = 'r'
+    mi = esda.Moran(residuals, w)
+    print(f"Moran's I on residuals: {mi.I:.4f} (p_norm={mi.p_norm:.4f})")
+except ImportError:
+    print('esda + libpysal not installed. Install with: pip install esda libpysal')</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+<div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain" tabindex="0">
+<pre>esda + libpysal not installed. Install with: pip install esda libpysal
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell" id="cell-id=4fae195d">
+<div class="jp-Cell-inputWrapper" tabindex="0">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
+<h2 id="why-these-wrappers-were-cut">Why these wrappers were cut<a class="anchor-link" href="#why-these-wrappers-were-cut">¶</a></h2><p>Both Cohen's κ and Moran's I are one-call patterns against <code>features.parquet</code>. Maintaining thin wrappers in <code>terraflow.validation</code> earned no Methods-section citations (downstream users cite <code>sklearn</code> / <code>esda</code> directly), so they were removed in v0.5.0 to keep the validation surface focused on <strong>spatial-block CV</strong> — the one diagnostic for which TerraFlow's per-cell schema + run fingerprinting genuinely add value. See issue #136 + PR #142.</p>
 </div>
 </div>
 </div>

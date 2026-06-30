@@ -1992,7 +1992,7 @@
   <span class="md-ellipsis">
     
   
-    Model Validation Demo
+    Model Validation Demo (v0.5.0+)
   
 
     
@@ -2429,11 +2429,11 @@ that guarantee covers, what it does not cover, and how to cite a run.</p>
    booleans/floats normalised). This means every field — <code>raster_path</code>,
    <code>raster_band</code>, <code>max_cells</code>, every <code>model_params</code> weight, the complete
    <code>climate</code> block (including <code>interpolation_method</code> and <code>variogram_mode</code>),
-   the <code>roi</code> block, and any optional <code>sensitivity</code> / <code>validation</code> / <code>export</code>
+   the <code>roi</code> block, and any optional <code>sensitivity</code> / <code>validation</code>
    config — contributes to the fingerprint.</li>
 <li><strong>The SHA-256 content hash of the input raster</strong> (GeoTIFF bytes).</li>
 <li><strong>The SHA-256 content hash of the climate CSV</strong> (file bytes).</li>
-<li><strong>The optional reference CSV hash</strong> for <code>terraflow validate</code>, when present.</li>
+<li><strong>The SHA-256 content hash of <code>climate.timeseries_csv</code></strong>, when set (long-format station daily data for the climate-impact path).</li>
 </ol>
 <p>The fingerprint is the directory name under <code>&lt;output_dir&gt;/runs/</code> where all
 artifacts land. Identical inputs and config ⇒ identical fingerprint ⇒ the
@@ -2511,8 +2511,8 @@ averaging step is logged at INFO level with the before/after station
 counts.</p>
 <h2 id="how-to-cite-a-specific-run">How to cite a specific run<a class="headerlink" href="#how-to-cite-a-specific-run" title="Permanent link">&para;</a></h2>
 <p>For a publication, cite the run the way you would cite a software version:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Results produced by TerraFlow v0.4.0
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>(https://pypi.org/project/terraflow-agro/0.4.0),
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Results produced by TerraFlow v0.5.0
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>(https://pypi.org/project/terraflow-agro/0.5.0),
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>run_fingerprint=&lt;hex&gt;, inputs sha256:&lt;raster&gt;, &lt;climate&gt;.
 </span></code></pre></div>
 <p>All three fields — the package version, the fingerprint, and the input
@@ -2520,7 +2520,7 @@ hashes — are recorded in the <code>manifest.json</code> of every run. The raw
 payload can be pasted verbatim into supplementary materials.</p>
 <h2 id="reproducibility-check-list-for-reviewers">Reproducibility check-list for reviewers<a class="headerlink" href="#reproducibility-check-list-for-reviewers" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Install the exact version: <code>pip install terraflow-agro==0.4.0</code>.</li>
+<li>Install the exact version: <code>pip install terraflow-agro==0.5.0</code>.</li>
 <li>Recompute the input hashes: <code>sha256sum &lt;raster.tif&gt; &lt;climate.csv&gt;</code>.</li>
 <li>Point the config at those paths and run <code>terraflow run -c cfg.yml</code>.</li>
 <li>Verify that the resulting directory name under <code>runs/</code> matches the

@@ -2013,7 +2013,7 @@
   <span class="md-ellipsis">
     
   
-    Model Validation Demo
+    Model Validation Demo (v0.5.0+)
   
 
     
@@ -3183,9 +3183,9 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="terraflow-comprehensive-testing-notebook">TerraFlow Comprehensive Testing Notebook<a class="anchor-link" href="#terraflow-comprehensive-testing-notebook">¶</a></h1><blockquote>
 <p>Originally authored against v0.2.0 to demonstrate the per-cell climate-interpolation
-upgrade vs. the v0.1 global-mean baseline. Re-executed against v0.4.0 as a
-regression check that the v0.2.0 → v0.4.0 evolution (kriging, sensitivity,
-validation, and now the optional GeoAI engine) remains backward-compatible with
+upgrade vs. the v0.1 global-mean baseline. Re-executed against v0.5.0 as a
+regression check that the v0.2.0 → v0.5.0 evolution (kriging, sensitivity,
+spatial-block validation, and climate-impact scenario fan-out) remains backward-compatible with
 the original config + climate-CSV inputs.</p>
 </blockquote>
 <p><strong>Objective</strong>: Exercise the core TerraFlow surface with real Kansas location data</p>
@@ -4181,7 +4181,7 @@ station_id       lat        lon  mean_temp  total_rain  humidity  wind_speed    
      WS_05 39.152481 -97.463354  15.725887   33.142473 65.337641   12.751396 1012.932514
 
  Required columns present: True
-   Climate variables: {'wind_speed', 'total_rain', 'mean_temp', 'humidity', 'pressure'}
+   Climate variables: {'total_rain', 'wind_speed', 'pressure', 'mean_temp', 'humidity'}
 </pre>
 </div>
 </div>
