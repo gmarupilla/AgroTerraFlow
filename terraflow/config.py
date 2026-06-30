@@ -244,7 +244,6 @@ class ValidationConfig(BaseModel):
 
     n_blocks_side: int = 4
     buffer_deg: float = 0.5
-    reference_csv: Optional[str] = None
 
     model_config = ConfigDict(extra="forbid")
 

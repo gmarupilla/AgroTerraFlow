@@ -109,7 +109,6 @@ Requires a `validation:` block in your config:
 validation:
   n_blocks_side: 4        # splits bounding box into n×n spatial blocks
   buffer_deg: 0.1         # degrees of buffer excluded between train/test folds
-  reference_csv: data/reference_labels.csv   # optional; columns: lat, lon, label
 ```
 
 Results are appended to the existing `report.json` under the `"validation"` key:
@@ -121,8 +120,6 @@ Results are appended to the existing `report.json` under the `"validation"` key:
     "citation": "Roberts et al. 2017, Ecography",
     "n_folds": 12,
     "mean_fold_accuracy": 0.74,
-    "cohen_kappa": 0.61,
-    "morans_i_residuals": 0.08,
     "kriging_loocv_rmse": {"mean_temp": 0.42, "total_rain": 12.1}
   }
 }

@@ -35,7 +35,7 @@ flowchart LR
 |---|---|
 | **Deterministic outputs** | Same config + same inputs → bit-identical results, addressed by run fingerprint |
 | **Provenance** | Every run writes a `manifest.json` capturing config, input hashes, software versions, and fingerprint |
-| **Spatial validation** | Spatial-block CV with Cohen's κ + Moran's I on residuals (`terraflow validate`) |
+| **Spatial validation** | Spatial-block CV (`terraflow validate`) |
 | **Sensitivity analysis** | Sobol' / Morris indices for model weights (`terraflow sensitivity`) |
 | **Uncertainty quantification** | Kriging Monte Carlo → score CIs (`score_ci_low` / `score_ci_high`) |
 | **Distribution** | PyPI (`terraflow-agro`) + Homebrew (`gmarupilla/terraflow`) + Docker |
@@ -113,7 +113,7 @@ report.json        — QA stats and timings
 |---|---|
 | `terraflow run -c config.yml` | Run the full pipeline |
 | `terraflow sensitivity -c config.yml` | Sobol' / Morris sensitivity indices for model weights |
-| `terraflow validate -c config.yml` | Spatial block CV, Cohen's kappa, Moran's I on residuals |
+| `terraflow validate -c config.yml` | Spatial block CV |
 
 See [CLI docs](https://terraflow.marupilla.dev/cli/usage/) for full reference.
 

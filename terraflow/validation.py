@@ -1,18 +1,24 @@
-"""Model validation module — spatial block CV, Cohen's kappa, Moran's I."""
+"""Model validation module — spatial block cross-validation.
+
+Users wanting spatial autocorrelation diagnostics (e.g. Moran's I) should
+call ``esda.Moran`` directly on ``features.parquet``. Users wanting
+inter-rater agreement (e.g. Cohen's κ) should call
+``sklearn.metrics.cohen_kappa_score`` directly. TerraFlow does not
+maintain wrappers around either, since neither earns Methods-section
+citations.
+"""
 
 from __future__ import annotations
 
 import json
 import tempfile
-import warnings
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
-from scipy.spatial import KDTree
 from scipy.spatial.distance import cdist
-from sklearn.metrics import accuracy_score, cohen_kappa_score
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GroupKFold
 
 from .config import build_config, load_config_dict
@@ -126,99 +132,6 @@ def _spatial_block_cv(
     return fold_accuracies
 
 
-def _compute_kappa(
-    cells_df: pd.DataFrame,
-    reference_df: pd.DataFrame,
-) -> float:
-    """Compute Cohen's kappa comparing reference labels to nearest TerraFlow cells.
-
-    Each row in *reference_df* is matched to the nearest cell in *cells_df*
-    via a KDTree on (lat, lon) coordinates (WGS84 degrees). If any reference
-    point is more than 1.0 degree from its nearest cell, a warning is emitted
-    indicating a possible geographic extent mismatch.
-
-    Parameters
-    ----------
-    cells_df:
-        DataFrame with columns ``lat``, ``lon``, ``label`` from features.parquet.
-    reference_df:
-        Reference CSV as a DataFrame with columns ``lat``, ``lon``, ``label``.
-
-    Returns
-    -------
-    float:
-        Cohen's kappa in [-1, 1].
-    """
-    cell_coords = np.column_stack([cells_df["lat"].values, cells_df["lon"].values])
-    ref_coords = np.column_stack(
-        [reference_df["lat"].values, reference_df["lon"].values]
-    )
-
-    tree = KDTree(cell_coords)
-    dists, cell_idxs = tree.query(ref_coords)
-
-    max_dist = float(dists.max())
-    if max_dist > 1.0:
-        warnings.warn(
-            f"Reference points are up to {max_dist:.1f} degrees distance from nearest cell "
-            "— possible extent mismatch. Ensure reference CSV uses WGS84 degrees "
-            "and covers the same region as the pipeline output.",
-            stacklevel=2,
-        )
-
-    matched_labels = cells_df["label"].values[cell_idxs]
-    return float(
-        cohen_kappa_score(
-            reference_df["label"].values,
-            matched_labels,
-            labels=["low", "medium", "high"],
-        )
-    )
-
-
-def _morans_i(
-    lats: np.ndarray,
-    lons: np.ndarray,
-    residuals: np.ndarray,
-) -> Optional[float]:
-    """Compute global Moran's I on residuals using row-standardized inverse-distance weights.
-
-    Formula: I = (n / S0) * (z^T W z) / (z^T z)
-    where z = residuals − mean(residuals), W = row-standardized weight matrix.
-
-    Reference: Cliff & Ord (1981). *Spatial Processes: Models and Applications*.
-
-    Parameters
-    ----------
-    lats, lons:
-        1-D coordinate arrays.
-    residuals:
-        1-D array of residual values (e.g. score − mean_score).
-
-    Returns
-    -------
-    float or None:
-        Global Moran's I. Returns None when all residuals are identical
-        (z^T z = 0) or when the weight matrix sums to zero.
-    """
-    coords = np.column_stack([lats, lons])
-    D = cdist(coords, coords)
-    W = np.exp(-D)
-    np.fill_diagonal(W, 0.0)
-
-    row_sums = W.sum(axis=1, keepdims=True)
-    W_row = np.where(row_sums > 0, W / row_sums, 0.0)
-
-    z = residuals - residuals.mean()
-    n = len(z)
-    S0 = float(W_row.sum())
-
-    if S0 == 0 or float(z @ z) == 0:
-        return None
-
-    return float((n / S0) * (z @ W_row @ z) / (z @ z))
-
-
 def _atomic_write_json(path: Path, data: Dict[str, Any]) -> None:
     """Write JSON data to path atomically (write-to-tmp, rename)."""
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -238,10 +151,9 @@ def run_validation(config_path: Path) -> Path:
     """Run model validation and append a validation block to report.json.
 
     Loads the TerraFlow config, locates the most recent pipeline run directory
-    (the one with the latest ``features.parquet``), computes spatial block CV,
-    Moran's I on score residuals, and optionally Cohen's kappa against a
-    reference CSV. Results are written atomically to the existing ``report.json``
-    under the ``"validation"`` key.
+    (the one with the latest ``features.parquet``), and computes spatial block
+    CV. Results are written atomically to the existing ``report.json`` under
+    the ``"validation"`` key.
 
     Parameters
     ----------
@@ -267,12 +179,11 @@ def run_validation(config_path: Path) -> Path:
     if cfg.validation is None:
         raise ValueError(
             "Config file has no 'validation:' section. "
-            "Add a validation: block with optional n_blocks_side, buffer_deg, "
-            "and reference_csv fields. See TerraFlow documentation for details."
+            "Add a validation: block with optional n_blocks_side and buffer_deg "
+            "fields. See TerraFlow documentation for details."
         )
 
     val_cfg = cfg.validation
-    config_dir = Path(config_path).resolve().parent
 
     run_dir = resolve_run_dir(config_path)
     features_path = run_dir / "features.parquet"
@@ -289,7 +200,6 @@ def run_validation(config_path: Path) -> Path:
     lats = df["lat"].values
     lons = df["lon"].values
     labels = df["label"].values
-    scores = df["score"].values
 
     # Spatial block CV
     fold_accs = _spatial_block_cv(
@@ -302,21 +212,6 @@ def run_validation(config_path: Path) -> Path:
     mean_fold_accuracy: Optional[float] = (
         float(np.mean(fold_accs)) if fold_accs else None
     )
-
-    # Moran's I on score residuals
-    morans_i_val = _morans_i(lats, lons, scores - float(scores.mean()))
-
-    # Cohen's kappa (optional)
-    kappa: Optional[float] = None
-    n_ref: Optional[int] = None
-    if val_cfg.reference_csv is not None:
-        ref_path = (config_dir / val_cfg.reference_csv).resolve()
-        reference_df = pd.read_csv(ref_path)
-        n_ref = len(reference_df)
-        kappa = _compute_kappa(df, reference_df)
-        logger.info(
-            f"Cohen's kappa computed from {n_ref} reference points: {kappa:.4f}"
-        )
 
     # Read existing report.json and append validation block
     report_path = run_dir / "report.json"
@@ -333,13 +228,7 @@ def run_validation(config_path: Path) -> Path:
         "buffer_deg": val_cfg.buffer_deg,
         "n_folds": len(fold_accs),
         "mean_fold_accuracy": mean_fold_accuracy,
-        "cohen_kappa": kappa,
-        "morans_i_residuals": morans_i_val,
         "kriging_loocv_rmse": report.get("kriging_loocv"),
-        "reference_dataset": (
-            str(val_cfg.reference_csv) if val_cfg.reference_csv else None
-        ),
-        "n_reference_points": n_ref if kappa is not None else None,
         "note": (
             "model has no free parameters; fold accuracy reflects spatial "
             "label consistency, not fit generalization"

@@ -79,7 +79,7 @@ def sensitivity_cmd(config: ConfigPath) -> None:
 
 @app.command("validate")
 def validate_cmd(config: ConfigPath) -> None:
-    """Run model validation (spatial CV, Cohen's kappa, Moran's I)."""
+    """Run model validation (spatial-block cross-validation)."""
     logger.info(f"TerraFlow validation starting with config: {config}")
     from .validation import run_validation
 
