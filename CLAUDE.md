@@ -60,16 +60,19 @@ All artifacts land under `<output_dir>/runs/<run_fingerprint>/` (where `output_d
 
 | Module | What it owns |
 |--------|-------------|
-| `cli.py` | Typer CLI — `run`, `sensitivity`, `validate`, `export` subcommands |
-| `config.py` | `PipelineConfig`, `ModelParams`, `ROI`, `SensitivityConfig`, `ValidationConfig`, `ExportConfig` Pydantic models |
+| `cli.py` | Typer CLI — `run`, `sensitivity`, `validate` subcommands |
+| `config.py` | `PipelineConfig`, `ModelParams`, `ROI`, `ClimateConfig` (`temporal_aggregations` + `scenarios`), `TemporalAggregation`, `Scenario`, `SensitivityConfig`, `ValidationConfig` Pydantic models |
 | `ingest.py` | `RasterLayer`, `ClimateLayer`, `DataCatalog` |
 | `geo.py` | ROI clipping, CRS alignment |
 | `climate.py` | `ClimateInterpolator` (linear / kriging / IDW) |
+| `climate_impact.py` | `run_climate_impact_features` — auto-invoked by `pipeline.run_pipeline` when `temporal_aggregations` + `scenarios` are set; writes `climate_features.parquet` |
+| `temporal.py` | Multi-temporal climate aggregation engine — `compute_per_station_aggregations` outer-products rules × scenarios |
+| `hazard.py` | WMO/ETCCDI-aligned indicators — `growing_degree_days`, `frost_days`, `heat_stress_days`, simplified Thornthwaite `spei` |
+| `cmip6.py` | CMIP6 NetCDF ingest behind optional `[cmip6]` extra — `cmip6_metadata`, `load_cmip6_scenario`, `cmip6_to_station_timeseries`; handles non-Gregorian calendars |
 | `model.py` | `suitability_score`, `suitability_label`, `suitability_score_array` |
-| `pipeline.py` | End-to-end orchestration, artifact writing |
+| `pipeline.py` | End-to-end orchestration, artifact writing; auto-invokes `climate_impact.run_climate_impact_features` when configured |
 | `sensitivity.py` | Sobol' / Morris analysis |
-| `validation.py` | Spatial CV, kappa, Moran's I |
-| `export.py` | H3-indexed export adapter (`to_h3()`, `run_export()`) |
+| `validation.py` | Spatial-block CV only (Cohen's κ + Moran's I removed in v0.5.0) |
 | `core/run_identity.py` | Deterministic run fingerprinting |
 
 ## Tests
@@ -97,7 +100,7 @@ Version is declared in **two places** — both must be updated together:
 - `pyproject.toml` line `version = "X.Y.Z"`
 - `terraflow/__init__.py` `__version__ = "X.Y.Z"`
 
-Project follows [Semantic Versioning](https://semver.org). Current version: `0.3.0`.
+Project follows [Semantic Versioning](https://semver.org). Current version: `0.5.0`.
 
 ### Release steps
 
@@ -138,7 +141,7 @@ User install: `brew tap gmarupilla/terraflow && brew install terraflow`
 
 | Extra | Packages | Install |
 |-------|----------|---------|
-| `[h3]` | `h3>=4.0,<5` | `pip install terraflow-agro[h3]` |
+| `[cmip6]` | `xarray>=2024.1`, `netcdf4>=1.7` | `pip install terraflow-agro[cmip6]` |
 | `[viz]` | `plotly` | `pip install terraflow-agro[viz]` |
 
 ## CI/CD Overview
