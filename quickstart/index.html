@@ -2240,8 +2240,9 @@
 <h2 id="what-is-terraflow">What is TerraFlow?<a class="headerlink" href="#what-is-terraflow" title="Permanent link">&para;</a></h2>
 <p>TerraFlow is a command-line tool that answers one question:</p>
 <blockquote>
-<p><strong>"Given a piece of land, how suitable is it for a particular crop or use — right now, given the current climate?"</strong></p>
+<p><strong>"Given a piece of land, how suitable is it for a particular crop — under current climate, and (in v0.5.0) under projected future climate (CMIP6 SSP scenarios)?"</strong></p>
 </blockquote>
+<p>That climate-impact framing is the flagship. As of v0.4.x the pipeline ingests weather-station observations via CSV; CMIP6 NetCDF scenario ingest lands in the v0.5.0 sprint (issue #138 sub-tasks). The same workflow methodology extends to habitat suitability, land-use planning, and conservation siting.</p>
 <p>It takes three inputs:</p>
 <table>
 <thead>
