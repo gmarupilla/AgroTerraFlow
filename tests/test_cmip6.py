@@ -247,6 +247,51 @@ def test_extract_station_timeseries_supports_latitude_longitude_names(tmp_path: 
 
 
 # ---------------------------------------------------------------------------
+# Non-Gregorian calendar handling (cftime path)
+# ---------------------------------------------------------------------------
+
+
+def _make_cftime_netcdf(path: Path, calendar: str) -> Path:
+    """Build a tiny NetCDF whose time axis decodes to cftime objects."""
+    cftime = pytest.importorskip("cftime")
+    n_t = 8
+    times = cftime.num2date(
+        np.arange(n_t, dtype=float),
+        units="days since 2010-01-01",
+        calendar=calendar,
+    )
+    lats = np.array([0.0, 1.0])
+    lons = np.array([0.0, 1.0])
+    values = np.arange(n_t * 2 * 2, dtype=float).reshape(n_t, 2, 2)
+    da = xr.DataArray(
+        values,
+        dims=("time", "lat", "lon"),
+        coords={"time": times, "lat": lats, "lon": lons},
+        name="tas",
+    )
+    da.to_dataset().to_netcdf(path)
+    return path
+
+
+def test_load_cmip6_scenario_period_filter_handles_noleap_calendar(tmp_path: Path):
+    """cftime ``365_day`` calendar (noleap) must not break period filtering."""
+    path = _make_cftime_netcdf(tmp_path / "noleap.nc", calendar="noleap")
+    da = load_cmip6_scenario(path, period=(2010, 2010))
+    assert da.sizes["time"] == 8  # all 8 days fall in 2010
+
+
+def test_extract_station_timeseries_handles_360_day_calendar(tmp_path: Path):
+    """cftime ``360_day`` time coords still produce a pandas-typed date column."""
+    path = _make_cftime_netcdf(tmp_path / "360day.nc", calendar="360_day")
+    stations = pd.DataFrame({"station_id": ["S1"], "lat": [0.0], "lon": [0.0]})
+    out = cmip6_to_station_timeseries(
+        path, stations, output_variable="temperature_c"
+    )
+    assert len(out) == 8
+    assert pd.api.types.is_datetime64_any_dtype(out["date"])
+
+
+# ---------------------------------------------------------------------------
 # Optional-extra error path
 # ---------------------------------------------------------------------------
 

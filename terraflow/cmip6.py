@@ -63,6 +63,20 @@ def _require_xarray() -> Any:
     return xr
 
 
+def _times_to_pandas(time_coord: Any) -> pd.DatetimeIndex:
+    """Convert an xarray time coordinate to a pandas ``DatetimeIndex``.
+
+    CMIP6 NetCDFs commonly use non-Gregorian calendars (``365_day``,
+    ``noleap``, ``360_day``); xarray decodes those to ``cftime`` objects
+    which ``pd.to_datetime`` rejects. Round-trip through ISO strings so
+    both ``datetime64`` and ``cftime`` paths land in pandas.
+    """
+    arr = np.asarray(time_coord)
+    if np.issubdtype(arr.dtype, np.datetime64):
+        return pd.to_datetime(arr)
+    return pd.to_datetime([t.isoformat() for t in arr])
+
+
 def _resolve_lat_lon_names(ds: Any) -> tuple[str, str]:
     """Find the latitude and longitude dimensions on *ds*.
 
@@ -188,9 +202,9 @@ def load_cmip6_scenario(
             raise ValueError(
                 f"variable {var_name!r} has no 'time' dimension; cannot apply period filter"
             )
-        time_values = pd.to_datetime(da["time"].to_pandas())
-        mask = (time_values.dt.year >= year_min) & (time_values.dt.year <= year_max)
-        da = da.isel(time=mask.to_numpy())
+        years = da["time"].dt.year.to_numpy()
+        mask = (years >= year_min) & (years <= year_max)
+        da = da.isel(time=mask)
     return da
 
 
@@ -260,7 +274,7 @@ def extract_station_timeseries(
     )
 
     # Materialise into a long-format DataFrame.
-    times = pd.to_datetime(sampled["time"].to_pandas())
+    times = _times_to_pandas(sampled["time"].to_numpy())
     arr = sampled.to_numpy()  # shape: (time, station)
     if arr.ndim == 1:
         # single-station case — xarray returns (time,)
