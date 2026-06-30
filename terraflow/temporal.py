@@ -120,8 +120,17 @@ def aggregate_per_station(
     if rule.kind == "precip_percentile":
         assert rule.percentile is not None
         result = _aggregate_precip_percentile(df, percentile=rule.percentile)
-        # Render the percentile label without trailing zeros.
-        pct_label = f"{rule.percentile:g}".replace(".", "p")
+        # Integer-valued percentiles render as p50 / p95 / p100 for
+        # readability; fractional percentiles use the full str() so values
+        # differing in the 6th+ significant digit (e.g. 99.99999 vs 100.0)
+        # do NOT collide on the same label. ``:g`` was rounding both to
+        # ``p100``, which would have silently overwritten one column in
+        # ``compute_per_station_aggregations``.
+        pct = rule.percentile
+        if pct == int(pct):
+            pct_label = str(int(pct))
+        else:
+            pct_label = str(pct).replace(".", "p")
         return result.rename(f"precip_percentile__p{pct_label}")
 
     raise ValueError(f"unsupported temporal_aggregation kind: {rule.kind!r}")
@@ -197,6 +206,15 @@ def compute_per_station_aggregations(
         for rule in rules:
             series = aggregate_per_station(scenario_df, rule)
             column_label = f"{series.name}__{scenario.name}"
+            if column_label in columns:
+                # Two rules generated the same column label — surface it
+                # rather than silently overwriting the earlier series.
+                raise ValueError(
+                    f"duplicate generated column label {column_label!r}; "
+                    "two TemporalAggregation rules produced the same name "
+                    "(check for near-identical percentile values or repeated "
+                    "rule kinds)."
+                )
             # Re-index against the union of stations so each column has the
             # same index. Missing stations end up NaN.
             columns[column_label] = series.reindex(all_station_ids)

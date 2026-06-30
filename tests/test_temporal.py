@@ -333,3 +333,29 @@ def test_compute_per_station_aggregations_handles_missing_station_in_scenario():
     assert np.isnan(out.loc["S1", "annual_mean__ssp245"])
     # S2 has 2050 rows but no 2010 rows → NaN in historical column
     assert np.isnan(out.loc["S2", "annual_mean__historical"])
+
+
+# ---------------------------------------------------------------------------
+# Label-collision safety (Codex P2 on PR #145)
+# ---------------------------------------------------------------------------
+
+
+def test_precip_percentile_label_preserves_precision():
+    """percentile=99.99999 and percentile=100.0 must produce distinct labels."""
+    df = _daily_series("S1", 0.0, 0.0, "2020-01-01", "2020-01-10")
+    a = aggregate_per_station(df, TemporalAggregation(kind="precip_percentile", percentile=99.99999))
+    b = aggregate_per_station(df, TemporalAggregation(kind="precip_percentile", percentile=100.0))
+    assert a.name != b.name
+
+
+def test_compute_per_station_aggregations_rejects_duplicate_labels():
+    """Two rules that would generate the same column label raise ValueError."""
+    df = _daily_series("S1", 0.0, 0.0, "2020-01-01", "2020-12-31")
+    # Two identical annual_mean rules → identical labels under the same scenario.
+    rules = [
+        TemporalAggregation(kind="annual_mean"),
+        TemporalAggregation(kind="annual_mean"),
+    ]
+    scenarios = [Scenario(name="historical", period=[2020, 2020])]
+    with pytest.raises(ValueError, match="duplicate generated column label"):
+        compute_per_station_aggregations(df, rules, scenarios)
