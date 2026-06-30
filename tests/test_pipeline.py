@@ -663,3 +663,161 @@ class TestCacheSchemaVersionInvalidation:
 
         assert mtime_before == mtime_after  # cache hit, not rewritten
         assert df_second.attrs["run_fingerprint"] == df_first.attrs["run_fingerprint"]
+
+
+# ---------------------------------------------------------------------------
+# Climate-impact orchestration (#138f) — run_pipeline auto-invocation
+# ---------------------------------------------------------------------------
+
+
+def _write_climate_impact_timeseries(path: Path) -> Path:
+    """3 stations × 730 days of synthetic daily climate for two scenario windows."""
+    import pandas as pd
+
+    dates = pd.date_range("1991-01-01", "1992-12-31", freq="D")
+    stations = [("S1", 40.0, -100.0), ("S2", 40.01, -99.99), ("S3", 40.02, -99.98)]
+    rows = []
+    for i, (sid, lat, lon) in enumerate(stations):
+        for d in dates:
+            rows.append(
+                {
+                    "station_id": sid,
+                    "lat": lat,
+                    "lon": lon,
+                    "date": d,
+                    "temperature_c": 15.0 + i + 5.0 * np.sin(2 * np.pi * d.dayofyear / 365),
+                    "precipitation_mm": 2.0 + 0.1 * i,
+                }
+            )
+    pd.DataFrame(rows).to_csv(path, index=False)
+    return path
+
+
+def test_run_pipeline_writes_climate_features_when_configured(
+    tmp_path: Path,
+    synthetic_raster: Path,
+    synthetic_climate_csv: Path,
+):
+    """#138f: when temporal_aggregations + scenarios are both set, the
+    pipeline auto-invokes ``run_climate_impact_features`` and writes
+    ``climate_features.parquet`` alongside ``features.parquet``."""
+    import pandas as pd
+
+    ts_csv = _write_climate_impact_timeseries(tmp_path / "ts.csv")
+    out_dir = tmp_path / "outputs"
+    cfg_content = textwrap.dedent(f"""
+        raster_path: "{synthetic_raster}"
+        climate_csv: "{synthetic_climate_csv}"
+        output_dir: "{out_dir}"
+
+        roi:
+          type: "bbox"
+          xmin: -101.0
+          ymin: 39.0
+          xmax: -99.0
+          ymax: 41.0
+
+        model_params:
+          v_min: 0.0
+          v_max: 25.0
+          t_min: 0.0
+          t_max: 40.0
+          r_min: 0.0
+          r_max: 300.0
+          w_v: 0.4
+          w_t: 0.3
+          w_r: 0.3
+
+        climate:
+          timeseries_csv: "{ts_csv}"
+          interpolation_method: linear
+          temporal_aggregations:
+            - kind: annual_mean
+            - kind: growing_degree_days
+              base_temp_c: 10.0
+          scenarios:
+            - name: historical
+              period: [1991, 1991]
+            - name: ssp245
+              period: [1992, 1992]
+
+        max_cells: 5
+        """)
+    cfg_file = tmp_path / "cfg.yml"
+    cfg_file.write_text(cfg_content, encoding="utf-8")
+
+    df = run_pipeline(cfg_file)
+    run_dir = Path(df.attrs["run_dir"])
+
+    cf_path = run_dir / "climate_features.parquet"
+    assert cf_path.exists(), "climate_features.parquet missing"
+
+    cf = pd.read_parquet(cf_path)
+    assert "cell_id" in cf.columns
+    # 2 rules × 2 scenarios = 4 derived columns
+    derived = [c for c in cf.columns if c != "cell_id"]
+    assert len(derived) == 4, f"expected 4 derived columns, got {derived}"
+    # Each derived column name encodes <rule>__<scenario>
+    assert all("__" in c for c in derived)
+    # Manifest output_files lists the new artifact
+    manifest = json.loads((run_dir / "manifest.json").read_text(encoding="utf-8"))
+    assert "climate_features.parquet" in manifest["output_files"]
+
+
+def test_run_pipeline_cache_requires_climate_features_for_climate_impact_config(
+    tmp_path: Path,
+    synthetic_raster: Path,
+    synthetic_climate_csv: Path,
+):
+    """The cached-run early-return must require climate_features.parquet
+    when the config declares the climate-impact path — otherwise a stale
+    historical-only cache would mask a missing artifact."""
+    ts_csv = _write_climate_impact_timeseries(tmp_path / "ts.csv")
+    out_dir = tmp_path / "outputs"
+    cfg_content = textwrap.dedent(f"""
+        raster_path: "{synthetic_raster}"
+        climate_csv: "{synthetic_climate_csv}"
+        output_dir: "{out_dir}"
+        roi:
+          type: bbox
+          xmin: -101.0
+          ymin: 39.0
+          xmax: -99.0
+          ymax: 41.0
+        model_params:
+          v_min: 0.0
+          v_max: 25.0
+          t_min: 0.0
+          t_max: 40.0
+          r_min: 0.0
+          r_max: 300.0
+          w_v: 0.4
+          w_t: 0.3
+          w_r: 0.3
+        climate:
+          timeseries_csv: "{ts_csv}"
+          interpolation_method: linear
+          temporal_aggregations:
+            - kind: annual_mean
+          scenarios:
+            - name: historical
+              period: [1991, 1991]
+        max_cells: 5
+        """)
+    cfg_file = tmp_path / "cfg.yml"
+    cfg_file.write_text(cfg_content, encoding="utf-8")
+
+    df_first = run_pipeline(cfg_file)
+    run_dir = Path(df_first.attrs["run_dir"])
+    cf_path = run_dir / "climate_features.parquet"
+    assert cf_path.exists()
+    cf_mtime_before = cf_path.stat().st_mtime_ns
+
+    cf_path.unlink()  # delete the new artifact only
+    df_second = run_pipeline(cfg_file)
+    assert (run_dir / "climate_features.parquet").exists(), (
+        "cache early-return masked missing climate_features.parquet"
+    )
+    cf_mtime_after = (run_dir / "climate_features.parquet").stat().st_mtime_ns
+    assert cf_mtime_after >= cf_mtime_before  # regenerated
+    assert df_second.attrs["run_fingerprint"] == df_first.attrs["run_fingerprint"]

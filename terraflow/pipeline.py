@@ -113,6 +113,7 @@ def _collect_input_paths(config_dict: dict, config_dir: Path) -> List[Path]:
         "climate_raster_paths",
         "weather_rasters",
         "weather_raster_glob",
+        "timeseries_csv",
     ):
         if key in config_dict:
             add_value(config_dict[key])
@@ -615,6 +616,8 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         run_dir / "manifest.json",
         run_dir / "report.json",
     ]
+    if cfg.climate.temporal_aggregations and cfg.climate.scenarios:
+        _required_artifacts.append(run_dir / "climate_features.parquet")
     if all(p.exists() for p in _required_artifacts):
         cached_version = _read_features_schema_version(run_dir / "features.parquet")
         if cached_version == FEATURES_SCHEMA_VERSION:
@@ -755,6 +758,17 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     )
     _atomic_write_text(run_dir / "results.csv", df.to_csv(index=False))
 
+    # Climate-impact path (#138f): when the config declares both
+    # ``temporal_aggregations`` and ``scenarios``, derive per-cell
+    # scenario × rule columns and write them to a sibling artifact so
+    # the historical ``features.parquet`` contract stays untouched.
+    climate_impact_written = False
+    if cfg.climate.temporal_aggregations and cfg.climate.scenarios:
+        from terraflow.climate_impact import run_climate_impact_features
+
+        run_climate_impact_features(cfg, run_dir, df[["cell_id", "lat", "lon"]])
+        climate_impact_written = True
+
     git_sha = _get_git_sha()
     input_fp_records = [
         {
@@ -780,6 +794,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
             "results.csv",
             "manifest.json",
             "report.json",
+            *(["climate_features.parquet"] if climate_impact_written else []),
         ],
     }
     _atomic_write_text(

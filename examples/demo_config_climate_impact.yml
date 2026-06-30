@@ -1,0 +1,76 @@
+# TerraFlow climate-impact demo configuration — western Kansas wheat suitability
+# under historical + SSP2-4.5 + SSP5-8.5 scenarios (#138f).
+#
+# This config exercises the climate-impact path: when ``climate.temporal_aggregations``
+# and ``climate.scenarios`` are both non-empty, ``terraflow run`` invokes the
+# orchestrator that computes per-cell scenario × rule derived columns and writes
+# them to ``climate_features.parquet`` alongside the historical ``features.parquet``.
+#
+# Inputs (not stored in git):
+#   data/usda_cdl.tif           — USDA NASS Cropland Data Layer (public domain).
+#   data/demo_climate.csv       — single-period mean climate (used by the
+#                                  historical suitability score).
+#   data/demo_timeseries.csv    — long-format daily station data with columns:
+#                                    station_id, lat, lon, date,
+#                                    temperature_c, precipitation_mm.
+#                                  CMIP6-derived bias-corrected daily output
+#                                  drops into the same shape.
+
+raster_path: "../data/usda_cdl.tif"
+climate_csv: "../data/demo_climate.csv"
+output_dir: "../outputs/climate_impact_demo"
+
+roi:
+  type: "bbox"
+  xmin: -101
+  ymin: 38
+  xmax: -94
+  ymax: 40
+
+max_cells: 2000
+
+model_params:
+  v_min: 0
+  v_max: 255
+  t_min: 0
+  t_max: 40
+  r_min: 0
+  r_max: 300
+  w_v: 0.4
+  w_t: 0.3
+  w_r: 0.3
+
+climate:
+  strategy: spatial
+  interpolation_method: linear
+  fallback_to_mean: true
+
+  # Per-station long-format daily time-series — drives every aggregation rule.
+  timeseries_csv: "../data/demo_timeseries.csv"
+
+  # Aggregation rules. Each rule × scenario pair becomes a column in
+  # climate_features.parquet, named ``<rule_label>__<scenario_name>``.
+  temporal_aggregations:
+    - kind: annual_mean
+    - kind: seasonal_mean
+      months: [4, 5, 6, 7, 8, 9]   # April–September growing season
+    - kind: growing_degree_days
+      base_temp_c: 10.0            # winter-wheat GDD base
+    - kind: frost_days
+      threshold_c: 0.0             # WMO ETCCDI FD0
+    - kind: heat_stress_days
+      threshold_c: 35.0            # WMO ETCCDI TX35 (wheat heat stress)
+    - kind: precip_percentile
+      percentile: 95.0
+    - kind: spei
+      timescale_months: 3
+
+  # Scenario windows. ``period`` is the inclusive year range; the orchestrator
+  # subsets the timeseries CSV per window before running aggregations.
+  scenarios:
+    - name: historical
+      period: [1991, 2020]
+    - name: ssp245
+      period: [2041, 2070]
+    - name: ssp585
+      period: [2041, 2070]
