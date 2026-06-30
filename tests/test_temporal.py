@@ -206,21 +206,24 @@ def test_aggregate_precip_percentile_95th_picks_high_value():
 
 
 @pytest.mark.parametrize(
-    "kind, kwargs",
+    "kind, kwargs, expected_name_prefix",
     [
-        ("growing_degree_days", {"base_temp_c": 10.0}),
-        ("frost_days", {"threshold_c": 0.0}),
-        ("heat_stress_days", {"threshold_c": 35.0}),
-        ("spei", {"timescale_months": 3}),
+        ("growing_degree_days", {"base_temp_c": 10.0}, "growing_degree_days"),
+        ("frost_days", {"threshold_c": 0.0}, "frost_days"),
+        ("heat_stress_days", {"threshold_c": 35.0}, "heat_stress_days"),
     ],
 )
-def test_aggregate_hazard_kinds_raise_not_implemented(kind, kwargs):
-    """Hazard kinds land in #138d (terraflow.hazard); engine framework
-    surfaces a clear NotImplementedError pointing at the follow-up PR."""
+def test_dispatcher_routes_to_hazard_module(kind, kwargs, expected_name_prefix):
+    """The dispatcher routes hazard kinds into ``terraflow.hazard`` (#138d).
+
+    Detailed numerical correctness for each hazard kind lives in
+    ``tests/test_hazard.py``; here we only verify the routing wiring.
+    """
     df = _daily_series("S1", 0.0, 0.0, "2020-01-01", "2020-12-31")
     rule = TemporalAggregation(kind=kind, **kwargs)
-    with pytest.raises(NotImplementedError, match="138d"):
-        aggregate_per_station(df, rule)
+    result = aggregate_per_station(df, rule)
+    assert "S1" in result.index
+    assert result.name.startswith(expected_name_prefix)
 
 
 # ---------------------------------------------------------------------------
@@ -343,8 +346,12 @@ def test_compute_per_station_aggregations_handles_missing_station_in_scenario():
 def test_precip_percentile_label_preserves_precision():
     """percentile=99.99999 and percentile=100.0 must produce distinct labels."""
     df = _daily_series("S1", 0.0, 0.0, "2020-01-01", "2020-01-10")
-    a = aggregate_per_station(df, TemporalAggregation(kind="precip_percentile", percentile=99.99999))
-    b = aggregate_per_station(df, TemporalAggregation(kind="precip_percentile", percentile=100.0))
+    a = aggregate_per_station(
+        df, TemporalAggregation(kind="precip_percentile", percentile=99.99999)
+    )
+    b = aggregate_per_station(
+        df, TemporalAggregation(kind="precip_percentile", percentile=100.0)
+    )
     assert a.name != b.name
 
 
