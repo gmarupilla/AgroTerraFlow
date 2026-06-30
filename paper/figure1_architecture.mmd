@@ -5,14 +5,21 @@ flowchart LR
 (orchestration)"]
 
     PIPE --> ING["Ingest
-(raster, climate)"]
+(raster, climate CSV,
+timeseries CSV / CMIP6)"]
     PIPE --> GEO["Geospatial
-(ROI clipping)"]
+(ROI clip, CRS)"]
+    PIPE --> CIM["Climate impact
+(temporal, hazard, CMIP6)"]
     PIPE --> MOD["Model
 (suitability scoring)"]
     PIPE --> OUT["Outputs
-(CSV, maps)"]
+(features.parquet,
+climate_features.parquet)"]
 
     ING --> GEO
+    ING --> CIM
     ING --> MOD
     GEO --> MOD
+    CIM --> OUT
+    MOD --> OUT

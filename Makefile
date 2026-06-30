@@ -146,6 +146,9 @@ get-demo-data:
 	$(PYTHON) scripts/make_demo_raster.py
 	@echo "Saved to data/usda_cdl.tif"
 	@echo ""
+	@echo "Generating synthetic station time-series (1991-2020 + 2041-2070, 9 stations)..."
+	$(PYTHON) scripts/make_demo_timeseries.py
+	@echo ""
 	@echo "For real USDA CDL data see data/README.md (USDA NASS CropScape)."
 
 paper:
