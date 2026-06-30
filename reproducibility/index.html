@@ -2282,7 +2282,9 @@ same OS/architecture:</p>
 <li>The per-cell Monte Carlo confidence-interval columns (<code>score_ci_low</code>,
   <code>score_ci_high</code>) when <code>uncertainty_samples &gt; 0</code>.</li>
 <li>All Sobol' and Morris indices from <code>terraflow sensitivity</code>.</li>
-<li>All spatial-block CV, kappa, and Moran's-I values from <code>terraflow validate</code>.</li>
+<li>All spatial-block CV fold accuracies from <code>terraflow validate</code>. For
+  spatial autocorrelation diagnostics on score residuals, call
+  <code>esda.Moran</code> directly on the exported <code>features.parquet</code>.</li>
 </ul>
 <p>The sampling path is exercised across the <code>max_cells == n_valid_cells</code> and
 <code>max_cells &gt; n_valid_cells</code> boundaries by the regression tests in
