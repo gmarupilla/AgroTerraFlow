@@ -70,7 +70,7 @@ flowchart TD
     F --> |temperature x w_t| G
     F --> |rainfall x w_r| G
     G --> H[Generate labels]
-    H --> I[Write results.csv]
+    H --> I[Write features.parquet<br/>+ results.csv]
     I --> J["cell_id, lat, lon, score, label"]
 
     style A fill:#2d8a55,stroke:#1e5c3a,color:#fff
