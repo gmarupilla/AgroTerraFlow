@@ -1,22 +1,27 @@
 cff-version: 1.2.0
 message: "If you use TerraFlow in your research, please cite it as below."
 type: software
-title: "TerraFlow: A Reproducible, Uncertainty-Aware Geospatial Workflow for Agricultural Suitability Modelling"
+title: "TerraFlow: A Reproducible Framework for Climate-Impact Assessment of Agricultural Suitability"
 version: 0.4.0
 date-released: "2026-06-08"
 license: MIT
 repository-code: "https://github.com/gmarupilla/AgroTerraFlow"
 url: "https://terraflow.marupilla.dev"
 abstract: >
-  TerraFlow is an open-source Python library for reproducible, auditable
-  geospatial workflows in agricultural and environmental data science.
-  It provides a config-driven pipeline for raster ingestion, ROI clipping,
-  spatial climate interpolation (linear, IDW, or Ordinary Kriging with
-  LOOCV variogram selection), suitability scoring with Monte-Carlo
-  uncertainty propagation, global sensitivity analysis (Sobol' / Morris),
-  spatial block cross-validation, and provenance-tracked artifact export.
-  Every run produces a deterministic content-addressed fingerprint enabling
-  independent verification of results.
+  TerraFlow is an open-source Python framework for reproducible
+  climate-impact assessment of agricultural suitability — including
+  climate-induced crop hazards (drought, flood, heat stress,
+  growing-degree-day shifts) under historical and projected future
+  climate (CMIP6 SSP scenarios). It provides a config-driven pipeline
+  for raster ingestion, ROI clipping, spatial climate interpolation
+  (linear, IDW, or Ordinary Kriging with LOOCV variogram selection),
+  suitability scoring with Monte-Carlo uncertainty propagation, global
+  sensitivity analysis (Sobol' / Morris), spatial block
+  cross-validation, and provenance-tracked artifact export. Every run
+  produces a deterministic content-addressed fingerprint enabling
+  independent verification of results. The same workflow methodology
+  extends to habitat suitability, land-use planning, and conservation
+  siting.
 keywords:
   - geospatial
   - agriculture

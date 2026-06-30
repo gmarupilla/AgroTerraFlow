@@ -1,12 +1,14 @@
 ---
 title: TerraFlow
-description: Reproducible geospatial modeling for agricultural suitability analysis — config-driven, fingerprinted, and spatially aware.
+description: Reproducible climate-impact assessment of agricultural suitability — config-driven, fingerprinted, uncertainty-aware.
 icon: material/sprout
 ---
 
 # TerraFlow
 
-Reproducible geospatial tool for agricultural suitability modeling. Give it a land-cover map, climate data, and a config file — it hands you a scored, location-stamped results table.
+A reproducible framework for **climate-impact assessment of agricultural suitability** — including climate-induced crop hazards (drought, flood, heat stress, growing-degree-day shifts) under historical and projected future climate. Give it a land-cover map, a climate dataset, and a config file — it returns a scored, location-stamped results table with per-cell uncertainty intervals and a content-addressable run fingerprint that lets reviewers regenerate the exact same numbers three years later.
+
+The same workflow methodology extends to habitat suitability, land-use planning, and conservation siting.
 
 ---
 

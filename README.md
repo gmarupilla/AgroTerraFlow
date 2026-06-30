@@ -1,4 +1,4 @@
-# TerraFlow: Reproducible Geospatial Agricultural Modeling
+# TerraFlow: A Reproducible Geospatial Suitability Framework
 
 [![CI](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/ci.yml)
 [![Deploy Docs](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/docs.yml/badge.svg)](https://github.com/gmarupilla/AgroTerraFlow/actions/workflows/docs.yml)
@@ -11,7 +11,7 @@
 [![Codecov](https://codecov.io/gh/gmarupilla/AgroTerraFlow/branch/main/graph/badge.svg)](https://codecov.io/gh/gmarupilla/AgroTerraFlow)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-TerraFlow is a reproducible, config-driven geospatial workflow for agricultural suitability modeling. Give it a land-cover raster, a climate CSV, and a YAML config — it returns a scored, location-stamped results table with full provenance.
+TerraFlow is a reproducible, config-driven framework for **climate-impact assessment of agricultural suitability** — including climate-induced crop hazards (drought, flood, heat stress, growing-degree-day shifts) under historical and projected future climate (CMIP6 SSP scenarios). Give it a land-cover raster, a climate dataset, and a YAML config — it returns a scored, location-stamped results table with full provenance and per-cell uncertainty intervals. The same workflow methodology extends to habitat suitability, land-use planning, and conservation siting.
 
 **Documentation:** [terraflow.marupilla.dev](https://terraflow.marupilla.dev) — see the [Reproducibility page](https://terraflow.marupilla.dev/reproducibility/) for what the run fingerprint covers and known sources of non-determinism.
 
