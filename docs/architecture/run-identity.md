@@ -96,6 +96,7 @@ without re-scoring (**no-op rerun**).
 | Same run directory → same `features.parquet` schema | Schema version frozen in Parquet metadata |
 | Different input content → different fingerprint | SHA-256 collision probability negligible |
 | Filesystem copy / CI clone → same fingerprint | mtime excluded from hash |
+| Random cell sampling reproducible across runs | `numpy.random.default_rng(seed)` initialised with first 64 bits of `sha256(run_fingerprint)` (`pipeline.py`) |
 
 ---
 
@@ -104,8 +105,3 @@ without re-scoring (**no-op rerun**).
 - The fingerprint covers **declared** input files (raster, climate CSV, ROI
   GeoJSON) only.  If a pipeline step reads additional files not listed in the
   config, those are not tracked.
-- Random cell sampling (`max_cells < n_valid_cells`) means the **cell set
-  may differ between runs even with the same fingerprint** — because
-  `random.sample` is seeded by Python's default PRNG, not by the fingerprint.
-  For fully deterministic cell selection, seed the PRNG via the config
-  (planned for a future release; tracked in ROADMAP).

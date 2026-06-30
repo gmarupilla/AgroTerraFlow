@@ -34,11 +34,11 @@ TerraFlow is an open-source Python library for **reproducible
 climate-impact assessment of agricultural suitability**. It turns a
 land-cover raster, weather-station observations, and a YAML configuration
 into a scored per-cell suitability table with complete, machine-readable
-provenance and per-cell uncertainty intervals. The locked product
-direction adds climate-induced crop hazards (drought, flood, heat stress,
-growing-degree-day shifts) under historical and projected future climate
-(CMIP6 SSP scenarios) in the next release; the configuration schema is
-already in place and the ingest + engine ships sequentially in v0.5.0. A single `terraflow run` clips the raster to a
+provenance and per-cell uncertainty intervals. As of v0.5.0 the framework
+also fans out climate-induced crop hazards (growing-degree days, frost
+days, heat-stress days, precipitation percentiles, simplified Thornthwaite
+SPEI) across arbitrary scenario windows, with CMIP6 NetCDF ingestion via
+the optional `[cmip6]` extra. A single `terraflow run` clips the raster to a
 region of interest, reprojects it to WGS84, spatially interpolates
 station climate to cell centroids (linear, inverse-distance, or Ordinary
 Kriging with automatic variogram selection), computes a normalised
@@ -69,9 +69,12 @@ depend on file paths, package versions, and random seeds that drift
 silently between runs; interpolation uncertainty and parameter
 sensitivity are rarely quantified; and reviewers cannot regenerate a
 specific figure from a specific configuration and specific input bytes.
-TerraFlow's roadmap adds CMIP6 NetCDF ingest for projected-climate
-scenarios in v0.5.0, but the reproducibility gap exists today on the
-historical pipeline alone.
+v0.5.0 closes one half of this gap: a config-level scenario × hazard
+fan-out now ingests CMIP6 NetCDF inputs and folds each file's SHA-256
+into the run fingerprint, so projected-climate analyses inherit the
+same reproducibility contract as the historical pipeline. The other
+half — adoption-driven validation of those projections against
+domain-specific benchmarks — is in progress.
 
 TerraFlow closes this gap with a single configuration-driven pipeline
 that fingerprints every run from the canonicalised YAML config plus
