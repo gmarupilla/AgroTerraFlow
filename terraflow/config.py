@@ -127,6 +127,148 @@ class ROI(BaseModel):
             raise ValueError(f"ymin ({self.ymin}) must be less than ymax ({self.ymax})")
 
 
+class TemporalAggregation(BaseModel):
+    """A named climate temporal aggregation rule (flagship #138).
+
+    Each entry produces one derived column on the per-cell features table.
+    The ``kind`` field selects the computation; remaining fields are
+    kind-specific and validated below.
+
+    Supported kinds:
+    - ``annual_mean``: yearly mean of the variable (no extra params).
+    - ``seasonal_mean``: mean over selected calendar ``months`` (1-12).
+    - ``growing_degree_days``: GDD accumulation above ``base_temp_c``.
+    - ``frost_days``: count of days at or below ``threshold_c``.
+    - ``heat_stress_days``: count of days at or above ``threshold_c``.
+    - ``precip_percentile``: nth percentile of daily precipitation
+      (``percentile`` in 0-100).
+    - ``spei``: Standardised Precipitation-Evapotranspiration Index at
+      ``timescale_months`` (e.g. 1, 3, 6, 12).
+    """
+
+    kind: Literal[
+        "annual_mean",
+        "seasonal_mean",
+        "growing_degree_days",
+        "frost_days",
+        "heat_stress_days",
+        "precip_percentile",
+        "spei",
+    ]
+    months: Optional[list[int]] = None
+    base_temp_c: Optional[float] = None
+    threshold_c: Optional[float] = None
+    percentile: Optional[float] = None
+    timescale_months: Optional[int] = None
+
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("months")
+    @classmethod
+    def validate_months(cls, v: Optional[list[int]]) -> Optional[list[int]]:
+        if v is None:
+            return v
+        if len(v) == 0:
+            raise ValueError("months must be a non-empty list when provided")
+        for month in v:
+            if not 1 <= month <= 12:
+                raise ValueError(f"months entries must be in 1-12, got {month}")
+        return v
+
+    @field_validator("percentile")
+    @classmethod
+    def validate_percentile(cls, v: Optional[float]) -> Optional[float]:
+        if v is None:
+            return v
+        if not 0.0 <= v <= 100.0:
+            raise ValueError(f"percentile must be in 0-100, got {v}")
+        return v
+
+    @field_validator("timescale_months")
+    @classmethod
+    def validate_timescale_months(cls, v: Optional[int]) -> Optional[int]:
+        if v is None:
+            return v
+        if v <= 0:
+            raise ValueError(f"timescale_months must be positive, got {v}")
+        return v
+
+    @model_validator(mode="after")
+    def validate_kind_params(self) -> "TemporalAggregation":
+        """Each kind requires specific fields and forbids the others."""
+        required_by_kind: dict[str, set[str]] = {
+            "annual_mean": set(),
+            "seasonal_mean": {"months"},
+            "growing_degree_days": {"base_temp_c"},
+            "frost_days": {"threshold_c"},
+            "heat_stress_days": {"threshold_c"},
+            "precip_percentile": {"percentile"},
+            "spei": {"timescale_months"},
+        }
+        all_kind_fields = {
+            "months",
+            "base_temp_c",
+            "threshold_c",
+            "percentile",
+            "timescale_months",
+        }
+        required = required_by_kind[self.kind]
+        forbidden = all_kind_fields - required
+        provided = {name for name in all_kind_fields if getattr(self, name) is not None}
+        missing = required - provided
+        if missing:
+            raise ValueError(
+                f"temporal_aggregation kind={self.kind!r} requires field(s): "
+                f"{sorted(missing)}"
+            )
+        unexpected = provided & forbidden
+        if unexpected:
+            raise ValueError(
+                f"temporal_aggregation kind={self.kind!r} does not accept field(s): "
+                f"{sorted(unexpected)}"
+            )
+        return self
+
+
+class Scenario(BaseModel):
+    """A named climate scenario over a year range (flagship #138).
+
+    ``name`` is a free-form label — typically ``historical``, ``ssp245``,
+    ``ssp585``. ``period`` is a closed inclusive ``[year_min, year_max]``
+    pair (e.g. ``[1991, 2020]`` or ``[2041, 2070]``).
+    """
+
+    name: str
+    period: list[int]
+
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("scenario name must be a non-empty string")
+        return v
+
+    @field_validator("period")
+    @classmethod
+    def validate_period(cls, v: list[int]) -> list[int]:
+        if len(v) != 2:
+            raise ValueError(
+                f"period must have exactly 2 entries [year_min, year_max], got {len(v)}"
+            )
+        year_min, year_max = v
+        if year_min > year_max:
+            raise ValueError(
+                f"period year_min ({year_min}) must be <= year_max ({year_max})"
+            )
+        if year_min < 1800 or year_max > 2200:
+            raise ValueError(
+                f"period years must be in 1800-2200, got [{year_min}, {year_max}]"
+            )
+        return v
+
+
 class ClimateConfig(BaseModel):
     """Climate data configuration for spatial matching and interpolation.
 
@@ -139,6 +281,13 @@ class ClimateConfig(BaseModel):
     - 'kriging': Ordinary Kriging — geostatistically optimal with per-cell uncertainty
       (requires pykrige; ≥5 stations recommended).
     - 'idw': Inverse Distance Weighting — fast, no uncertainty estimate.
+
+    The optional ``temporal_aggregations`` and ``scenarios`` fields support
+    the flagship climate-impact assessment workflow (#138): each entry in
+    ``temporal_aggregations`` is computed for each entry in ``scenarios``,
+    producing scenario-tagged derived columns on the features table. When
+    both lists are empty (the default), the pipeline behaves exactly as
+    before — a single-period spatial-interpolation run.
 
     Attributes
     ----------
@@ -153,6 +302,10 @@ class ClimateConfig(BaseModel):
     fallback_to_mean:
         If True, use global mean climate for cells outside interpolation range
         or when climate data is sparse (default True).
+    temporal_aggregations:
+        Optional list of climate aggregation rules computed per cell per scenario.
+    scenarios:
+        Optional list of named climate scenarios (e.g. historical, ssp245, ssp585).
     """
 
     strategy: Literal["spatial", "index"] = "spatial"
@@ -160,6 +313,8 @@ class ClimateConfig(BaseModel):
     variogram_mode: Literal["standard", "extended"] = "standard"
     cell_id_column: str | None = None
     fallback_to_mean: bool = True
+    temporal_aggregations: list[TemporalAggregation] = []
+    scenarios: list[Scenario] = []
 
     model_config = ConfigDict(extra="forbid")
 
@@ -190,6 +345,16 @@ class ClimateConfig(BaseModel):
         if self.interpolation_method != "kriging" and self.variogram_mode != "standard":
             raise ValueError(
                 "variogram_mode only applies when interpolation_method='kriging'"
+            )
+        if self.temporal_aggregations and not self.scenarios:
+            raise ValueError(
+                "climate.temporal_aggregations requires at least one entry in "
+                "climate.scenarios"
+            )
+        scenario_names = [s.name for s in self.scenarios]
+        if len(scenario_names) != len(set(scenario_names)):
+            raise ValueError(
+                "climate.scenarios must have unique names; duplicates found"
             )
 
 
@@ -312,6 +477,17 @@ class PipelineConfig(BaseModel):
         self.roi.validate_bounds()
         self.model_params.validate_ranges()
         self.climate.validate_config()
+        # The aggregation engine + scenario fan-out land in #138b/c/d.
+        # Reject configs that set these fields until the engine consumes
+        # them, so users do not silently get single-period output.
+        if self.climate.temporal_aggregations or self.climate.scenarios:
+            raise NotImplementedError(
+                "climate.temporal_aggregations and climate.scenarios are "
+                "config-schema-only in this release (#138a). The aggregation "
+                "engine + scenario fan-out land in #138b (engine), #138c "
+                "(CMIP6 NetCDF ingest), and #138d (hazard module). Leave both "
+                "lists empty until those PRs ship."
+            )
 
 
 def load_config_dict(path: str | Path) -> dict:

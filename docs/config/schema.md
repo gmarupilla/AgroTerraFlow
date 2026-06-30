@@ -122,6 +122,54 @@ Climate data is applied ==per-cell== using configurable interpolation strategies
 | `variogram_mode` | string | `"standard"` | `"standard"` tries spherical/exponential/Gaussian; `"extended"` also evaluates nested kriging candidates (kriging only) |
 | `fallback_to_mean` | bool | `true` | Use global mean for cells outside interpolation range |
 | `cell_id_column` | string | `null` | Column for explicit cell ID matching (index strategy only) |
+| `temporal_aggregations` | list | `[]` | Optional list of climate aggregation rules computed per cell per scenario (climate-impact flagship, #138). |
+| `scenarios` | list | `[]` | Optional list of named climate scenarios (historical / SSP variants). Required when `temporal_aggregations` is non-empty. |
+
+### Climate-impact aggregations and scenarios (flagship #138)
+
+**Why:** Climate-impact assessment needs the same suitability calculation across multiple time slices — *historical* baseline plus *projected* CMIP6 scenarios — combined with crop-specific climate indicators. TerraFlow expresses this as a (`temporal_aggregations` × `scenarios`) outer product: each rule is computed for each scenario, producing scenario-tagged derived columns on `features.parquet`.
+
+**Defaults:** Both lists default to empty, which preserves the historical single-period behaviour. The pipeline only enters the multi-scenario code path when both lists are non-empty.
+
+Supported `temporal_aggregations[].kind` values and their required fields:
+
+| `kind` | Required fields | Description |
+|---|---|---|
+| `annual_mean` | — | Yearly mean of the climate variable |
+| `seasonal_mean` | `months: [1..12]` | Mean over the selected calendar months |
+| `growing_degree_days` | `base_temp_c: float` | GDD accumulation above the base temperature |
+| `frost_days` | `threshold_c: float` | Count of days at or below the threshold |
+| `heat_stress_days` | `threshold_c: float` | Count of days at or above the threshold |
+| `precip_percentile` | `percentile: 0..100` | Nth percentile of daily precipitation |
+| `spei` | `timescale_months: int > 0` | Standardised Precipitation-Evapotranspiration Index |
+
+`scenarios[]` entries take a free-form `name` (typically `historical`, `ssp245`, `ssp585`) and a closed `period: [year_min, year_max]` pair (e.g. `[1991, 2020]`). Scenario names must be unique within a config.
+
+Example (full flagship block):
+
+```yaml title="config.yml"
+climate:
+  strategy: spatial
+  interpolation_method: kriging
+  temporal_aggregations:
+    - kind: annual_mean
+    - kind: seasonal_mean
+      months: [4, 5, 6, 7, 8, 9]   # growing season
+    - kind: growing_degree_days
+      base_temp_c: 10.0
+    - kind: frost_days
+      threshold_c: 0.0
+    - kind: heat_stress_days
+      threshold_c: 35.0
+    - kind: precip_percentile
+      percentile: 95.0
+    - kind: spei
+      timescale_months: 3
+  scenarios:
+    - { name: historical, period: [1991, 2020] }
+    - { name: ssp245, period: [2041, 2070] }
+    - { name: ssp585, period: [2041, 2070] }
+```
 
 ### Interpolation methods
 
