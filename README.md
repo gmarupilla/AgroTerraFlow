@@ -12,7 +12,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![DOI](https://zenodo.org/badge/1104263606.svg)](https://doi.org/10.5281/zenodo.21070362)
 
-TerraFlow is a reproducible, config-driven framework for **climate-impact assessment of agricultural suitability**. Give it a land-cover raster, a climate CSV (weather-station observations), and a YAML config — it returns a scored, location-stamped results table with full provenance and per-cell uncertainty intervals. The locked product direction adds climate-induced crop hazards (drought, flood, heat stress, growing-degree-day shifts) under historical and projected future climate (CMIP6 SSP scenarios) in the upcoming v0.5.0 release; the configuration schema is already in place (see [`climate.temporal_aggregations`](https://terraflow.marupilla.dev/config/schema/)), and the ingest + engine PRs land sequentially over the v0.5.0 sprint. The same workflow methodology extends to habitat suitability, land-use planning, and conservation siting.
+TerraFlow is a reproducible, config-driven framework for **climate-impact assessment of agricultural suitability**. Give it a land-cover raster, a climate CSV (weather-station observations), and a YAML config — it returns a scored, location-stamped per-cell results table with full provenance and per-cell uncertainty intervals. As of **v0.5.0** the framework also fans out climate-induced crop hazards (growing-degree days, frost days, heat-stress days, precipitation percentiles, simplified Thornthwaite SPEI) across arbitrary CMIP6 SSP scenario windows, writing a sibling `climate_features.parquet` artifact alongside the historical suitability score. The same workflow methodology extends to habitat suitability, land-use planning, and conservation siting.
 
 **Documentation:** [terraflow.marupilla.dev](https://terraflow.marupilla.dev) — see the [Reproducibility page](https://terraflow.marupilla.dev/reproducibility/) for what the run fingerprint covers and known sources of non-determinism.
 
@@ -116,11 +116,11 @@ report.json        — QA stats and timings
 
 | Subcommand | Purpose |
 |---|---|
-| `terraflow run -c config.yml` | Run the full pipeline |
+| `terraflow run -c config.yml` | Run the full pipeline. Auto-invokes the climate-impact path (scenario × hazard fan-out) when both `climate.temporal_aggregations` and `climate.scenarios` are set in the config. |
 | `terraflow sensitivity -c config.yml` | Sobol' / Morris sensitivity indices for model weights |
 | `terraflow validate -c config.yml` | Spatial block CV |
 
-See [CLI docs](https://terraflow.marupilla.dev/cli/usage/) for full reference.
+See [CLI docs](https://terraflow.marupilla.dev/cli/usage/) for full reference. End-to-end climate-impact example: [`examples/demo_config_climate_impact.yml`](examples/demo_config_climate_impact.yml) + the [demo notebook](https://terraflow.marupilla.dev/notebooks/07_climate_impact_crop_suitability/).
 
 ## Climate interpolation
 
@@ -158,7 +158,7 @@ make docs-build
 
 ## Architecture
 
-Core modules: `cli`, `config`, `climate`, `core/run_identity`, `exceptions`, `export`, `geo`, `ingest`, `model`, `pipeline`, `sensitivity`, `stats`, `utils`, `validation`, `viz`.
+Core modules: `cli`, `config`, `pipeline`, `model`, `ingest`, `geo`, `climate`, `climate_impact`, `temporal`, `hazard`, `cmip6`, `sensitivity`, `validation`, `core/run_identity`, `stats`, `exceptions`, `utils`, `viz`.
 
 Run artifacts under `<output_dir>/runs/<fingerprint>/` include `features.parquet`, `manifest.json`, `report.json`, and `results.csv`. When kriging is configured, `report.json` also carries `kriging_diagnostics` (model, nugget, sill, range), `kriging_loocv` RMSE per variable, `uncertainty` coverage, and an `interpolation_fallback` block with per-variable fallback-to-mean counts. Multi-band rasters are supported via the top-level `raster_band` field (1-based; default `1`).
 
