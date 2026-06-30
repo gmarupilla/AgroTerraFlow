@@ -408,14 +408,14 @@ def test_climate_config_scenarios_must_have_unique_names(tmp_path: Path):
         load_config(cfg_file)
 
 
-def test_pipeline_config_rejects_full_climate_impact_block_until_engine_ships(
+def test_pipeline_config_rejects_climate_impact_without_timeseries_csv(
     tmp_path: Path,
 ):
-    """Full flagship config currently raises NotImplementedError (#138a gate).
+    """#138e gate: aggregations require a timeseries_csv input.
 
-    The pipeline does not yet consume the new fields; the engine lands in
-    #138b/c/d. Until then, accepting the config would silently produce
-    old single-period output. This gate keeps users honest.
+    Previously raised NotImplementedError under the #138a gate; now the
+    engine ships (#138e) and the gate is a clean ValueError when the user
+    forgets the new input field.
     """
     cfg_content = textwrap.dedent("""
         raster_path: "data/usda_cdl.tif"
@@ -460,7 +460,7 @@ def test_pipeline_config_rejects_full_climate_impact_block_until_engine_ships(
     cfg_file = tmp_path / "cfg.yml"
     cfg_file.write_text(cfg_content, encoding="utf-8")
 
-    with pytest.raises(NotImplementedError, match="138b"):
+    with pytest.raises(ValueError, match="timeseries_csv"):
         load_config(cfg_file)
 
 

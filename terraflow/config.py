@@ -315,6 +315,7 @@ class ClimateConfig(BaseModel):
     fallback_to_mean: bool = True
     temporal_aggregations: list[TemporalAggregation] = []
     scenarios: list[Scenario] = []
+    timeseries_csv: Optional[str] = None
 
     model_config = ConfigDict(extra="forbid")
 
@@ -477,16 +478,15 @@ class PipelineConfig(BaseModel):
         self.roi.validate_bounds()
         self.model_params.validate_ranges()
         self.climate.validate_config()
-        # The aggregation engine + scenario fan-out land in #138b/c/d.
-        # Reject configs that set these fields until the engine consumes
-        # them, so users do not silently get single-period output.
-        if self.climate.temporal_aggregations or self.climate.scenarios:
-            raise NotImplementedError(
-                "climate.temporal_aggregations and climate.scenarios are "
-                "config-schema-only in this release (#138a). The aggregation "
-                "engine + scenario fan-out land in #138b (engine), #138c "
-                "(CMIP6 NetCDF ingest), and #138d (hazard module). Leave both "
-                "lists empty until those PRs ship."
+        # Climate-impact path active when both lists are non-empty (#138e).
+        # The historical single-period path still runs first; the climate-
+        # impact derived columns land in a separate ``climate_features.parquet``
+        # artifact so the existing artifact contract stays unchanged.
+        if self.climate.temporal_aggregations and not self.climate.timeseries_csv:
+            raise ValueError(
+                "climate.temporal_aggregations requires climate.timeseries_csv "
+                "(long-format station time-series with columns "
+                "station_id, lat, lon, date, temperature_c, precipitation_mm)."
             )
 
 
