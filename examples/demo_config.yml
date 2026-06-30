@@ -63,4 +63,3 @@ sensitivity:
 validation:
   n_blocks_side: 4
   buffer_deg: 0.5
-  reference_csv: "synthetic_reference.csv"
