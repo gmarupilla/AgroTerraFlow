@@ -41,7 +41,7 @@ pipeline.py → write artifacts to output_dir/runs/<fingerprint>/
 | `model.py` | `suitability_score()`, `suitability_label()`, `suitability_score_array()` |
 | `pipeline.py` | Orchestration — fingerprint → load → clip → interpolate → score → write |
 | `sensitivity.py` | Sobol' / Morris via SALib — triggered by `terraflow sensitivity` |
-| `validation.py` | Spatial block CV, Cohen's kappa, Moran's I — triggered by `terraflow validate` |
+| `validation.py` | Spatial block CV — triggered by `terraflow validate` |
 | `core/run_identity.py` | Deterministic SHA256 fingerprint of canonicalized config + input files |
 
 ## Output Artifacts

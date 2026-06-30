@@ -81,107 +81,11 @@ class TestSpatialBlockCV:
         assert accs == []
 
 
-class TestCohensKappa:
-    """VALD-02: Cohen's kappa against reference."""
-
-    def test_kappa_perfect_agreement(self):
-        """Perfect agreement produces kappa = 1.0."""
-        cells_df = pd.DataFrame(
-            {
-                "lat": [0.0, 1.0, 2.0],
-                "lon": [0.0, 1.0, 2.0],
-                "label": ["low", "medium", "high"],
-            }
-        )
-        ref_df = pd.DataFrame(
-            {
-                "lat": [0.0, 1.0, 2.0],
-                "lon": [0.0, 1.0, 2.0],
-                "label": ["low", "medium", "high"],
-            }
-        )
-        from terraflow.validation import _compute_kappa
-
-        kappa = _compute_kappa(cells_df, ref_df)
-        assert kappa == pytest.approx(1.0)
-
-    def test_kappa_with_mismatch(self):
-        """Partial mismatch produces 0 < kappa < 1."""
-        cells_df = pd.DataFrame(
-            {
-                "lat": [0.0, 1.0, 2.0, 3.0],
-                "lon": [0.0, 1.0, 2.0, 3.0],
-                "label": ["low", "medium", "high", "low"],
-            }
-        )
-        ref_df = pd.DataFrame(
-            {
-                "lat": [0.0, 1.0, 2.0, 3.0],
-                "lon": [0.0, 1.0, 2.0, 3.0],
-                "label": ["low", "medium", "low", "low"],
-            }
-        )
-        from terraflow.validation import _compute_kappa
-
-        kappa = _compute_kappa(cells_df, ref_df)
-        assert -1.0 <= kappa <= 1.0
-
-    def test_kappa_extent_warning(self):
-        """Reference points far from cells emit a warning."""
-        cells_df = pd.DataFrame(
-            {
-                "lat": [0.0],
-                "lon": [0.0],
-                "label": ["low"],
-            }
-        )
-        ref_df = pd.DataFrame(
-            {
-                "lat": [50.0],
-                "lon": [50.0],
-                "label": ["low"],
-            }
-        )
-        import warnings
-
-        from terraflow.validation import _compute_kappa
-
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            _compute_kappa(cells_df, ref_df)
-            assert any("distance" in str(warning.message).lower() for warning in w)
-
-
-class TestMoransI:
-    """VALD-04: Moran's I on residuals."""
-
-    def test_morans_i_spatially_clustered(self):
-        """Spatially clustered residuals produce positive Moran's I."""
-        lats = np.array([0.0, 0.0, 0.0, 3.0, 3.0, 3.0])
-        lons = np.array([0.0, 0.1, 0.2, 3.0, 3.1, 3.2])
-        residuals = np.array([1.0, 1.1, 0.9, -1.0, -0.9, -1.1])
-        from terraflow.validation import _morans_i
-
-        moran_stat = _morans_i(lats, lons, residuals)
-        assert moran_stat is not None
-        assert moran_stat > 0.0
-
-    def test_morans_i_degenerate_uniform(self):
-        """All-equal residuals return None."""
-        lats = np.array([0.0, 1.0, 2.0])
-        lons = np.array([0.0, 1.0, 2.0])
-        residuals = np.array([5.0, 5.0, 5.0])
-        from terraflow.validation import _morans_i
-
-        moran_stat = _morans_i(lats, lons, residuals)
-        assert moran_stat is None
-
-
 class TestReportValidationBlock:
     """VALD-04: report.json validation block structure."""
 
     def test_validation_block_has_required_keys(self):
-        """Validation block contains kappa, morans_i, mean_fold_accuracy."""
+        """Validation block exposes mean_fold_accuracy + n_folds."""
         from terraflow.validation import run_validation
 
         assert callable(run_validation)
@@ -212,12 +116,9 @@ validation:
   buffer_deg: 0.0
 """
 
-_MINIMAL_CONFIG_WITH_REF = _MINIMAL_CONFIG.rstrip() + "\n  reference_csv: {ref_csv}\n"
-
 
 def _make_features_parquet(run_dir, n=30):
     """Write a minimal features.parquet into run_dir."""
-    import pandas as pd
 
     rng = np.random.default_rng(42)
     df = pd.DataFrame(
@@ -260,8 +161,6 @@ class TestRunValidation:
             "method",
             "n_folds",
             "mean_fold_accuracy",
-            "cohen_kappa",
-            "morans_i_residuals",
             "n_blocks_side",
             "buffer_deg",
         ):
@@ -322,36 +221,3 @@ class TestRunValidation:
         with patch("terraflow.validation.resolve_run_dir", return_value=run_dir):
             with pytest.raises(FileNotFoundError):
                 run_validation(cfg_path)
-
-    def test_run_validation_with_reference_csv(self, tmp_path):
-        """run_validation computes kappa when reference_csv is provided."""
-        import json
-        from unittest.mock import patch
-
-        import pandas as pd
-
-        from terraflow.validation import run_validation
-
-        run_dir = tmp_path / "runs" / "abc123"
-        df = _make_features_parquet(run_dir)
-
-        ref_csv = tmp_path / "ref.csv"
-        pd.DataFrame(
-            {
-                "lat": df["lat"].values[:10],
-                "lon": df["lon"].values[:10],
-                "label": df["label"].values[:10],
-            }
-        ).to_csv(ref_csv, index=False)
-
-        cfg_path = tmp_path / "config.yml"
-        cfg_path.write_text(
-            _MINIMAL_CONFIG_WITH_REF.format(out_dir=tmp_path, ref_csv=ref_csv)
-        )
-
-        with patch("terraflow.validation.resolve_run_dir", return_value=run_dir):
-            result = run_validation(cfg_path)
-
-        block = json.loads(result.read_text())["validation"]
-        assert block["cohen_kappa"] is not None
-        assert block["n_reference_points"] is not None

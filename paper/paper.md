@@ -40,7 +40,7 @@ weighted suitability score, and writes `features.parquet`,
 directory. Three companion sub-commands extend the same contract:
 `terraflow sensitivity` and `terraflow validate` produce Sobol' and
 Morris indices [@herman2017salib; @saltelli2008global] and spatial-block
-cross-validation with Cohen's κ and Moran's I. Every run is identified
+cross-validation. Every run is identified
 by a deterministic content-addressable `run_fingerprint`, so identical
 inputs produce the same directory name and bit-identical outputs within
 documented limits.
@@ -159,8 +159,6 @@ cells:
 | Sobol' | S1 indices (`w_v`, `w_t`, `w_r`) | 0.331, 0.333, 0.333 |
 | Sobol' | ST indices (`w_v`, `w_t`, `w_r`) | 0.333, 0.333, 0.333 |
 | Block CV | Mean fold accuracy (5 folds) | 0.48 |
-| Kappa | Cohen's κ against reference CSV | −0.05 |
-| Spatial | Moran's I on score residuals | 0.19 |
 
 Every number above is reproducible from `make get-demo-data &&
 terraflow run -c examples/demo_config.yml` plus the two companion
