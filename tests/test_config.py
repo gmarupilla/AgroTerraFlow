@@ -408,8 +408,15 @@ def test_climate_config_scenarios_must_have_unique_names(tmp_path: Path):
         load_config(cfg_file)
 
 
-def test_pipeline_config_accepts_full_climate_impact_block(tmp_path: Path):
-    """Full flagship config parses end-to-end."""
+def test_pipeline_config_rejects_full_climate_impact_block_until_engine_ships(
+    tmp_path: Path,
+):
+    """Full flagship config currently raises NotImplementedError (#138a gate).
+
+    The pipeline does not yet consume the new fields; the engine lands in
+    #138b/c/d. Until then, accepting the config would silently produce
+    old single-period output. This gate keeps users honest.
+    """
     cfg_content = textwrap.dedent("""
         raster_path: "data/usda_cdl.tif"
         climate_csv: "data/demo_climate.csv"
@@ -453,10 +460,33 @@ def test_pipeline_config_accepts_full_climate_impact_block(tmp_path: Path):
     cfg_file = tmp_path / "cfg.yml"
     cfg_file.write_text(cfg_content, encoding="utf-8")
 
-    cfg = load_config(cfg_file)
-    assert len(cfg.climate.temporal_aggregations) == 7
-    assert len(cfg.climate.scenarios) == 3
-    assert cfg.climate.scenarios[0].name == "historical"
-    assert cfg.climate.scenarios[0].period == [1991, 2020]
-    assert cfg.climate.temporal_aggregations[1].kind == "seasonal_mean"
-    assert cfg.climate.temporal_aggregations[1].months == [4, 5, 6, 7, 8, 9]
+    with pytest.raises(NotImplementedError, match="138b"):
+        load_config(cfg_file)
+
+
+def test_climate_config_models_parse_directly():
+    """The Pydantic models themselves accept the full shape — only the
+    PipelineConfig-level gate rejects until #138b lands. This keeps the
+    schema introspectable for tooling and docs."""
+    from terraflow.config import ClimateConfig, Scenario, TemporalAggregation
+
+    cfg = ClimateConfig(
+        temporal_aggregations=[
+            TemporalAggregation(kind="annual_mean"),
+            TemporalAggregation(kind="seasonal_mean", months=[4, 5, 6, 7, 8, 9]),
+            TemporalAggregation(kind="growing_degree_days", base_temp_c=10.0),
+            TemporalAggregation(kind="frost_days", threshold_c=0.0),
+            TemporalAggregation(kind="heat_stress_days", threshold_c=35.0),
+            TemporalAggregation(kind="precip_percentile", percentile=95.0),
+            TemporalAggregation(kind="spei", timescale_months=3),
+        ],
+        scenarios=[
+            Scenario(name="historical", period=[1991, 2020]),
+            Scenario(name="ssp245", period=[2041, 2070]),
+            Scenario(name="ssp585", period=[2041, 2070]),
+        ],
+    )
+    assert len(cfg.temporal_aggregations) == 7
+    assert len(cfg.scenarios) == 3
+    assert cfg.scenarios[0].period == [1991, 2020]
+    assert cfg.temporal_aggregations[1].months == [4, 5, 6, 7, 8, 9]

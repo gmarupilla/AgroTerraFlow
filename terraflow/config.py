@@ -477,6 +477,17 @@ class PipelineConfig(BaseModel):
         self.roi.validate_bounds()
         self.model_params.validate_ranges()
         self.climate.validate_config()
+        # The aggregation engine + scenario fan-out land in #138b/c/d.
+        # Reject configs that set these fields until the engine consumes
+        # them, so users do not silently get single-period output.
+        if self.climate.temporal_aggregations or self.climate.scenarios:
+            raise NotImplementedError(
+                "climate.temporal_aggregations and climate.scenarios are "
+                "config-schema-only in this release (#138a). The aggregation "
+                "engine + scenario fan-out land in #138b (engine), #138c "
+                "(CMIP6 NetCDF ingest), and #138d (hazard module). Leave both "
+                "lists empty until those PRs ship."
+            )
 
 
 def load_config_dict(path: str | Path) -> dict:
