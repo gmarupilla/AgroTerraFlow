@@ -2,14 +2,14 @@ cff-version: 1.2.0
 message: "If you use TerraFlow in your research, please cite it as below."
 type: software
 title: "TerraFlow: A Reproducible Framework for Climate-Impact Assessment of Agricultural Suitability"
-version: 0.4.0
-date-released: "2026-06-08"
+version: 0.5.0
+date-released: "2026-06-30"
 license: MIT
 repository-code: "https://github.com/gmarupilla/AgroTerraFlow"
 url: "https://terraflow.marupilla.dev"
 abstract: >
   TerraFlow is an open-source Python framework for reproducible
-  climate-impact assessment of agricultural suitability. As of v0.4.x
+  climate-impact assessment of agricultural suitability. As of v0.5.x
   it provides a config-driven pipeline for raster ingestion, ROI
   clipping, spatial climate interpolation (linear, IDW, or Ordinary
   Kriging with LOOCV variogram selection) from weather-station CSV
@@ -17,12 +17,12 @@ abstract: >
   propagation, global sensitivity analysis (Sobol' / Morris), spatial
   block cross-validation, and provenance-tracked artifact export.
   Every run produces a deterministic content-addressed fingerprint
-  enabling independent verification of results. The locked v0.5.0
-  scope adds climate-induced crop hazards (drought, flood, heat
-  stress, growing-degree-day shifts) under historical and projected
-  future climate (CMIP6 SSP scenarios). The same workflow methodology
-  extends to habitat suitability, land-use planning, and conservation
-  siting.
+  enabling independent verification of results. v0.5.0 adds
+  climate-induced crop hazards (growing-degree days, frost days, heat
+  stress days, precipitation percentiles, simplified Thornthwaite SPEI)
+  under historical and projected future climate (CMIP6 NetCDF
+  ingestion with SSP scenarios). The same workflow methodology extends
+  to habitat suitability, land-use planning, and conservation siting.
 keywords:
   - geospatial
   - agriculture
