@@ -249,11 +249,18 @@ def test_validate_all_rejects_aggregations_without_timeseries_csv(tmp_path: Path
         cfg.validate_all()
 
 
-def test_validate_all_accepts_climate_impact_with_timeseries(tmp_path: Path):
-    """Previously NotImplementedError — #138e activates the path."""
+def test_validate_all_blocks_climate_impact_until_pipeline_wiring(tmp_path: Path):
+    """#138e exposes ``run_climate_impact_features`` as a public entry but
+    the ``terraflow run`` pipeline does not auto-invoke it until #138f.
+
+    Until then ``PipelineConfig.validate_all`` refuses climate-impact
+    configs to prevent silent single-period results. The orchestrator
+    itself remains callable directly (covered elsewhere in this module).
+    """
     ts_path = _write_timeseries_csv(
         tmp_path / "ts.csv",
         stations=[("S1", 40.0, -100.0)],
     )
     cfg = _minimal_cfg(ts_path)
-    cfg.validate_all()  # no raise
+    with pytest.raises(NotImplementedError, match="#138f"):
+        cfg.validate_all()
