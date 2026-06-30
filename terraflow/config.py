@@ -488,18 +488,6 @@ class PipelineConfig(BaseModel):
                 "(long-format station time-series with columns "
                 "station_id, lat, lon, date, temperature_c, precipitation_mm)."
             )
-        # #138e exposes terraflow.climate_impact.run_climate_impact_features as
-        # a public entry point, but ``terraflow run`` (terraflow.pipeline.
-        # run_pipeline) does not auto-invoke it yet — that wiring lands in
-        # #138f. Until then, refuse climate-impact configs in the main pipeline
-        # path so users do not get a silent single-period result.
-        if self.climate.temporal_aggregations and self.climate.scenarios:
-            raise NotImplementedError(
-                "Climate-impact configs are recognised but the main "
-                "`terraflow run` pipeline does not yet auto-invoke the "
-                "orchestrator. Call terraflow.climate_impact."
-                "run_climate_impact_features directly until #138f ships."
-            )
 
 
 def load_config_dict(path: str | Path) -> dict:

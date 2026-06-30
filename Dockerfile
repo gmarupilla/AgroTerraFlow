@@ -30,6 +30,10 @@ COPY examples ./examples
 # Generate synthetic demo raster (data/usda_cdl.tif) — no network needed
 RUN python scripts/make_demo_raster.py
 
+# Generate synthetic station time-series (data/demo_timeseries.csv) so the
+# climate-impact demo config works in --network none environments.
+RUN python scripts/make_demo_timeseries.py
+
 # Pipeline writes here at runtime
 RUN mkdir -p outputs
 

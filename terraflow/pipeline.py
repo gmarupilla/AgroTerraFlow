@@ -113,6 +113,7 @@ def _collect_input_paths(config_dict: dict, config_dir: Path) -> List[Path]:
         "climate_raster_paths",
         "weather_rasters",
         "weather_raster_glob",
+        "timeseries_csv",
     ):
         if key in config_dict:
             add_value(config_dict[key])
@@ -146,6 +147,32 @@ def _collect_input_paths(config_dict: dict, config_dir: Path) -> List[Path]:
             seen.add(resolved)
             deduped.append(resolved)
     return deduped
+
+
+def _normalize_config_paths(config_dict: dict, config_dir: Path) -> None:
+    """Resolve relative paths in ``config_dict`` against ``config_dir``.
+
+    Mutates ``config_dict`` in place. Covers the top-level (``raster_path``,
+    ``climate_csv``, ``output_dir``) and the nested ``climate.timeseries_csv``
+    so a config can be loaded from any working directory.
+    """
+    for key in ("raster_path", "climate_csv", "output_dir"):
+        value = config_dict.get(key)
+        if value is None:
+            continue
+        path = Path(str(value))
+        if not path.is_absolute():
+            config_dict[key] = str((config_dir / path).resolve())
+
+    climate_block = config_dict.get("climate")
+    if isinstance(climate_block, dict):
+        for key in ("timeseries_csv",):
+            value = climate_block.get(key)
+            if value is None:
+                continue
+            path = Path(str(value))
+            if not path.is_absolute():
+                climate_block[key] = str((config_dir / path).resolve())
 
 
 def _resolve_roi_hash(config_dict: dict, config_dir: Path) -> str:
@@ -201,11 +228,7 @@ def resolve_run_dir(config_path: Path | str) -> Path:
     config_dict = load_config_dict(config_path)
     config_dir = config_path.resolve().parent
 
-    for _key in ("raster_path", "climate_csv", "output_dir"):
-        if _key in config_dict and config_dict[_key] is not None:
-            _p = Path(str(config_dict[_key]))
-            if not _p.is_absolute():
-                config_dict[_key] = str((config_dir / _p).resolve())
+    _normalize_config_paths(config_dict, config_dir)
 
     cfg: PipelineConfig = build_config(config_dict)
     roi_hash = _resolve_roi_hash(config_dict, config_dir)
@@ -590,11 +613,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     config_dict = load_config_dict(config_path)
     config_dir = config_path.resolve().parent
 
-    for _key in ("raster_path", "climate_csv", "output_dir"):
-        if _key in config_dict and config_dict[_key] is not None:
-            _p = Path(str(config_dict[_key]))
-            if not _p.is_absolute():
-                config_dict[_key] = str((config_dir / _p).resolve())
+    _normalize_config_paths(config_dict, config_dir)
 
     cfg: PipelineConfig = build_config(config_dict)
     logger.info(f"Loaded config from {config_path}")
@@ -615,6 +634,8 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
         run_dir / "manifest.json",
         run_dir / "report.json",
     ]
+    if cfg.climate.temporal_aggregations and cfg.climate.scenarios:
+        _required_artifacts.append(run_dir / "climate_features.parquet")
     if all(p.exists() for p in _required_artifacts):
         cached_version = _read_features_schema_version(run_dir / "features.parquet")
         if cached_version == FEATURES_SCHEMA_VERSION:
@@ -755,6 +776,17 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
     )
     _atomic_write_text(run_dir / "results.csv", df.to_csv(index=False))
 
+    # Climate-impact path (#138f): when the config declares both
+    # ``temporal_aggregations`` and ``scenarios``, derive per-cell
+    # scenario × rule columns and write them to a sibling artifact so
+    # the historical ``features.parquet`` contract stays untouched.
+    climate_impact_written = False
+    if cfg.climate.temporal_aggregations and cfg.climate.scenarios:
+        from terraflow.climate_impact import run_climate_impact_features
+
+        run_climate_impact_features(cfg, run_dir, df[["cell_id", "lat", "lon"]])
+        climate_impact_written = True
+
     git_sha = _get_git_sha()
     input_fp_records = [
         {
@@ -780,6 +812,7 @@ def run_pipeline(config_path: str | Path) -> pd.DataFrame:
             "results.csv",
             "manifest.json",
             "report.json",
+            *(["climate_features.parquet"] if climate_impact_written else []),
         ],
     }
     _atomic_write_text(

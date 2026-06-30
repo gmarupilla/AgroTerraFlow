@@ -165,6 +165,10 @@ nav:
       - Extended Variogram Mode: notebooks/05_extended_variogram_mode.ipynb
       - Sensitivity Analysis: notebooks/02_sensitivity_analysis.ipynb
       - Model Validation: notebooks/03_model_validation.ipynb
+      - Climate-Impact Crop Suitability: notebooks/07_climate_impact_crop_suitability.ipynb
+  - Guides:
+      - Satellite inputs: guides/satellite-inputs.md
+  - Migration v0.4 → v0.5: migration-v0.4-to-v0.5.md
   - Development: DEVELOPMENT.md
   - Roadmap: ROADMAP.md
   - Contributing: contributing.md

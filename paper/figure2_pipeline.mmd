@@ -2,7 +2,9 @@ flowchart LR
 
     A["Load config"] --> B["Validate (Pydantic)"]
     B --> C["Raster ingest"]
-    B --> D["Climate ingest"]
+    B --> D["Climate CSV ingest"]
+    B --> T["Timeseries / CMIP6 ingest
+(if climate-impact configured)"]
 
     C --> E["ROI clip"]
     D --> F["Climate summary"]
@@ -12,5 +14,12 @@ flowchart LR
 
     G --> H["Score"]
     H --> I["Label"]
-    I --> J["Write CSV"]
-    J --> K["Plotly map (optional)"]
+    I --> J["Write features.parquet"]
+
+    T --> TA["Filter per scenario"]
+    TA --> TR["Aggregate per station
+(annual_mean, GDD,
+frost / heat days, SPEI, ...)"]
+    TR --> TK["Kriging to cell centroids"]
+    J --> TK
+    TK --> TW["Write climate_features.parquet"]

@@ -22,13 +22,17 @@ TerraFlow is a reproducible, config-driven framework for **climate-impact assess
 ```mermaid
 flowchart LR
     CFG["Config<br/>(YAML + Pydantic)"] --> PIPE["Pipeline<br/>(orchestration)"]
-    PIPE --> ING["Ingest<br/>(raster, climate)"]
-    PIPE --> GEO["Geospatial<br/>(ROI clipping)"]
+    PIPE --> ING["Ingest<br/>(raster, climate CSV,<br/>timeseries CSV / CMIP6)"]
+    PIPE --> GEO["Geospatial<br/>(ROI clip, CRS)"]
+    PIPE --> CIM["Climate impact<br/>(temporal, hazard,<br/>CMIP6)"]
     PIPE --> MOD["Model<br/>(suitability scoring)"]
-    PIPE --> OUT["Outputs<br/>(Parquet, CSV,<br/>manifest, report)"]
+    PIPE --> OUT["Outputs<br/>(features.parquet,<br/>climate_features.parquet,<br/>manifest, report)"]
     ING --> GEO
+    ING --> CIM
     ING --> MOD
     GEO --> MOD
+    CIM --> OUT
+    MOD --> OUT
 ```
 
 | Property | What TerraFlow guarantees |

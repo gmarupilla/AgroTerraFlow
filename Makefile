@@ -120,6 +120,34 @@ docker-smoke:
 	done; \
 	echo "docker-smoke OK: offline run produced all 3 artifacts in $$fp_dir"
 
+# Hermetic climate-impact end-to-end (#138f): exercises the new
+# timeseries_csv + temporal_aggregations + scenarios path with
+# --network none.  Validates that climate_features.parquet lands in the
+# run directory and contains scenario × rule columns.
+docker-smoke-climate-impact:
+	docker build -t terraflow:latest .
+	@set -e; \
+	out=$$(mktemp -d 2>/dev/null || mktemp -d -t terraflow-ci-smoke); \
+	cleanup() { docker run --rm -v "$$out":/cleanup alpine:3 sh -c 'rm -rf /cleanup/*' 2>/dev/null || true; rmdir "$$out" 2>/dev/null || true; }; \
+	trap cleanup EXIT; \
+	echo "Running climate-impact pipeline in docker with --network none..."; \
+	docker run --rm --network none \
+		-v "$$out":/app/outputs \
+		terraflow:latest \
+		run --config examples/demo_config_climate_impact.yml; \
+	fp_dir=$$(ls -d "$$out"/climate_impact_demo/runs/*/ 2>/dev/null | head -n1); \
+	if [ -z "$$fp_dir" ]; then \
+		echo "docker-smoke-climate-impact FAILED: no run directory under $$out/climate_impact_demo/runs/"; \
+		exit 1; \
+	fi; \
+	for artifact in features.parquet climate_features.parquet manifest.json report.json; do \
+		if [ ! -f "$$fp_dir/$$artifact" ]; then \
+			echo "docker-smoke-climate-impact FAILED: missing $$fp_dir/$$artifact"; \
+			exit 1; \
+		fi; \
+	done; \
+	echo "docker-smoke-climate-impact OK: offline run produced features + climate_features in $$fp_dir"
+
 lint:
 	$(RUFF) check terraflow tests --fix
 	$(BLACK) terraflow tests
@@ -145,6 +173,9 @@ get-demo-data:
 	@echo "Generating synthetic demo raster (western Kansas extent, CDL-compatible)..."
 	$(PYTHON) scripts/make_demo_raster.py
 	@echo "Saved to data/usda_cdl.tif"
+	@echo ""
+	@echo "Generating synthetic station time-series (1991-2020 + 2041-2070, 9 stations)..."
+	$(PYTHON) scripts/make_demo_timeseries.py
 	@echo ""
 	@echo "For real USDA CDL data see data/README.md (USDA NASS CropScape)."
 

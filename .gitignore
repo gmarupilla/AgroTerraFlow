@@ -329,6 +329,9 @@ outputs/
 data/*.tif
 data/*.tiff
 
+# Generated synthetic timeseries (rebuild with: make get-demo-data)
+data/demo_timeseries.csv
+
 # Marimo session cache
 __marimo__/
 
