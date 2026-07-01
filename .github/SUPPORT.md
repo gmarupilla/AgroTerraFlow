@@ -10,7 +10,7 @@ you're trying to do.
   reproducibility page, architecture decision records.
 - **Notebooks:** end-to-end examples under
   [`docs/notebooks/`](../docs/notebooks/) (climate pipeline, kriging
-  uncertainty, sensitivity, validation, H3 export, GeoAI engine).
+  uncertainty, sensitivity, validation, climate-impact crop suitability).
 - **CHANGELOG:** [`CHANGELOG.md`](../CHANGELOG.md) — what shipped in each
   release, including breaking changes.
 

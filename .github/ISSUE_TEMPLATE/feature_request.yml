@@ -44,10 +44,12 @@ body:
       multiple: true
       options:
         - Pipeline (terraflow run)
+        - Climate-impact (temporal_aggregations + scenarios, climate_features.parquet)
+        - Hazard indicators (GDD / frost / heat / SPEI)
+        - CMIP6 NetCDF ingest (terraflow.cmip6, [cmip6] extra)
         - Sensitivity (terraflow sensitivity)
         - Validation (terraflow validate)
-        - Export (terraflow export)
-        - GeoAI engine (terraflow geoai)
+        - Kriging / climate interpolation
         - Configuration / Pydantic schema
         - Reproducibility / fingerprinting
         - Docs / paper
