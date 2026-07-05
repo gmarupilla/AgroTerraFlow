@@ -188,12 +188,13 @@ shared compute infrastructure.
 on a real research problem, `terraflow drought` builds an impact-labelled benchmark
 linking open predictors to realised insured drought loss for 587 US Corn Belt
 counties over 2000–2023 (13,895 county-years) [@drought_benchmark]. Under a temporal
-split that holds out extreme years (including the 2012 drought), a within-season
-climate model predicts significant drought loss at ROC-AUC 0.93 / PR-AUC 0.78, and
-0.91 mean ROC-AUC under leave-one-state-out spatial cross-validation. The benchmark
-also surfaces an open methodological challenge — tree models collapse when
-extrapolating to extreme held-out years while linear models remain robust — that
-only a shared, reproducible benchmark can expose. Dataset, splits, baselines, and a
+split that holds out extreme years (including the 2012 drought), the best within-season
+model predicts significant drought loss at ROC-AUC 0.95 (PR-AUC 0.66; the positive
+class is a rare 6%), and 0.91 mean ROC-AUC under leave-one-state-out spatial
+cross-validation. The benchmark also surfaces an open methodological challenge — a
+random forest collapses to near-chance on held-out extreme years while
+gradient-boosting and linear models remain robust — that only a shared, reproducible
+benchmark can expose. Dataset, splits, baselines, and a
 deterministic build fingerprint are released under CC-BY-4.0 [@drought_benchmark];
 the predictor corpus derives from a separate flash-drought study [@flashdry], which
 the software supports but does not duplicate.
