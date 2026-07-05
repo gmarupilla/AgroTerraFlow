@@ -48,6 +48,23 @@ flowchart LR
 
 ---
 
+## Drought-impact prediction benchmark
+
+`terraflow drought` builds and evaluates an **impact-labeled** drought benchmark — predicting
+**insured drought loss** (USDA RMA Cause of Loss) from within-season climate/vegetation anomalies.
+It is a decision-relevant *impact* target, distinct from drought *severity* (USDM D2+) and crop
+*yield* benchmarks (CY-Bench, SustainBench).
+
+```bash
+terraflow drought fetch    --rma-dir data/drought/rma --year-min 2000 --year-max 2023
+terraflow drought build    -c examples/drought_v0_corn_6state.yml
+terraflow drought evaluate -c examples/drought_v0_corn_6state.yml
+```
+
+Dataset on Zenodo: **[10.5281/zenodo.21208651](https://doi.org/10.5281/zenodo.21208651)** (CC-BY-4.0). See the [drought benchmark guide](https://terraflow.marupilla.dev/guides/drought-benchmark/).
+
+---
+
 ## Installation
 
 **macOS (Homebrew)** — handles GDAL and PROJ automatically:

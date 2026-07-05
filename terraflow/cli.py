@@ -17,6 +17,10 @@ app = typer.Typer(
     add_completion=False,
 )
 
+from .drought.cli import drought_app  # noqa: E402 (registered after app is created)
+
+app.add_typer(drought_app, name="drought")
+
 
 def _config_option() -> Any:
     return typer.Option(

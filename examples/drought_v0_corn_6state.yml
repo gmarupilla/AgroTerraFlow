@@ -1,0 +1,31 @@
+# Drought-impact benchmark — v0 (corn, 6-state Corn Belt).
+#
+# Predicts insured drought loss (USDA RMA Cause of Loss) from within-season climate/vegetation
+# anomalies. Edit the three paths below, then:
+#
+#   terraflow drought fetch --rma-dir data/drought/rma --year-min 2000 --year-max 2023
+#   terraflow drought build    -c examples/drought_v0_corn_6state.yml
+#   terraflow drought evaluate -c examples/drought_v0_corn_6state.yml
+
+# Spatial / temporal scope
+states: ["17", "18", "19", "27", "29", "31"]   # IL IN IA MN MO NE (FIPS state codes)
+crop: "CORN"
+year_min: 2000
+year_max: 2023
+
+# Label (RMA Cause of Loss)
+drought_causes: ["Drought"]       # add "Heat", "Hot Wind" for a heat-inclusive variant
+loss_ratio_threshold: 0.10        # binary "significant drought loss" cutoff on drought_loss_ratio
+
+# Predictor aggregation
+cutoff_doy: 212                   # ~Jul 31 — early-warning framing; 273 = end-of-season variant
+
+# Splits
+test_years: [2012, 2017, 2022, 2023]
+train_max_year: 2015
+n_blocks_side: 4
+
+# Paths (edit these)
+rma_dir: "data/drought/rma"                       # where `terraflow drought fetch` writes colsom_*.zip
+feature_table: "PATH/TO/flashdry/data/processed/feature_table.parquet"
+output_dir: "outputs/drought_v0"

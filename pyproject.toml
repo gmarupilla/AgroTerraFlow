@@ -72,7 +72,7 @@ Homepage = "https://github.com/gmarupilla/AgroTerraFlow"
 Documentation = "https://terraflow.marupilla.dev"
 
 [tool.setuptools]
-packages = ["terraflow", "terraflow.core"]
+packages = ["terraflow", "terraflow.core", "terraflow.drought"]
 
 [tool.mypy]
 python_version = "3.12"

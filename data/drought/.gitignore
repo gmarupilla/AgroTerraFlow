@@ -1,0 +1,6 @@
+# Keep the benchmark data out of git; track only the provenance/metadata docs.
+*
+!.gitignore
+!README.md
+!DATASHEET.md
+!zenodo-benchmark.json
