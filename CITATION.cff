@@ -53,3 +53,12 @@ references:
         given-names: Gnaneswara
       - family-names: Bayina
         given-names: Chandhini
+  - type: dataset
+    title: "Drought-Impact Prediction Benchmark (v0): county-level insured drought loss for the US Corn Belt"
+    doi: 10.5281/zenodo.21208651
+    year: 2026
+    authors:
+      - family-names: Marupilla
+        given-names: Gnaneswara
+      - family-names: Bayina
+        given-names: Chandhini

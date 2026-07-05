@@ -5,6 +5,8 @@
 *Cause of Loss* indemnity attributed to drought — a decision-relevant economic *impact* target,
 distinct from drought *severity* (USDM D2+) and crop *yield* benchmarks (CY-Bench, SustainBench).
 
+**Dataset:** Zenodo DOI [10.5281/zenodo.21208651](https://doi.org/10.5281/zenodo.21208651) (CC-BY-4.0).
+
 ## Why this benchmark
 
 Existing drought benchmarks predict how *dry* it is (severity) or how much a crop *yields*. Neither

@@ -45,6 +45,6 @@ leaderboard (`leaderboard.csv`) covers naive, severity-only, and Ridge/RF/GBM cl
 
 ## Distribution & license
 
-- Benchmark table + splits + manifest + leaderboard are released on Zenodo (dataset DOI; see
-  `zenodo-benchmark.json`). Code: MIT (`terraflow`). Upstream data are public/open; cite the flashdry
+- Benchmark table + splits + manifest + leaderboard are released on Zenodo:
+  **DOI [10.5281/zenodo.21208651](https://doi.org/10.5281/zenodo.21208651)** (concept DOI — always latest version). Code: MIT (`terraflow`). Upstream data are public/open; cite the flashdry
   corpus and the upstream products.
