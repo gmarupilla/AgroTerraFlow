@@ -204,6 +204,12 @@ uncertainty propagation, Sobol' and Morris sensitivity analysis, and
 spatial-block cross-validation under a single deterministic provenance
 scheme. The integration — not any one component — is the contribution.
 
+**Data availability.** The benchmark — predictors and labels — is archived at
+Zenodo [@drought_benchmark] and is self-contained for training and evaluation. Full
+raster-level regeneration of the predictors uses public Earth-observation products
+(MODIS, ERA5-Land, Daymet, USDM, USDA-NASS) via the flashdry corpus [@flashdry] and
+is not required to use the benchmark.
+
 # AI usage disclosure
 
 The authors used Anthropic Claude — specifically the Claude Code
