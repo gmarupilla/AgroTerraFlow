@@ -163,6 +163,7 @@ nav:
       - terraflow.stats: api/stats.md
       - terraflow.sensitivity: api/sensitivity.md
       - terraflow.validation: api/validation.md
+      - terraflow.drought: api/drought.md
   - Notebooks:
       - TerraFlow v0.2.0 Demo: notebooks/terraflow_v0_2_0_comprehensive_test.ipynb
       - Kriging and Uncertainty: notebooks/kriging_uncertainty_demo.ipynb
@@ -170,8 +171,10 @@ nav:
       - Sensitivity Analysis: notebooks/02_sensitivity_analysis.ipynb
       - Model Validation: notebooks/03_model_validation.ipynb
       - Climate-Impact Crop Suitability: notebooks/07_climate_impact_crop_suitability.ipynb
+      - Drought-Impact Benchmark: notebooks/08_drought_impact_benchmark.ipynb
   - Guides:
       - Satellite inputs: guides/satellite-inputs.md
+      - Drought benchmark: guides/drought-benchmark.md
   - Migration v0.4 → v0.5: migration-v0.4-to-v0.5.md
   - Development: DEVELOPMENT.md
   - Roadmap: ROADMAP.md

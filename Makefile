@@ -7,7 +7,7 @@ PRE_COMMIT = .venv/bin/pre-commit
 MYPY = .venv/bin/mypy
 PIP_LICENSES = .venv/bin/pip-licenses
 
-.PHONY: help venv install dev test test-cov smoke-test typecheck license-check run build clean docker-build docker-run docker-smoke lint lint-fix pre-commit docs-serve docs-build paper get-demo-data
+.PHONY: help venv install dev test test-cov smoke-test typecheck license-check run build clean docker-build docker-run docker-smoke lint lint-fix pre-commit docs-serve docs-build paper get-demo-data get-drought-data drought-eval
 
 help:
 	@echo "Available commands:"
@@ -66,6 +66,14 @@ license-check:
 
 run-demo:
 	$(PYTHON) -m terraflow.cli --config examples/demo_config.yml
+
+get-drought-data:
+	@echo "Downloading RMA Cause of Loss (public) 2000-2023 into data/drought/rma ..."
+	$(PYTHON) -m terraflow.cli drought fetch --rma-dir data/drought/rma --year-min 2000 --year-max 2023
+
+drought-eval:
+	$(PYTHON) -m terraflow.cli drought build -c examples/drought_v0_corn_6state.yml
+	$(PYTHON) -m terraflow.cli drought evaluate -c examples/drought_v0_corn_6state.yml
 
 # ---------------------------
 # Build & Release

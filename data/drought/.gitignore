@@ -1,0 +1,4 @@
+# Keep the benchmark data out of git; track only the provenance docs.
+*
+!.gitignore
+!README.md

@@ -7,6 +7,28 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+### Added
+- **Drought-impact prediction benchmark (`terraflow.drought`).** A new in-package sub-package and
+  `terraflow drought {fetch,build,evaluate}` CLI that assembles and evaluates an *impact-labeled*
+  drought benchmark: predict **insured drought loss** (USDA RMA Cause of Loss, public 1989-present)
+  from within-season climate/vegetation anomalies. This is a decision-relevant *impact* target,
+  distinct from drought *severity* (USDM D2+) and crop *yield* benchmarks (CY-Bench / SustainBench).
+  - `rma.py` downloads + parses the pipe-delimited Cause of Loss files (verified 30-field layout) and
+    joins on 5-digit `GEOID`; `labels.py` builds per-(county, crop-year) `drought_loss_ratio`
+    (regression) + `significant_drought_loss` (binary), with `drought_share` as a bounded auxiliary
+    target; `predictors.py` aggregates the 30 deseasonalized flashdry `*_anom` features + USDM
+    severity up to a configurable `cutoff_doy` (early-warning framing); `splits.py` provides temporal
+    (held-out years incl. the 2012 extreme), leave-one-state-out spatial, and LOYO regimes;
+    `baselines.py`/`evaluate.py` produce a leaderboard (naive, severity-only, and Ridge/RF/GBM climate
+    models) with regression (R2/RMSE/Spearman) and classification (ROC-AUC/PR-AUC/Brier) metrics;
+    `dataset.py` writes `benchmark.parquet` + `manifest.json` (deterministic build fingerprint via
+    `terraflow.core.run_identity`) + `splits.json`.
+  - Reproducible one-shot: `terraflow drought fetch` -> `build -c cfg.yml` -> `evaluate -c cfg.yml`.
+    Sample config in `examples/drought_v0_corn_6state.yml`; provenance in `data/drought/README.md`.
+  - No new runtime dependency (reuses the existing scikit-learn / pandas / pyarrow stack). 23 new
+    tests (`tests/test_drought_*.py`); existing CLI commands are unaffected (backward-compat guard).
+
+
 ## [0.5.0] — 2026-06-30
 
 **Flagship release**: climate-impact assessment of agricultural suitability. Multi-scenario climate driver (historical + CMIP6 SSP windows) cross-multiplied with seven hazard indicators (annual mean, seasonal mean, growing-degree days, frost days, heat-stress days, precipitation percentiles, simplified Thornthwaite SPEI) lands as a sibling `climate_features.parquet` artifact alongside the historical `features.parquet`. GeoAI and H3 export modules were cut to refocus the surface on Methods-section-citable functionality (issues #134/#135/#136). See `docs/migration-v0.4-to-v0.5.md` for the full diff.
