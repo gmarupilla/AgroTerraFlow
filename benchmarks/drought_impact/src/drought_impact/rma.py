@@ -98,7 +98,7 @@ def download_col_year(year: int, cfg: BenchmarkConfig, *, overwrite: bool = Fals
     try:
         resp = requests.get(url, timeout=120, stream=True)
         resp.raise_for_status()
-    except Exception as exc:  # noqa: BLE001 - re-raised with guidance
+    except requests.RequestException as exc:
         raise RuntimeError(
             f"Failed to download RMA COL for {year} from {url}: {exc}. "
             f"If network egress is blocked, download the archive manually and place it at "

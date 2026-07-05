@@ -8,16 +8,20 @@ identical fingerprint → reproducible builds (AgroTerraFlow's provenance DNA, v
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 
 import pandas as pd
 
+from .baselines import INDEX_COLUMN_CANDIDATES
 from .config import BenchmarkConfig
 from .coverage import build_coverage
 from .fingerprint import compute_build_fingerprint, fingerprint_file
 from .labels import build_labels
 from .predictors import aggregate_predictors
 from .rma import load_col
+
+logger = logging.getLogger(__name__)
 
 # Non-predictor columns, in fixed leading order.
 _LEADING_COLUMNS = [
@@ -33,6 +37,71 @@ _LEADING_COLUMNS = [
     "planted_acres",
     "insured_acre_fraction",
 ]
+
+# Config path attributes that carry external severity-index inputs, and the column
+# names (a subset of INDEX_COLUMN_CANDIDATES) each is expected to provide.
+_INDEX_PATH_ATTRS = ["wxcond_path", "vci_tci_vhi_path", "usdm_path"]
+
+
+def _order_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Deterministic column order: leading label/coverage, then indices, then predictors."""
+    leading = [c for c in _LEADING_COLUMNS if c in df.columns]
+    index_cols = [c for c in INDEX_COLUMN_CANDIDATES if c in df.columns]
+    rest = sorted(c for c in df.columns if c not in leading and c not in index_cols)
+    return df[leading + index_cols + rest]
+
+
+def _aggregate_index_frame(frame: pd.DataFrame, cfg: BenchmarkConfig, value_cols: list[str]) -> pd.DataFrame:
+    """Reduce a (possibly weekly) index frame to one row per ``GEOID`` × year.
+
+    Weekly frames (those with a ``date`` column) are averaged over the same growing-season
+    window ``[season_start_doy, cutoff_doy]`` used for the predictors, preserving the
+    early-warning framing. Already-annual frames are grouped directly.
+    """
+    frame = frame.copy()
+    frame["GEOID"] = frame["GEOID"].astype(str).str.zfill(5)
+    if "date" in frame.columns:
+        dates = pd.to_datetime(frame["date"])
+        frame["year"] = frame["year"] if "year" in frame.columns else dates.dt.year
+        doy = dates.dt.dayofyear
+        frame = frame[(doy >= cfg.season_start_doy) & (doy <= cfg.cutoff_doy)]
+    frame["year"] = frame["year"].astype("Int64")
+    return frame.groupby(["GEOID", "year"], dropna=True)[value_cols].mean().reset_index()
+
+
+def attach_index_columns(benchmark: pd.DataFrame, cfg: BenchmarkConfig) -> pd.DataFrame:
+    """Join configured severity-index inputs (WxCond / VCI-TCI-VHI / USDM) onto the benchmark.
+
+    Each configured path is read, its recognized index columns
+    (:data:`drought_impact.baselines.INDEX_COLUMN_CANDIDATES`) are aggregated to
+    ``GEOID`` × year, and left-joined. When a path is set but missing or carries no
+    recognized columns, a warning is logged instead of silently dropping the input — so
+    the severity-index baselines are never quietly skipped.
+    """
+    out = benchmark
+    for attr in _INDEX_PATH_ATTRS:
+        path = getattr(cfg, attr)
+        if path is None:
+            continue
+        if not Path(path).exists():
+            logger.warning("%s=%s does not exist; index columns not joined", attr, path)
+            continue
+        frame = pd.read_parquet(path)
+        if "GEOID" not in frame.columns:
+            logger.warning("%s=%s has no GEOID column; index columns not joined", attr, path)
+            continue
+        value_cols = [c for c in INDEX_COLUMN_CANDIDATES if c in frame.columns]
+        if not value_cols:
+            logger.warning(
+                "%s=%s has no recognized index columns %s; nothing joined",
+                attr,
+                path,
+                INDEX_COLUMN_CANDIDATES,
+            )
+            continue
+        agg = _aggregate_index_frame(frame, cfg, value_cols)
+        out = out.merge(agg, on=["GEOID", "year"], how="left")
+    return out
 
 
 def join_benchmark(
@@ -92,6 +161,7 @@ def assemble_benchmark(cfg: BenchmarkConfig, *, write: bool = True) -> tuple[pd.
     coverage = build_coverage(col, nass)
 
     benchmark = join_benchmark(labels, predictors, coverage)
+    benchmark = _order_columns(attach_index_columns(benchmark, cfg))
 
     fingerprint = compute_build_fingerprint(cfg.as_fingerprint_dict(), _input_fingerprints(cfg))
     manifest = {
