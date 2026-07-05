@@ -14,7 +14,9 @@ __all__ = [
     "evaluate",
     "labels",
     "metrics",
+    "nass",
     "predictors",
     "rma",
+    "sob",
     "splits",
 ]

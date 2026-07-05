@@ -11,7 +11,7 @@ from terraflow.drought.config import DroughtConfig
 from terraflow.drought.dataset import assemble_benchmark, load_benchmark
 from terraflow.drought.evaluate import run_leaderboard
 
-from .drought_synthetic import make_benchmark, make_feature_table, write_synthetic_col
+from .drought_synthetic import make_benchmark, make_feature_table, write_synthetic_col, write_synthetic_sob
 
 _STATES = ["17", "19"]
 _GEOIDS = ["17001", "19005"]
@@ -42,6 +42,7 @@ def _setup_inputs(tmp_path: Path, years: list[int]) -> DroughtConfig:
         rma_dir=tmp_path,
         feature_table=ft_path,
         output_dir=tmp_path / "out",
+        add_coverage=False,
     )
 
 
@@ -52,7 +53,7 @@ def test_assemble_writes_artifacts(tmp_path: Path):
     assert len(bench) == 4  # 2 counties × 2 years
     assert (cfg.output_dir / "benchmark.parquet").exists()
     manifest = json.loads((cfg.output_dir / "manifest.json").read_text())
-    assert manifest["schema_version"] == "1"
+    assert manifest["schema_version"] == "2"
     assert len(manifest["build_fingerprint"]) == 64
     assert manifest["n_counties"] == 2
     assert (cfg.output_dir / "splits.json").exists()
@@ -69,6 +70,50 @@ def test_assemble_is_deterministic(tmp_path: Path):
     assemble_benchmark(cfg, write=True)
     fp2 = json.loads((cfg.output_dir / "manifest.json").read_text())["build_fingerprint"]
     assert fp1 == fp2
+
+
+def test_assemble_with_sob_uses_true_liability(tmp_path: Path):
+    ft = make_feature_table(_GEOIDS, [2000, 2001])
+    ft_path = tmp_path / "feature_table.parquet"
+    ft.to_parquet(ft_path, index=False)
+    for y in (2000, 2001):
+        col_rows = [
+            {
+                "year": y,
+                "state": g[:2],
+                "county": g[2:],
+                "commodity": "CORN",
+                "cause": "Drought",
+                "liability": 1000,
+                "indemnity": 300,
+            }
+            for g in _GEOIDS
+        ]
+        write_synthetic_col(tmp_path / f"colsom_{y}.zip", col_rows)
+        # True insured liability is much larger than the loss-experience liability.
+        sob_rows = [
+            {"year": y, "state": g[:2], "county": g[2:], "commodity": "CORN", "liability": 100000, "acres": 5000}
+            for g in _GEOIDS
+        ]
+        write_synthetic_sob(tmp_path / f"sobcov_{y}.zip", sob_rows)
+
+    cfg = DroughtConfig(
+        states=_STATES,
+        year_min=2000,
+        year_max=2001,
+        rma_dir=tmp_path,
+        sob_dir=tmp_path,
+        feature_table=ft_path,
+        output_dir=tmp_path / "out",
+        add_coverage=False,
+    )
+    bench = assemble_benchmark(cfg, write=True)
+    assert "total_liability" in bench.columns
+    # ratio now uses the true SOB liability (300 / 100000 = 0.003), so no county is "significant".
+    assert bench["drought_loss_ratio"].max() < 0.01
+    assert not bench["significant_drought_loss"].any()
+    manifest = json.loads((cfg.output_dir / "manifest.json").read_text())
+    assert manifest["schema_version"] == "2"
 
 
 def test_load_benchmark_missing(tmp_path: Path):

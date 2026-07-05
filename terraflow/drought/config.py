@@ -15,6 +15,27 @@ from pydantic import BaseModel, Field, field_validator
 # The 6-state Corn Belt used by the flashdry predictor corpus (FIPS state codes).
 CORN_BELT_STATES: tuple[str, ...] = ("17", "18", "19", "27", "29", "31")  # IL IN IA MN MO NE
 
+# FIPS state code → USPS postal code (for the NASS QuickStats query).
+STATE_FIPS_TO_ALPHA: dict[str, str] = {
+    "17": "IL",
+    "18": "IN",
+    "19": "IA",
+    "27": "MN",
+    "29": "MO",
+    "31": "NE",
+    "01": "AL",
+    "05": "AR",
+    "08": "CO",
+    "20": "KS",
+    "21": "KY",
+    "26": "MI",
+    "38": "ND",
+    "39": "OH",
+    "46": "SD",
+    "47": "TN",
+    "55": "WI",
+}
+
 
 class DroughtConfig(BaseModel):
     """End-to-end configuration for building and evaluating the drought-impact benchmark."""
@@ -43,6 +64,13 @@ class DroughtConfig(BaseModel):
     train_max_year: int = 2015
     n_blocks_side: int = 4  # spatial-block grid is n×n
 
+    # --- Coverage / denominator hardening ----------------------------------------------
+    # SOB coverage files give the TRUE total insured liability (denominator) + insured acres.
+    # If unset, the drought-loss ratio falls back to the Cause-of-Loss loss-experience liability.
+    sob_dir: Path | None = None  # directory holding sobcov_YYYY.zip files
+    # Pull NASS planted acres to add an insured-acre-fraction coverage-bias column (needs an API key).
+    add_coverage: bool = True
+
     # --- Paths --------------------------------------------------------------------------
     rma_dir: Path  # directory holding colsom_YYYY.txt (or .zip) files
     feature_table: Path  # flashdry data/processed/feature_table.parquet
@@ -64,6 +92,11 @@ class DroughtConfig(BaseModel):
     @property
     def years(self) -> list[int]:
         return list(range(self.year_min, self.year_max + 1))
+
+    @property
+    def state_alphas(self) -> list[str]:
+        """USPS postal codes for the configured FIPS states (for the NASS query)."""
+        return [STATE_FIPS_TO_ALPHA[s] for s in self.states if s in STATE_FIPS_TO_ALPHA]
 
     @classmethod
     def from_yaml(cls, path: Path) -> "DroughtConfig":

@@ -107,3 +107,37 @@ def make_benchmark(
             rec["significant_drought_loss"] = ratio >= 0.10
             recs.append(rec)
     return pd.DataFrame(recs)
+
+
+# 28-field SOB coverage record (see terraflow.drought.sob.SOB_COLUMNS).
+_SOB_TEMPLATE = (
+    "{year}|{state}|IA|{county}|County|0041|{commodity}|02|RP   |A|RBUP|.6500|"
+    "39|28|15|44|22|Acres|{acres}|0|{liability}|{premium}|0|0|0|0|0|.00"
+)
+
+
+def write_synthetic_sob(path, rows):
+    """Write a pipe-delimited SOB coverage .txt (or .zip) from row dicts."""
+    import zipfile
+    from pathlib import Path as _P
+
+    lines = [
+        _SOB_TEMPLATE.format(
+            year=r["year"],
+            state=str(r["state"]).zfill(2),
+            county=str(r["county"]).zfill(3),
+            commodity=r.get("commodity", "CORN").ljust(30),
+            acres=int(r.get("acres", 1000)),
+            liability=int(r.get("liability", 100000)),
+            premium=int(r.get("premium", 5000)),
+        )
+        for r in rows
+    ]
+    text = "\n".join(lines) + "\n"
+    path = _P(path)
+    if path.suffix.lower() == ".zip":
+        with zipfile.ZipFile(path, "w") as zf:
+            zf.writestr("sobcov_synthetic.txt", text)
+    else:
+        path.write_text(text, encoding="latin-1")
+    return path

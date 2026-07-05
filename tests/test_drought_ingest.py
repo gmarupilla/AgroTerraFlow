@@ -4,13 +4,16 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pandas as pd
 import pytest
 
 from terraflow.drought.config import DroughtConfig
-from terraflow.drought.labels import LABEL_COLUMNS, build_labels
+from terraflow.drought.labels import LABEL_COLUMNS, build_labels, finalize_targets
+from terraflow.drought.nass import parse_nass_records
 from terraflow.drought.rma import COL_COLUMNS, col_url, load_col, parse_col_file
+from terraflow.drought.sob import aggregate_sob, load_sob
 
-from .drought_synthetic import write_synthetic_col
+from .drought_synthetic import write_synthetic_col, write_synthetic_sob
 
 
 def _cfg(tmp_path: Path, **kw) -> DroughtConfig:
@@ -111,10 +114,13 @@ def test_build_labels_math(tmp_path: Path):
     r = labels.iloc[0]
     assert r["drought_indemnity"] == pytest.approx(300.0)
     assert r["total_indemnity"] == pytest.approx(400.0)
-    assert r["liability"] == pytest.approx(3000.0)
+    assert r["col_liability"] == pytest.approx(3000.0)
     assert r["drought_share"] == pytest.approx(0.75)
-    assert r["drought_loss_ratio"] == pytest.approx(0.1)  # 300/3000
-    assert bool(r["significant_drought_loss"]) is True  # >= 0.10 threshold
+    # No SOB joined -> finalize falls back to col_liability: ratio = 300/3000 = 0.10 -> significant.
+    final = finalize_targets(labels, _cfg(tmp_path))
+    fr = final.iloc[0]
+    assert fr["drought_loss_ratio"] == pytest.approx(0.1)
+    assert bool(fr["significant_drought_loss"]) is True
 
 
 def test_build_labels_filters_scope(tmp_path: Path):
@@ -126,3 +132,51 @@ def test_build_labels_filters_scope(tmp_path: Path):
     col = load_col(tmp_path, [2000])
     labels = build_labels(col, _cfg(tmp_path))  # crop defaults to CORN
     assert set(labels["GEOID"]) == {"17001"}
+
+
+def test_sob_parse_and_aggregate(tmp_path: Path):
+    rows = [
+        {"year": 2012, "state": 19, "county": 1, "commodity": "CORN", "liability": 6_000_000, "acres": 3000},
+        {"year": 2012, "state": 19, "county": 1, "commodity": "CORN", "liability": 4_000_000, "acres": 2000},
+    ]
+    write_synthetic_sob(tmp_path / "sobcov_2012.zip", rows)
+    sob = load_sob(tmp_path, [2012], states=["19"], commodity="CORN")
+    agg = aggregate_sob(sob)
+    a = agg.iloc[0]
+    assert a["GEOID"] == "19001"
+    assert a["total_liability"] == pytest.approx(10_000_000)
+    assert a["insured_acres"] == pytest.approx(5000)
+
+
+def test_finalize_uses_true_sob_liability(tmp_path: Path):
+    # With SOB total_liability (10000) the ratio is 0.03 (< threshold), not the col_liability
+    # fallback (1000 -> 0.30). Coverage fraction = insured / planted.
+    df = pd.DataFrame(
+        {
+            "GEOID": ["19001"],
+            "year": [2012],
+            "drought_indemnity": [300.0],
+            "total_indemnity": [300.0],
+            "col_liability": [1000.0],
+            "total_liability": [10_000.0],
+            "insured_acres": [5000.0],
+            "planted_acres": [6000.0],
+        }
+    )
+    final = finalize_targets(df, _cfg(tmp_path)).iloc[0]
+    assert final["drought_loss_ratio"] == pytest.approx(0.03)
+    assert bool(final["significant_drought_loss"]) is False
+    assert final["insured_acre_fraction"] == pytest.approx(5000 / 6000)
+
+
+def test_nass_parse_records():
+    recs = [
+        {"agg_level_desc": "COUNTY", "state_fips_code": "19", "county_ansi": "001", "year": "2012", "Value": "176,000"},
+        {"agg_level_desc": "COUNTY", "state_fips_code": "19", "county_ansi": "001", "year": "2012", "Value": "24,000"},
+        {"agg_level_desc": "COUNTY", "state_fips_code": "19", "county_ansi": "", "year": "2012", "Value": "999"},
+        {"agg_level_desc": "STATE", "state_fips_code": "19", "county_ansi": "003", "year": "2012", "Value": "5"},
+        {"agg_level_desc": "COUNTY", "state_fips_code": "19", "county_ansi": "005", "year": "2012", "Value": "(D)"},
+    ]
+    df = parse_nass_records(recs)
+    assert set(df["GEOID"]) == {"19001"}
+    assert df.iloc[0]["planted_acres"] == pytest.approx(200000)  # 176000 + 24000 summed
