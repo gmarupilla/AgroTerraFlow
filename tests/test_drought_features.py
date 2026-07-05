@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+import pytest
 
 from terraflow.drought.config import DroughtConfig
 from terraflow.drought.metrics import classification_metrics, regression_metrics
@@ -24,7 +25,7 @@ from .drought_synthetic import make_feature_table
 
 
 def _cfg(tmp_path: Path, **kw) -> DroughtConfig:
-    d = dict(
+    d: dict = dict(
         states=["17", "19"],
         year_min=2000,
         year_max=2001,
@@ -89,8 +90,8 @@ def test_describe_splits_keys(tmp_path: Path):
 def test_regression_metrics():
     y = np.array([0.0, 1.0, 2.0, 3.0])
     perfect = regression_metrics(y, y)
-    assert perfect["spearman"] == 1.0
-    assert perfect["rmse"] == 0.0
+    assert perfect["spearman"] == pytest.approx(1.0)
+    assert perfect["rmse"] == pytest.approx(0.0)
     # constant prediction → spearman undefined (NaN), no warning/crash.
     const = regression_metrics(y, np.ones_like(y))
     assert np.isnan(const["spearman"])
@@ -99,7 +100,7 @@ def test_regression_metrics():
 def test_classification_metrics():
     y = np.array([0, 0, 1, 1])
     sep = classification_metrics(y, np.array([0.1, 0.2, 0.8, 0.9]))
-    assert sep["roc_auc"] == 1.0
+    assert sep["roc_auc"] == pytest.approx(1.0)
     assert sep["positives"] == 2
     # single-class truth → AUC/AP undefined but Brier still defined.
     single = classification_metrics(np.array([0, 0, 0]), np.array([0.1, 0.2, 0.3]))

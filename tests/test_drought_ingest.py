@@ -14,7 +14,7 @@ from .drought_synthetic import write_synthetic_col
 
 
 def _cfg(tmp_path: Path, **kw) -> DroughtConfig:
-    defaults = dict(
+    defaults: dict = dict(
         states=["17", "19"],
         year_min=2000,
         year_max=2001,
@@ -51,7 +51,7 @@ def test_parse_txt_and_zip_agree(tmp_path: Path):
     assert list(df_txt.columns)[: len(COL_COLUMNS)] == list(COL_COLUMNS)
     assert df_txt.loc[0, "GEOID"] == "17001"
     assert df_txt.loc[0, "commodity_name"] == "CORN"  # stripped
-    assert df_txt.loc[0, "indemnity_amount"] == 300.0  # numeric-coerced
+    assert df_txt.loc[0, "indemnity_amount"] == pytest.approx(300.0)  # numeric-coerced
     assert df_zip.loc[0, "GEOID"] == "17001"
 
 
@@ -109,9 +109,9 @@ def test_build_labels_math(tmp_path: Path):
 
     assert list(labels.columns) == list(LABEL_COLUMNS)
     r = labels.iloc[0]
-    assert r["drought_indemnity"] == 300.0
-    assert r["total_indemnity"] == 400.0
-    assert r["liability"] == 3000.0
+    assert r["drought_indemnity"] == pytest.approx(300.0)
+    assert r["total_indemnity"] == pytest.approx(400.0)
+    assert r["liability"] == pytest.approx(3000.0)
     assert r["drought_share"] == pytest.approx(0.75)
     assert r["drought_loss_ratio"] == pytest.approx(0.1)  # 300/3000
     assert bool(r["significant_drought_loss"]) is True  # >= 0.10 threshold
