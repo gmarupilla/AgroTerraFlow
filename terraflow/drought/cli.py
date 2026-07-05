@@ -13,6 +13,7 @@ from .config import DroughtConfig
 from .dataset import assemble_benchmark, load_benchmark
 from .evaluate import run_leaderboard
 from .rma import download_col_years
+from .sob import download_sob_years
 
 drought_app = typer.Typer(
     name="drought",
@@ -32,12 +33,16 @@ def fetch_cmd(
     year_min: Annotated[int, typer.Option(help="First commodity year")] = 2000,
     year_max: Annotated[int, typer.Option(help="Last commodity year")] = 2023,
     overwrite: Annotated[bool, typer.Option(help="Re-download existing files")] = False,
+    sob_dir: Annotated[Path | None, typer.Option(help="Also fetch SOB coverage files (true liability) here")] = None,
 ) -> None:
-    """Download RMA Cause of Loss files for a year range."""
+    """Download RMA Cause of Loss (and optionally Summary-of-Business coverage) files."""
     years = list(range(year_min, year_max + 1))
     logger.info(f"Fetching RMA Cause of Loss {year_min}-{year_max} into {rma_dir}")
     paths = download_col_years(years, rma_dir, overwrite=overwrite)
-    logger.info(f"Fetched {len(paths)} files.")
+    logger.info(f"Fetched {len(paths)} Cause of Loss files.")
+    if sob_dir is not None:
+        sob_paths = download_sob_years(years, sob_dir, overwrite=overwrite)
+        logger.info(f"Fetched {len(sob_paths)} Summary-of-Business coverage files.")
 
 
 @drought_app.command("build")
