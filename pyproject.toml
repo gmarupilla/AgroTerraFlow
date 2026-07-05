@@ -92,6 +92,11 @@ select = ["E", "F", "W", "I"]
 ignore = ["E501"]
 
 [tool.pytest.ini_options]
+# Core test collection is scoped to tests/ so a bare `pytest` (make test / test-cov)
+# never recurses into the self-contained benchmarks/ sub-package (which has its own deps,
+# pyproject, and pytest run: `pytest benchmarks/drought_impact/tests`).
+testpaths = ["tests"]
+norecursedirs = ["benchmarks"]
 markers = [
     "smoke: end-to-end smoke tests using synthetic data (run with: pytest -m smoke)",
 ]

@@ -340,3 +340,9 @@ test_outputs/
 
 # MkDocs build output (site/ is already covered by /site above, but belt-and-suspenders)
 site/
+
+# Drought-impact benchmark: raw RMA archives + generated dataset artifacts are not
+# committed (the code regenerates them). Tests use synthetic fixtures built at runtime.
+benchmarks/drought_impact/data/raw/
+benchmarks/drought_impact/data/processed/
+benchmarks/drought_impact/**/*.parquet

@@ -164,6 +164,10 @@ Run artifacts under `<output_dir>/runs/<fingerprint>/` include `features.parquet
 
 Key design decisions are documented in Architecture Decision Records under `docs/architecture/`. See [`docs/reproducibility.md`](https://terraflow.marupilla.dev/reproducibility/) for the run fingerprint contract and known sources of non-determinism.
 
+## Benchmarks
+
+`benchmarks/drought_impact/` is a self-contained, spin-out-ready sub-package defining the **Drought-Impact Prediction Benchmark (v0)** — a prediction-ready benchmark whose target is *insured drought loss* (USDA RMA Cause-of-Loss indemnity), not drought severity or yield. It has its own `pyproject.toml` and does not depend on `terraflow`. See [`benchmarks/drought_impact/README.md`](benchmarks/drought_impact/README.md) and the [docs page](https://terraflow.marupilla.dev/benchmarks/drought-impact/).
+
 ## Project Scope
 
 TerraFlow is a reproducible pipeline for geospatial agricultural modeling. It

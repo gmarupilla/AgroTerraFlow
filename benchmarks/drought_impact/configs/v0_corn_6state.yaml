@@ -1,0 +1,39 @@
+# Drought-Impact Benchmark — v0 config (corn, 6-state Corn Belt)
+#
+# All external locations are paths/URLs, so the same code runs on synthetic fixtures
+# here and on the real flashdry/RMA data locally. Point the *_path entries at your
+# local flashdry `data/processed/` tree before a real build.
+
+states: ["17", "18", "19", "27", "29", "31"]  # IL, IN, IA, MN, MO, NE
+year_min: 2000
+year_max: 2023
+crop: "CORN"
+
+# Growing-season window (day-of-year) over which _anom predictors are aggregated.
+# cutoff_doy ~= Jul 31 → the early-warning framing.
+season_start_doy: 60
+cutoff_doy: 212
+
+# Binary significant-loss flag.
+binary_threshold: 0.10
+binary_threshold_mode: "fixed"  # or "county_baseline"
+
+# Splits.
+spatial_blocks_side: 4
+temporal_test_years: [2012, 2022, 2023]
+
+# --- External inputs (edit for a real local build) --------------------------------
+# flashdry predictor matrix + auxiliary baselines. Leave null to skip.
+feature_table_path: null   # e.g. ~/workspace/research/papers/flashdry/data/processed/feature_table.parquet
+nass_acres_path: null      # NASS planted acres (for insured_acre_fraction)
+wxcond_path: null          # flashdry WxCond severity-detector probs (severity != impact baseline)
+vci_tci_vhi_path: null     # VCI/TCI/VHI baselines
+usdm_path: null            # USDM D2+ county-weekly
+
+# Where COL archives are downloaded/placed, and where artifacts are written.
+rma_data_dir: "data/raw"
+output_dir: "data/processed"
+
+rma_source:
+  base_url: "https://www.rma.usda.gov/-/media/RMA/Cause-Of-Loss/Summary-of-Business-with-Month-of-Loss"
+  filename_template: "colsom_{year}.zip"
