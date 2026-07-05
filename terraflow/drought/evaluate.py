@@ -10,6 +10,7 @@ Writes ``evaluate_report.json`` and ``leaderboard.csv`` to the run's output dire
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 
 import numpy as np
@@ -37,14 +38,19 @@ def _fit_predict_regression(name: str, feats: str, train: pd.DataFrame, test: pd
 
 
 def _fit_predict_classification(name: str, feats: str, train: pd.DataFrame, test: pd.DataFrame) -> dict:
-    est = make_classifiers()[name]
     y_train = train[CLASSIFICATION_TARGET].to_numpy(dtype=int)
+    y_test = test[CLASSIFICATION_TARGET].to_numpy(dtype=int)
+    # A one-class training set (rare-event scope / high threshold) can't fit sklearn classifiers;
+    # fall back to a constant predictor at the single observed class rather than crashing.
+    if np.unique(y_train).size < 2:
+        return classification_metrics(y_test, np.full(len(y_test), float(y_train[0]) if len(y_train) else 0.0))
+    est = make_classifiers()[name]
     est.fit(feature_matrix(train, feats), y_train)
     if hasattr(est, "predict_proba"):
         score = est.predict_proba(feature_matrix(test, feats))[:, 1]
     else:  # pragma: no cover - all configured classifiers expose predict_proba
         score = est.predict(feature_matrix(test, feats)).astype(float)
-    return classification_metrics(test[CLASSIFICATION_TARGET].to_numpy(dtype=int), score)
+    return classification_metrics(y_test, score)
 
 
 def _temporal_leaderboard(train: pd.DataFrame, test: pd.DataFrame) -> dict:
@@ -115,9 +121,20 @@ def run_leaderboard(benchmark: pd.DataFrame, cfg: DroughtConfig, *, write_dir: P
     if write_dir is not None:
         write_dir = Path(write_dir)
         write_dir.mkdir(parents=True, exist_ok=True)
-        (write_dir / "evaluate_report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+        (write_dir / "evaluate_report.json").write_text(json.dumps(_json_safe(report), indent=2), encoding="utf-8")
         _leaderboard_frame(report).to_csv(write_dir / "leaderboard.csv", index=False)
     return report
+
+
+def _json_safe(obj):
+    """Recursively replace non-finite floats (NaN/inf) with None so the JSON is strict-parseable."""
+    if isinstance(obj, float):
+        return obj if math.isfinite(obj) else None
+    if isinstance(obj, dict):
+        return {k: _json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_json_safe(v) for v in obj]
+    return obj
 
 
 def _leaderboard_frame(report: dict) -> pd.DataFrame:

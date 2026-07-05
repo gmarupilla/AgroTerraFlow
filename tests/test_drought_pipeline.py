@@ -97,6 +97,22 @@ def test_run_leaderboard_structure_and_files(tmp_path: Path):
     assert "spatial_loso" in report
     assert (cfg.output_dir / "evaluate_report.json").exists()
     assert (cfg.output_dir / "leaderboard.csv").exists()
+    # Report must be strict JSON: non-finite metrics (e.g. Mean-baseline Spearman) become null, not NaN.
+    report_text = (cfg.output_dir / "evaluate_report.json").read_text()
+    assert "NaN" not in report_text and "Infinity" not in report_text
+
+
+def test_classification_handles_one_class_training(tmp_path: Path):
+    # A training set with a single class must not crash the temporal classifiers.
+    from terraflow.drought.baselines import CLASSIFICATION_TARGET
+    from terraflow.drought.evaluate import _fit_predict_classification
+
+    bench = make_benchmark(["17001", "17003", "19001"], [2000, 2001, 2002])
+    train = bench[bench["year"] < 2002].copy()
+    train[CLASSIFICATION_TARGET] = False  # force one-class training
+    test = bench[bench["year"] == 2002]
+    metrics = _fit_predict_classification("LogReg", "climate", train, test)
+    assert "roc_auc" in metrics and "brier" in metrics
 
 
 def test_run_leaderboard_empty_split_raises(tmp_path: Path):
