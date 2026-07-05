@@ -72,9 +72,12 @@ specific figure from a specific configuration and specific input bytes.
 v0.5.0 closes one half of this gap: a config-level scenario × hazard
 fan-out now ingests CMIP6 NetCDF inputs and folds each file's SHA-256
 into the run fingerprint, so projected-climate analyses inherit the
-same reproducibility contract as the historical pipeline. The other
-half — adoption-driven validation of those projections against
-domain-specific benchmarks — is in progress.
+same reproducibility contract as the historical pipeline. The
+complementary half — validating model output against a domain-specific *impact*
+benchmark — is realised by the bundled `terraflow drought` application: a
+prediction-ready benchmark linking open climate/vegetation predictors to realised
+insured drought loss across the US Corn Belt, released as a versioned Zenodo
+dataset [@drought_benchmark].
 
 TerraFlow closes this gap with a single configuration-driven pipeline
 that fingerprints every run from the canonicalised YAML config plus
@@ -180,6 +183,20 @@ Every number above is reproducible from `make get-demo-data &&
 terraflow run -c examples/demo_config.yml` plus the two companion
 subcommands; the published `run_fingerprint` is verifiable without
 shared compute infrastructure.
+
+**A worked application: predicting drought impact.** To demonstrate the framework
+on a real research problem, `terraflow drought` builds an impact-labelled benchmark
+linking open predictors to realised insured drought loss for 587 US Corn Belt
+counties over 2000–2023 (13,895 county-years) [@drought_benchmark]. Under a temporal
+split that holds out extreme years (including the 2012 drought), a within-season
+climate model predicts significant drought loss at ROC-AUC 0.93 / PR-AUC 0.78, and
+0.91 mean ROC-AUC under leave-one-state-out spatial cross-validation. The benchmark
+also surfaces an open methodological challenge — tree models collapse when
+extrapolating to extreme held-out years while linear models remain robust — that
+only a shared, reproducible benchmark can expose. Dataset, splits, baselines, and a
+deterministic build fingerprint are released under CC-BY-4.0 [@drought_benchmark];
+the predictor corpus derives from a separate flash-drought study [@flashdry], which
+the software supports but does not duplicate.
 
 To the authors' knowledge TerraFlow is the only open package that
 composes Ordinary Kriging with LOOCV variogram selection, Monte-Carlo
