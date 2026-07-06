@@ -2230,10 +2230,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#reference-results-v0-587-counties-13895-county-years-185-positive" class="md-nav__link">
+  <a href="#reference-results-v02-587-counties-13895-county-years-60-positive" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Reference results (v0, 587 counties, 13,895 county-years, 18.5% positive)
+        Reference results (v0.2, 587 counties, 13,895 county-years, 6.0% positive)
       
     </span>
   </a>
@@ -2454,10 +2454,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#reference-results-v0-587-counties-13895-county-years-185-positive" class="md-nav__link">
+  <a href="#reference-results-v02-587-counties-13895-county-years-60-positive" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Reference results (v0, 587 counties, 13,895 county-years, 18.5% positive)
+        Reference results (v0.2, 587 counties, 13,895 county-years, 6.0% positive)
       
     </span>
   </a>
@@ -2529,13 +2529,13 @@ that realized loss, back to 1989 — but it has never been packaged as a predict
   spatial, and leave-one-year-out.</li>
 </ul>
 <h2 id="quickstart">Quickstart<a class="headerlink" href="#quickstart" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>terraflow<span class="w"> </span>drought<span class="w"> </span>fetch<span class="w">    </span>--rma-dir<span class="w"> </span>data/drought/rma<span class="w"> </span>--year-min<span class="w"> </span><span class="m">2000</span><span class="w"> </span>--year-max<span class="w"> </span><span class="m">2023</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>terraflow<span class="w"> </span>drought<span class="w"> </span>fetch<span class="w">    </span>--rma-dir<span class="w"> </span>data/drought/rma<span class="w"> </span>--sob-dir<span class="w"> </span>data/drought/sob<span class="w"> </span>--year-min<span class="w"> </span><span class="m">2000</span><span class="w"> </span>--year-max<span class="w"> </span><span class="m">2023</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>terraflow<span class="w"> </span>drought<span class="w"> </span>build<span class="w">    </span>-c<span class="w"> </span>examples/drought_v0_corn_6state.yml
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>terraflow<span class="w"> </span>drought<span class="w"> </span>evaluate<span class="w"> </span>-c<span class="w"> </span>examples/drought_v0_corn_6state.yml
 </span></code></pre></div>
 <p><code>build</code> writes <code>benchmark.parquet</code> + <code>manifest.json</code> (deterministic build fingerprint) + <code>splits.json</code>;
 <code>evaluate</code> writes <code>evaluate_report.json</code> + <code>leaderboard.csv</code>.</p>
-<h2 id="reference-results-v0-587-counties-13895-county-years-185-positive">Reference results (v0, 587 counties, 13,895 county-years, 18.5% positive)<a class="headerlink" href="#reference-results-v0-587-counties-13895-county-years-185-positive" title="Permanent link">&para;</a></h2>
+<h2 id="reference-results-v02-587-counties-13895-county-years-60-positive">Reference results (v0.2, 587 counties, 13,895 county-years, 6.0% positive)<a class="headerlink" href="#reference-results-v02-587-counties-13895-county-years-60-positive" title="Permanent link">&para;</a></h2>
 <p>Temporal split (train ≤ 2015, test = 2012/2017/2022/2023):</p>
 <table>
 <thead>
@@ -2548,42 +2548,40 @@ that realized loss, back to 1989 — but it has never been packaged as a predict
 <tbody>
 <tr>
 <td>Classification</td>
-<td>LogReg [climate]</td>
-<td>ROC-AUC <strong>0.93</strong>, PR-AUC <strong>0.78</strong></td>
+<td>GradientBoost [climate]</td>
+<td>ROC-AUC <strong>0.95</strong>, PR-AUC <strong>0.66</strong></td>
 </tr>
 <tr>
 <td>Classification</td>
 <td>LogReg [severity]</td>
-<td>ROC-AUC 0.92, PR-AUC 0.73</td>
+<td>ROC-AUC 0.93, PR-AUC 0.62</td>
 </tr>
 <tr>
 <td>Classification</td>
 <td>RandomForest [climate]</td>
-<td>ROC-AUC 0.27 (temporal extrapolation collapse)</td>
-</tr>
-<tr>
-<td>Regression</td>
-<td>Ridge [climate]</td>
-<td>Spearman <strong>0.65</strong></td>
+<td>ROC-AUC 0.56 (temporal-extrapolation collapse)</td>
 </tr>
 <tr>
 <td>Spatial LOSO</td>
-<td>RandomForest [climate]</td>
+<td>GradientBoost [climate]</td>
 <td>mean ROC-AUC <strong>0.91</strong></td>
 </tr>
 </tbody>
 </table>
-<p>Findings: (1) within-season signal predicts insured drought loss well (AUC ≈ 0.91–0.93);
-(2) USDM severity is a <em>strong</em> baseline — within-season climate anomalies match/slightly beat it and
-are available earlier in the season; (3) <strong>temporal extrapolation to extreme years is the open
-challenge</strong> — tree models collapse under distribution shift while linear models hold. That model-class
-gap is the benchmark's most interesting result.</p>
+<p>Findings: (1) within-season signal predicts realised insured drought loss well (best temporal
+ROC-AUC ≈ 0.95; spatial ≈ 0.91); (2) USDM severity is a <em>strong</em> baseline that within-season climate
+models match/beat while arriving earlier in the season; (3) <strong>model choice matters sharply under
+temporal extrapolation</strong> — a random forest collapses to near-chance (≈0.56) on held-out extreme
+years while gradient-boosting and linear models stay strong (0.80–0.95). The positive class is rare
+(6%), so PR-AUC is the honest headline.</p>
 <h2 id="limitations-datasheet-notes">Limitations (datasheet notes)<a class="headerlink" href="#limitations-datasheet-notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li>RMA Cause of Loss covers <strong>insured acres only</strong>; participation varies by crop/region/year.</li>
-<li>The loss-experience liability denominator can push <code>drought_loss_ratio</code> above 1 in catastrophic
-  years — prefer rank metrics (Spearman) and the binary target.</li>
-<li>v0 is corn + Corn Belt; soybean, CONUS, and a coverage-bias column are planned follow-ups.</li>
+<li>RMA Cause of Loss covers <strong>insured acres only</strong>; the benchmark ships an <code>insured_acre_fraction</code>
+  column (insured acres / NASS planted acres; median ≈ 0.70) so users can filter/weight by coverage.</li>
+<li><code>drought_loss_ratio</code> uses the <strong>true total insured liability</strong> (RMA Summary-of-Business), removing
+  the loss-experience &gt;1 artifact (4 of 13,895 rows marginally exceed 1). Rank metrics and the binary
+  target remain robust.</li>
+<li>v0.2 is corn + Corn Belt; soybean, CONUS, and additional predictors (e.g. GRACE) are planned.</li>
 </ul>
 <h2 id="provenance-citation">Provenance &amp; citation<a class="headerlink" href="#provenance-citation" title="Permanent link">&para;</a></h2>
 <p>The predictor corpus comes from the separate <a href="https://github.com/gmarupilla/flashdry">flashdry</a> repo
