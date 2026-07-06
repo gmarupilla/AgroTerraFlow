@@ -1,8 +1,7 @@
 {
   "//": "Metadata for the MANUAL Zenodo dataset deposit of the drought-impact benchmark. This is NOT the flashdry GitHub-release integration; upload the bundled artifacts (benchmark.parquet, splits.json, manifest.json, leaderboard.csv, evaluate_report.json, DATASHEET.md) as a new Zenodo record and paste these fields.",
   "doi": "10.5281/zenodo.21208651",
-  "version_doi": "10.5281/zenodo.21211752",
-  "version": "v0.2",
+  "version": "v0.3",
   "title": "Drought-Impact Prediction Benchmark (v0): county-level insured drought loss for the US Corn Belt",
   "upload_type": "dataset",
   "description": "A prediction-ready, impact-labeled drought benchmark: predict realized insured drought loss (USDA RMA Cause of Loss) from within-season climate/vegetation anomalies. v0 covers corn across the 6-state US Corn Belt (IL/IN/IA/MN/MO/NE), 2000-2023 (13,895 county-years, 587 counties, 18.5% positive). Distinct from drought-severity (USDM) and crop-yield benchmarks. Includes official temporal / leave-one-state-out spatial / leave-one-year-out splits and a baseline leaderboard. Built and reproducible with the open-source terraflow.drought pipeline.",
