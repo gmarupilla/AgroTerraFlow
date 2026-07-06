@@ -174,3 +174,67 @@ def test_run_leaderboard_empty_split_raises(tmp_path: Path):
     )
     with pytest.raises(ValueError, match="empty train or test"):
         run_leaderboard(bench, cfg)
+
+
+def test_assemble_is_crop_parameterized(tmp_path: Path):
+    # Build a soybean benchmark from synthetic data: only SOYBEANS rows are scored.
+    ft = make_feature_table(_GEOIDS, [2000, 2001])
+    ft_path = tmp_path / "feature_table.parquet"
+    ft.to_parquet(ft_path, index=False)
+    for y in (2000, 2001):
+        write_synthetic_col(
+            tmp_path / f"colsom_{y}.zip",
+            [
+                {
+                    "year": y,
+                    "state": g[:2],
+                    "county": g[2:],
+                    "commodity": "SOYBEANS",
+                    "cause": "Drought",
+                    "liability": 1000,
+                    "indemnity": 300,
+                }
+                for g in _GEOIDS
+            ]
+            + [
+                {
+                    "year": y,
+                    "state": _GEOIDS[0][:2],
+                    "county": _GEOIDS[0][2:],
+                    "commodity": "CORN",
+                    "cause": "Drought",
+                    "liability": 1000,
+                    "indemnity": 999,
+                }
+                for _ in (0,)
+            ],
+        )
+        write_synthetic_sob(
+            tmp_path / f"sobcov_{y}.zip",
+            [
+                {
+                    "year": y,
+                    "state": g[:2],
+                    "county": g[2:],
+                    "commodity": "SOYBEANS",
+                    "liability": 100000,
+                    "acres": 5000,
+                }
+                for g in _GEOIDS
+            ],
+        )
+    cfg = DroughtConfig(
+        crop="SOYBEANS",
+        states=_STATES,
+        year_min=2000,
+        year_max=2001,
+        rma_dir=tmp_path,
+        sob_dir=tmp_path,
+        feature_table=ft_path,
+        output_dir=tmp_path / "out",
+        add_coverage=False,
+    )
+    bench = assemble_benchmark(cfg, write=True)
+    # The corn indemnity (999) must be excluded; soybean drought_indemnity is 300 per county-year.
+    assert bench["drought_indemnity"].max() == 300.0
+    assert (cfg.output_dir / "benchmark.parquet").exists()
