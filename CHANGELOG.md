@@ -8,6 +8,12 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ## [Unreleased]
 
 ### Added
+- **Drought benchmark coverage hardening.** `terraflow.drought` now derives the drought-loss-ratio
+  denominator from the RMA Summary-of-Business coverage file (`sob.py`) — the *true* total insured
+  liability across all policies — removing the >1 artifact of the Cause-of-Loss loss-experience
+  liability; and adds an `insured_acre_fraction` coverage-bias column from USDA NASS planted acres
+  (`nass.py`, QuickStats API via `NASS_API_KEY`). Manifest `schema_version` → 2. Falls back to the
+  Cause-of-Loss liability when no SOB directory is configured.
 - **Drought-impact prediction benchmark (`terraflow.drought`).** A new in-package sub-package and
   `terraflow drought {fetch,build,evaluate}` CLI that assembles and evaluates an *impact-labeled*
   drought benchmark: predict **insured drought loss** (USDA RMA Cause of Loss, public 1989-present)

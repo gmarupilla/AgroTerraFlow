@@ -69,7 +69,7 @@ run-demo:
 
 get-drought-data:
 	@echo "Downloading RMA Cause of Loss (public) 2000-2023 into data/drought/rma ..."
-	$(PYTHON) -m terraflow.cli drought fetch --rma-dir data/drought/rma --year-min 2000 --year-max 2023
+	$(PYTHON) -m terraflow.cli drought fetch --rma-dir data/drought/rma --sob-dir data/drought/sob --year-min 2000 --year-max 2023
 
 drought-eval:
 	$(PYTHON) -m terraflow.cli drought build -c examples/drought_v0_corn_6state.yml

@@ -26,6 +26,8 @@ train_max_year: 2015
 n_blocks_side: 4
 
 # Paths (edit these)
-rma_dir: "data/drought/rma"                       # where `terraflow drought fetch` writes colsom_*.zip
+rma_dir: "data/drought/rma"                       # colsom_*.zip (Cause of Loss)
+sob_dir: "data/drought/sob"                       # sobcov_*.zip (Summary of Business — true liability)
+add_coverage: true                                # NASS planted acres -> coverage-bias column (needs NASS_API_KEY)
 feature_table: "PATH/TO/flashdry/data/processed/feature_table.parquet"
 output_dir: "outputs/drought_v0"

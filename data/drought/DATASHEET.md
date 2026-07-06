@@ -16,9 +16,11 @@ Following Gebru et al., *Datasheets for Datasets* (2021).
 - **Features.** 30 deseasonalized flashdry climate anomalies (`*_anom`) + `NDVI_anom_z` + USDM
   severity (`dm_gte_d2`, `dm_class`), each aggregated {mean, min, max, last} up to `cutoff_doy`
   (default ≈ Jul 31 — early-warning), plus `n_obs` and `n_stress_weeks`.
-- **Labels.** `drought_loss_ratio` (regression), `significant_drought_loss` (binary, positive rate
-  **18.5%**), `drought_share` (bounded auxiliary), and raw `drought_indemnity` / `total_indemnity` /
-  `liability`.
+- **Labels.** `drought_loss_ratio` (regression; drought indemnity / true insured liability),
+  `significant_drought_loss` (binary, positive rate **6.0%**), `drought_share` (bounded auxiliary),
+  and raw `drought_indemnity` / `total_indemnity` / `total_liability`.
+- **Coverage.** `insured_acres`, `total_premium`, `planted_acres`, and `insured_acre_fraction`
+  (insured / planted acres; median ≈ 0.70) expose RMA's insured-only coverage bias.
 - **Splits** (`splits.json`). Temporal (train ≤ 2015, test = 2012/2017/2022/2023), leave-one-state-out
   spatial, leave-one-year-out.
 
@@ -37,10 +39,11 @@ leaderboard (`leaderboard.csv`) covers naive, severity-only, and Ridge/RF/GBM cl
 
 ## Limitations & caveats
 
-- **Insured-acre coverage.** RMA Cause of Loss covers *insured* acres only; participation varies by
-  crop/region/year. A per-county-year coverage-bias column is a planned follow-up.
-- **Denominator.** `drought_loss_ratio` uses loss-experience liability and can exceed 1.0 in
-  catastrophic county-years — prefer **rank metrics (Spearman)** and the **binary target**.
+- **Insured-acre coverage.** RMA covers *insured* acres only; the `insured_acre_fraction` column
+  (insured / NASS planted acres) documents this per county-year so users can filter or weight.
+- **Denominator.** `drought_loss_ratio` uses the **true total insured liability** (RMA
+  Summary-of-Business), so the loss-experience >1 artifact is essentially removed (4 of 13,895
+  rows marginally exceed 1). Rank metrics and the binary target remain robust.
 - **Scope.** v0 is corn + Corn Belt; soybean, CONUS, and additional predictors (e.g. GRACE) are future work.
 
 ## Distribution & license

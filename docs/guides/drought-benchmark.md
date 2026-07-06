@@ -28,7 +28,7 @@ that realized loss, back to 1989 — but it has never been packaged as a predict
 ## Quickstart
 
 ```bash
-terraflow drought fetch    --rma-dir data/drought/rma --year-min 2000 --year-max 2023
+terraflow drought fetch    --rma-dir data/drought/rma --sob-dir data/drought/sob --year-min 2000 --year-max 2023
 terraflow drought build    -c examples/drought_v0_corn_6state.yml
 terraflow drought evaluate -c examples/drought_v0_corn_6state.yml
 ```
@@ -36,30 +36,32 @@ terraflow drought evaluate -c examples/drought_v0_corn_6state.yml
 `build` writes `benchmark.parquet` + `manifest.json` (deterministic build fingerprint) + `splits.json`;
 `evaluate` writes `evaluate_report.json` + `leaderboard.csv`.
 
-## Reference results (v0, 587 counties, 13,895 county-years, 18.5% positive)
+## Reference results (v0.2, 587 counties, 13,895 county-years, 6.0% positive)
 
 Temporal split (train ≤ 2015, test = 2012/2017/2022/2023):
 
 | Task | Model | Headline |
 |---|---|---|
-| Classification | LogReg [climate] | ROC-AUC **0.93**, PR-AUC **0.78** |
-| Classification | LogReg [severity] | ROC-AUC 0.92, PR-AUC 0.73 |
-| Classification | RandomForest [climate] | ROC-AUC 0.27 (temporal extrapolation collapse) |
-| Regression | Ridge [climate] | Spearman **0.65** |
-| Spatial LOSO | RandomForest [climate] | mean ROC-AUC **0.91** |
+| Classification | GradientBoost [climate] | ROC-AUC **0.95**, PR-AUC **0.66** |
+| Classification | LogReg [severity] | ROC-AUC 0.93, PR-AUC 0.62 |
+| Classification | RandomForest [climate] | ROC-AUC 0.56 (temporal-extrapolation collapse) |
+| Spatial LOSO | GradientBoost [climate] | mean ROC-AUC **0.91** |
 
-Findings: (1) within-season signal predicts insured drought loss well (AUC ≈ 0.91–0.93);
-(2) USDM severity is a *strong* baseline — within-season climate anomalies match/slightly beat it and
-are available earlier in the season; (3) **temporal extrapolation to extreme years is the open
-challenge** — tree models collapse under distribution shift while linear models hold. That model-class
-gap is the benchmark's most interesting result.
+Findings: (1) within-season signal predicts realised insured drought loss well (best temporal
+ROC-AUC ≈ 0.95; spatial ≈ 0.91); (2) USDM severity is a *strong* baseline that within-season climate
+models match/beat while arriving earlier in the season; (3) **model choice matters sharply under
+temporal extrapolation** — a random forest collapses to near-chance (≈0.56) on held-out extreme
+years while gradient-boosting and linear models stay strong (0.80–0.95). The positive class is rare
+(6%), so PR-AUC is the honest headline.
 
 ## Limitations (datasheet notes)
 
-- RMA Cause of Loss covers **insured acres only**; participation varies by crop/region/year.
-- The loss-experience liability denominator can push `drought_loss_ratio` above 1 in catastrophic
-  years — prefer rank metrics (Spearman) and the binary target.
-- v0 is corn + Corn Belt; soybean, CONUS, and a coverage-bias column are planned follow-ups.
+- RMA Cause of Loss covers **insured acres only**; the benchmark ships an `insured_acre_fraction`
+  column (insured acres / NASS planted acres; median ≈ 0.70) so users can filter/weight by coverage.
+- `drought_loss_ratio` uses the **true total insured liability** (RMA Summary-of-Business), removing
+  the loss-experience >1 artifact (4 of 13,895 rows marginally exceed 1). Rank metrics and the binary
+  target remain robust.
+- v0.2 is corn + Corn Belt; soybean, CONUS, and additional predictors (e.g. GRACE) are planned.
 
 ## Provenance & citation
 
