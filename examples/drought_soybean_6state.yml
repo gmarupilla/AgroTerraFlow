@@ -1,0 +1,32 @@
+# Drought-impact benchmark — soybean, 6-state Corn Belt.
+#
+# Same pipeline as the corn config, with crop: SOYBEANS. RMA Cause of Loss, SOB coverage, and NASS
+# planted acres all key on the commodity name "SOYBEANS". Build/evaluate identically:
+#
+#   terraflow drought fetch    --rma-dir data/drought/rma --sob-dir data/drought/sob
+#   terraflow drought build    -c examples/drought_soybean_6state.yml
+#   terraflow drought evaluate -c examples/drought_soybean_6state.yml
+#
+# CAVEAT: the flashdry NDVI predictor is corn-masked, so for soybean NDVI_anom_z acts as a regional
+# vegetation-stress proxy, not a crop-specific signal. The weather anomalies and USDM severity are
+# crop-agnostic. A soybean-masked NDVI layer is a planned follow-up.
+
+states: ["17", "18", "19", "27", "29", "31"]   # IL IN IA MN MO NE
+crop: "SOYBEANS"
+year_min: 2000
+year_max: 2023
+
+drought_causes: ["Drought"]
+loss_ratio_threshold: 0.10
+cutoff_doy: 212
+
+test_years: [2012, 2017, 2022, 2023]
+train_max_year: 2015
+n_blocks_side: 4
+
+rma_dir: "data/drought/rma"
+sob_dir: "data/drought/sob"
+add_coverage: true
+
+feature_table: "PATH/TO/flashdry/data/processed/feature_table.parquet"
+output_dir: "outputs/drought_soybean"

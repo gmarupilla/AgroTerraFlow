@@ -8,6 +8,9 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ## [Unreleased]
 
 ### Added
+- **Drought benchmark: soybean support.** The `terraflow.drought` pipeline is crop-parameterized;
+  a soybean benchmark is available via `examples/drought_soybean_6state.yml` (RMA/SOB/NASS all key
+  on `SOYBEANS`). NDVI remains corn-masked (regional proxy for non-corn crops; documented).
 - **Drought benchmark coverage hardening.** `terraflow.drought` now derives the drought-loss-ratio
   denominator from the RMA Summary-of-Business coverage file (`sob.py`) — the *true* total insured
   liability across all policies — removing the >1 artifact of the Cause-of-Loss loss-experience

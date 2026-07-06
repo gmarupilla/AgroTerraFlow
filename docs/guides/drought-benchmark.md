@@ -61,7 +61,12 @@ years while gradient-boosting and linear models stay strong (0.80–0.95). The p
 - `drought_loss_ratio` uses the **true total insured liability** (RMA Summary-of-Business), removing
   the loss-experience >1 artifact (4 of 13,895 rows marginally exceed 1). Rank metrics and the binary
   target remain robust.
-- v0.2 is corn + Corn Belt; soybean, CONUS, and additional predictors (e.g. GRACE) are planned.
+- **Other crops.** The pipeline is crop-parameterized (`crop:` in the config). A **soybean** benchmark
+  is available via `examples/drought_soybean_6state.yml` (13,895 county-years, 4.8% positive; best
+  temporal ROC-AUC 0.93, spatial LOSO 0.91). Caveat: flashdry NDVI is corn-masked, so for non-corn
+  crops `NDVI_anom_z` is a regional vegetation proxy (weather anomalies + USDM severity are
+  crop-agnostic); a crop-masked NDVI layer is a follow-up.
+- CONUS coverage and additional predictors (e.g. GRACE) are planned.
 
 ## Provenance & citation
 
