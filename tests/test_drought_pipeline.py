@@ -236,5 +236,5 @@ def test_assemble_is_crop_parameterized(tmp_path: Path):
     )
     bench = assemble_benchmark(cfg, write=True)
     # The corn indemnity (999) must be excluded; soybean drought_indemnity is 300 per county-year.
-    assert bench["drought_indemnity"].max() == 300.0
+    assert bench["drought_indemnity"].max() == pytest.approx(300.0)
     assert (cfg.output_dir / "benchmark.parquet").exists()
