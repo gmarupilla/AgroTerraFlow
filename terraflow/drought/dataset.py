@@ -57,19 +57,26 @@ def assemble_benchmark(cfg: DroughtConfig, *, write: bool = True, nass_api_key: 
         sob_agg["GEOID"] = sob_agg["GEOID"].astype(str)
         benchmark = benchmark.merge(sob_agg, on=["GEOID", "year"], how="left").fillna(_SOB_FILL)
 
+    extra_digests: list[dict] = []
     if cfg.add_coverage:
         key = nass_api_key or os.environ.get("NASS_API_KEY")
         if key:
             nass = fetch_planted_acres(cfg.state_alphas, cfg.crop, key)
             nass["GEOID"] = nass["GEOID"].astype(str)
             benchmark = benchmark.merge(nass, on=["GEOID", "year"], how="left")
+            # NASS is a live source (no local file); hash the fetched acreage so revised values
+            # invalidate the build fingerprint, preserving the reproducibility contract.
+            nass_bytes = nass.sort_values(["GEOID", "year"]).to_csv(index=False).encode("utf-8")
+            extra_digests.append(
+                {"path": f"nass:quickstats:{cfg.crop}", "sha256": hashlib.sha256(nass_bytes).hexdigest()}
+            )
 
     benchmark = finalize_targets(benchmark, cfg)
     benchmark["significant_drought_loss"] = benchmark["significant_drought_loss"].astype(bool)
     benchmark = benchmark.sort_values(["GEOID", "year"]).reset_index(drop=True)
 
     if write:
-        _write_artifacts(benchmark, cfg)
+        _write_artifacts(benchmark, cfg, extra_digests=extra_digests)
     return benchmark
 
 
@@ -108,7 +115,7 @@ def _rma_paths(cfg: DroughtConfig, prefix: str, directory: Path | None) -> list[
     return out
 
 
-def _write_artifacts(benchmark: pd.DataFrame, cfg: DroughtConfig) -> None:
+def _write_artifacts(benchmark: pd.DataFrame, cfg: DroughtConfig, extra_digests: list[dict] | None = None) -> None:
     out = Path(cfg.output_dir)
     out.mkdir(parents=True, exist_ok=True)
     benchmark.to_parquet(out / "benchmark.parquet", index=False)
@@ -117,6 +124,7 @@ def _write_artifacts(benchmark: pd.DataFrame, cfg: DroughtConfig) -> None:
     input_paths += _rma_paths(cfg, "colsom", cfg.rma_dir)
     input_paths += _rma_paths(cfg, "sobcov", cfg.sob_dir)
     input_digests = [fingerprint_file(str(p)) for p in input_paths]
+    input_digests += extra_digests or []
     manifest = {
         "schema_version": "2",
         "config": _config_dict(cfg),

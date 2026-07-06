@@ -37,12 +37,24 @@ def parse_nass_records(records: list[dict]) -> pd.DataFrame:
             acres = float(value)
         except ValueError:
             continue  # withheld/non-numeric ("(D)", "(Z)", etc.)
-        rows.append({"GEOID": state_fips + county_ansi.zfill(3), "year": int(r["year"]), "planted_acres": acres})
+        rows.append(
+            {
+                "GEOID": state_fips + county_ansi.zfill(3),
+                "year": int(r["year"]),
+                "planted_acres": acres,
+                "is_total": r.get("prodn_practice_desc") == "ALL PRODUCTION PRACTICES",
+            }
+        )
     if not rows:
         return pd.DataFrame(columns=["GEOID", "year", "planted_acres"])
     df = pd.DataFrame(rows)
-    # Sum any within-county practice splits (irrigated/non-irrigated) to a single planted total.
-    return df.groupby(["GEOID", "year"], as_index=False)["planted_acres"].sum()
+    # QuickStats returns an "ALL PRODUCTION PRACTICES" total alongside IRRIGATED/NON-IRRIGATED
+    # breakouts that sum to it; summing everything would double-count. Prefer the total, and fall
+    # back to summing breakouts only for county-years that have no total row.
+    totals = df[df["is_total"]].groupby(["GEOID", "year"], as_index=False)["planted_acres"].max()
+    others = df[~df["is_total"]].merge(totals[["GEOID", "year"]], on=["GEOID", "year"], how="left", indicator=True)
+    fallback = others[others["_merge"] == "left_only"].groupby(["GEOID", "year"], as_index=False)["planted_acres"].sum()
+    return pd.concat([totals, fallback], ignore_index=True).sort_values(["GEOID", "year"]).reset_index(drop=True)
 
 
 def _query_state(state_alpha: str, commodity: str, api_key: str) -> list[dict]:

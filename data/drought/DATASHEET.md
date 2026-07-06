@@ -20,7 +20,7 @@ Following Gebru et al., *Datasheets for Datasets* (2021).
   `significant_drought_loss` (binary, positive rate **6.0%**), `drought_share` (bounded auxiliary),
   and raw `drought_indemnity` / `total_indemnity` / `total_liability`.
 - **Coverage.** `insured_acres`, `total_premium`, `planted_acres`, and `insured_acre_fraction`
-  (insured / planted acres; median ≈ 0.45) expose RMA's insured-only coverage bias.
+  (insured / planted acres; median ≈ 0.70) expose RMA's insured-only coverage bias.
 - **Splits** (`splits.json`). Temporal (train ≤ 2015, test = 2012/2017/2022/2023), leave-one-state-out
   spatial, leave-one-year-out.
 

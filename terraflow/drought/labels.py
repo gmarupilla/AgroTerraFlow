@@ -76,7 +76,10 @@ def finalize_targets(df: pd.DataFrame, cfg: DroughtConfig) -> pd.DataFrame:
     out["drought_loss_ratio"] = _safe_ratio(out["drought_indemnity"], liability)
     out["significant_drought_loss"] = out["drought_loss_ratio"] >= cfg.loss_ratio_threshold
     if "insured_acres" in out.columns and "planted_acres" in out.columns:
-        out["insured_acre_fraction"] = _safe_ratio(out["insured_acres"], out["planted_acres"])
+        planted = out["planted_acres"].to_numpy(dtype=float)
+        insured = out["insured_acres"].to_numpy(dtype=float)
+        # Missing/withheld planted acres -> unknown coverage (NaN), not a spurious 0.0.
+        out["insured_acre_fraction"] = np.divide(insured, planted, out=np.full(len(out), np.nan), where=planted > 0)
     return out
 
 

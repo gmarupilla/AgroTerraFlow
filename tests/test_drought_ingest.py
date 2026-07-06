@@ -169,14 +169,33 @@ def test_finalize_uses_true_sob_liability(tmp_path: Path):
     assert final["insured_acre_fraction"] == pytest.approx(5000 / 6000)
 
 
+def _nass_rec(county, value, practice=None):
+    return {
+        "agg_level_desc": "COUNTY",
+        "state_fips_code": "19",
+        "county_ansi": county,
+        "year": "2012",
+        "Value": value,
+        "prodn_practice_desc": practice,
+    }
+
+
 def test_nass_parse_records():
     recs = [
-        {"agg_level_desc": "COUNTY", "state_fips_code": "19", "county_ansi": "001", "year": "2012", "Value": "176,000"},
-        {"agg_level_desc": "COUNTY", "state_fips_code": "19", "county_ansi": "001", "year": "2012", "Value": "24,000"},
-        {"agg_level_desc": "COUNTY", "state_fips_code": "19", "county_ansi": "", "year": "2012", "Value": "999"},
-        {"agg_level_desc": "STATE", "state_fips_code": "19", "county_ansi": "003", "year": "2012", "Value": "5"},
-        {"agg_level_desc": "COUNTY", "state_fips_code": "19", "county_ansi": "005", "year": "2012", "Value": "(D)"},
+        # County 001 has a total + irrigated/non-irrigated breakouts that sum to it:
+        # the total must be used (200000), NOT summed to 400000.
+        _nass_rec("001", "200,000", "ALL PRODUCTION PRACTICES"),
+        _nass_rec("001", "80,000", "IRRIGATED"),
+        _nass_rec("001", "120,000", "NON-IRRIGATED"),
+        # County 003 has only breakouts (no total row) -> fall back to summing them.
+        _nass_rec("003", "50,000", "IRRIGATED"),
+        _nass_rec("003", "50,000", "NON-IRRIGATED"),
+        # Skipped: no county ANSI, non-county aggregation, withheld value.
+        _nass_rec("", "999", "ALL PRODUCTION PRACTICES"),
+        {"agg_level_desc": "STATE", "state_fips_code": "19", "county_ansi": "007", "year": "2012", "Value": "5"},
+        _nass_rec("009", "(D)", "ALL PRODUCTION PRACTICES"),
     ]
-    df = parse_nass_records(recs)
-    assert set(df["GEOID"]) == {"19001"}
-    assert df.iloc[0]["planted_acres"] == pytest.approx(200000)  # 176000 + 24000 summed
+    df = parse_nass_records(recs).set_index("GEOID")
+    assert set(df.index) == {"19001", "19003"}
+    assert df.loc["19001", "planted_acres"] == pytest.approx(200000)  # total, not double-counted
+    assert df.loc["19003", "planted_acres"] == pytest.approx(100000)  # breakouts summed (no total)

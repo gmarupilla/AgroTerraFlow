@@ -28,7 +28,7 @@ that realized loss, back to 1989 — but it has never been packaged as a predict
 ## Quickstart
 
 ```bash
-terraflow drought fetch    --rma-dir data/drought/rma --year-min 2000 --year-max 2023
+terraflow drought fetch    --rma-dir data/drought/rma --sob-dir data/drought/sob --year-min 2000 --year-max 2023
 terraflow drought build    -c examples/drought_v0_corn_6state.yml
 terraflow drought evaluate -c examples/drought_v0_corn_6state.yml
 ```
@@ -57,7 +57,7 @@ years while gradient-boosting and linear models stay strong (0.80–0.95). The p
 ## Limitations (datasheet notes)
 
 - RMA Cause of Loss covers **insured acres only**; the benchmark ships an `insured_acre_fraction`
-  column (insured acres / NASS planted acres; median ≈ 0.45) so users can filter/weight by coverage.
+  column (insured acres / NASS planted acres; median ≈ 0.70) so users can filter/weight by coverage.
 - `drought_loss_ratio` uses the **true total insured liability** (RMA Summary-of-Business), removing
   the loss-experience >1 artifact (4 of 13,895 rows marginally exceed 1). Rank metrics and the binary
   target remain robust.
