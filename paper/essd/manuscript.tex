@@ -1,0 +1,155 @@
+%% Earth System Science Data (ESSD) -- Data description paper
+%% Compile with the Copernicus LaTeX package (download `copernicus.cls` + bst from
+%% https://publications.copernicus.org/for_authors/latex_instructions.html and place alongside).
+%%
+%%   pdflatex manuscript ; bibtex manuscript ; pdflatex manuscript ; pdflatex manuscript
+%%
+%% NOTE: every quantitative result is produced by `terraflow drought build/evaluate` on the real
+%% RMA + flashdry inputs (no synthetic data), verified against a fresh evaluate_report.json on
+%% 2026-07-05: corn 6.0% positive (temporal ROC-AUC 0.954, spatial LOSO 0.915); soybean 4.8%
+%% positive (temporal 0.927, spatial LOSO 0.898).
+
+\documentclass[essd, manuscript]{copernicus}
+
+\begin{document}
+
+\title{An impact-labeled, prediction-ready drought benchmark for the US Corn Belt: predicting insured drought loss from within-season climate signal}
+
+\Author[1]{Gnaneswara}{Marupilla}
+\Author[2]{Chandhini}{Bayina}
+
+\affil[1]{Independent Researcher \& Software Engineer (Scientific Computing)}
+\affil[2]{University of Central Missouri, Warrensburg, Missouri, United States}
+
+\runningtitle{An impact-labeled drought benchmark for the US Corn Belt}
+\runningauthor{G. Marupilla and C. Bayina}
+
+\correspondence{Gnaneswara Marupilla (gnaneswara@marupilla.dev)}
+
+\received{}
+\pubdiscuss{}
+\revised{}
+\accepted{}
+\published{}
+
+\firstpage{1}
+
+\maketitle
+
+\begin{abstract}
+Drought benchmarks in machine learning predict how \emph{dry} a season is (drought severity, e.g.\ the US Drought Monitor D2+ category) or how much a crop \emph{yields}. Neither answers the question insurers, agencies, and adaptation planners actually face: \emph{where will drought translate into realized economic loss this season?} We present the first prediction-ready, \emph{impact-labeled} drought benchmark, whose target is \textbf{realized insured drought loss} derived from the public USDA Risk Management Agency (RMA) Cause of Loss records. The benchmark pairs this label with a within-season predictor stack of deseasonalized climate and vegetation anomalies aggregated to a mid-season cutoff, framing an \textbf{early-warning} task: predict end-of-season insured loss from signal available by late July. Version~0 covers corn and soybean across the six-state Corn Belt (Illinois, Indiana, Iowa, Minnesota, Missouri, Nebraska), 2000--2023, at county--crop-year resolution (13\,895 county-years, 587 counties per crop). We release the assembled benchmark table, official temporal / leave-one-state-out / leave-one-year-out splits, a deterministic build manifest, and a baseline leaderboard, alongside the open-source \texttt{terraflow.drought} pipeline that reproduces every artifact from public inputs. A tiered baseline evaluation shows that within-season climate signal predicts realized insured drought loss well (best temporal ROC-AUC $\approx 0.95$, spatial ROC-AUC $\approx 0.91$), that US Drought Monitor severity is a strong but beatable baseline that arrives later in the season, and that model choice matters sharply under temporal extrapolation to extreme years. The dataset is archived on Zenodo (https://doi.org/10.5281/zenodo.21208651, CC-BY-4.0).
+\end{abstract}
+
+\introduction  %% Section 1
+\label{sec:intro}
+
+Drought is the costliest recurrent climate hazard for US agriculture, and quantifying \emph{where and when} it will cause loss is central to crop insurance, disaster response, and adaptation planning. Machine learning has been applied extensively to two adjacent framings. The first is \emph{drought severity detection} --- predicting a categorical dryness index such as the US Drought Monitor (USDM) D2+ class from meteorological and remote-sensing inputs. The second is \emph{crop-yield prediction}, the target of benchmarks such as CY-Bench and SustainBench \citep{yeh2021sustainbench}. Both are valuable, but neither is the economic-impact quantity that risk managers act on. Severity measures the \emph{hazard}; yield measures a \emph{biophysical outcome}; neither is the \emph{realized insured loss} that determines indemnity payouts, program cost, and where mitigation has the highest return.
+
+The USDA RMA Cause of Loss Summary-of-Business files are the public, county-level record of exactly this quantity --- indemnities paid, attributed to a specific cause of loss (including ``Drought''), back to 1989. Despite being open and long-running, these records have never been packaged as a prediction-ready machine-learning benchmark: they are distributed as large pipe-delimited loss-experience files that require careful joining to the true insured liability and to a coverage denominator before they can serve as an honest supervised target.
+
+We close that gap. Our contributions are:
+\begin{enumerate}
+\item \textbf{An impact label.} A defensible, reproducible per-(county, crop, year) drought-loss target derived from RMA Cause of Loss, using the true total insured liability (from the RMA Summary-of-Business coverage files) as the denominator so the loss-experience ``$>$1'' artifact is removed, plus a documented insured-acre coverage-bias column.
+\item \textbf{A prediction-ready benchmark.} The label joined to a within-season predictor stack of deseasonalized climate and vegetation anomalies and USDM severity aggregates, with regression and classification targets and three official evaluation splits (temporal, leave-one-state-out spatial, leave-one-year-out).
+\item \textbf{A reproducible pipeline.} \texttt{terraflow.drought}, an open-source (MIT) sub-package that fetches the public inputs, assembles the benchmark, and runs a baseline leaderboard, writing a SHA-256 build fingerprint so identical inputs reproduce byte-identical artifacts.
+\end{enumerate}
+
+The benchmark is deliberately \emph{lean} in v0 --- it uses only established, openly licensed data products and standard estimators --- so that its value is the \textbf{task and the labeled data}, not a modeling apparatus. Deep sequence models, additional predictors (e.g.\ GRACE terrestrial water storage), soybean-masked vegetation indices, and CONUS coverage are explicit future work.
+
+\section{Data and methods}
+\label{sec:methods}
+
+\subsection{Study domain and unit}
+The instance is one row per \textbf{(county FIPS \texttt{GEOID}, crop, crop-year)}. Version~0 covers \emph{corn} and \emph{soybean} over the six-state Corn Belt --- Illinois (FIPS 17), Indiana (18), Iowa (19), Minnesota (27), Missouri (29), Nebraska (31) --- for crop-years \textbf{2000--2023}. This yields \textbf{13\,895 county-years across 587 counties} per crop. The annual grain matches the native resolution of the RMA loss records, and the county grain matches both the RMA and the predictor corpus join key.
+
+\subsection{Label construction (RMA Cause of Loss)}
+\label{sec:labels}
+Labels derive from the USDA RMA \emph{Cause of Loss} Summary-of-Business files (public, pipe-delimited, 1989--present). For each county-crop-year we compute:
+\begin{itemize}
+\item \texttt{drought\_indemnity} $= \sum$ indemnity where the \emph{Cause of Loss Description} equals ``Drought'' (a literal text match on the official field --- no code-table lookup);
+\item \texttt{total\_indemnity} $= \sum$ indemnity over all causes;
+\item \texttt{drought\_share} $=$ \texttt{drought\_indemnity} / \texttt{total\_indemnity}, a bounded auxiliary target in $[0, 1]$.
+\end{itemize}
+The primary regression target is the \textbf{drought loss ratio}
+\[
+\texttt{drought\_loss\_ratio} = \frac{\texttt{drought\_indemnity}}{\texttt{total\_liability}},
+\]
+where the denominator \texttt{total\_liability} is taken from the RMA \emph{Summary-of-Business coverage} files --- the true total insured liability across \emph{all} policies (the pipeline falls back to the Cause-of-Loss loss-experience liability \texttt{col\_liability} only when the coverage file is absent). Using this denominator (rather than the loss-experience liability of only loss-incurring policies, which is present in the Cause of Loss file) removes the artifact whereby the ratio can exceed 1: after this correction only 4 of 13\,895 corn rows marginally exceed 1, and both the rank metrics and the binary target are robust to them. The binary target is \texttt{significant\_drought\_loss} $= (\texttt{drought\_loss\_ratio} \geq \tau)$, with default threshold $\tau = 0.10$.
+
+County-years that appear in the predictor panel but have \emph{no} Cause of Loss record are genuine zero-loss negatives (\texttt{drought\_loss\_ratio} $= 0$, not significant) and are retained and filled, rather than dropped --- an omission that would otherwise inflate the positive rate. The resulting positive rate is \textbf{6.0\,\% for corn} and \textbf{4.8\,\% for soybean}; the positive class is rare, which is why we treat PR-AUC (average precision) as the honest classification headline.
+
+\subsection{Predictors (within-season, early-warning)}
+\label{sec:predictors}
+Predictors come from the openly documented \emph{flashdry} corpus (https://github.com/gmarupilla/flashdry), a county-aggregated stack built from MODIS NDVI, ERA5-Land \citep{munoz2021era5land}, Daymet \citep{thornton2016daymet}, the US Drought Monitor \citep{svoboda2002usdm}, and USDA-NASS. We aggregate the growing-season time series \emph{up to a configurable day-of-year cutoff} (\texttt{cutoff\_doy}, default 212 $\approx$ 31~July) to enforce an \textbf{early-warning} framing: predict end-of-season realized loss from signal available only by mid-season. For each county-year the predictor vector comprises: the \textbf{30 deseasonalized climate anomalies} (\texttt{*\_anom}), each summarized as \{mean, min, max, last\}; \texttt{NDVI\_anom\_z}, the standardized NDVI anomaly (same four summaries); \textbf{USDM severity} aggregates (\texttt{dm\_gte\_d2}, \texttt{dm\_class}); and \texttt{n\_obs} and \texttt{n\_stress\_weeks} (season coverage and count of stress weeks). An end-of-season variant (\texttt{cutoff\_doy}~$= 273$, 30~September) is available by configuration.
+
+\subsection{Coverage bias}
+Because RMA covers \emph{insured} acres only, the benchmark ships coverage columns --- \texttt{insured\_acres}, \texttt{total\_premium}, \texttt{planted\_acres} (USDA-NASS), and \texttt{insured\_acre\_fraction} (insured / planted acres, median $\approx 0.70$) --- so users can filter or weight by insurance penetration rather than silently treating uninsured acreage as zero-loss. This is stated as a first-class limitation, not a footnote.
+
+\subsection{Benchmark assembly and reproducibility}
+\texttt{terraflow drought build} performs: parse RMA Cause of Loss $\rightarrow$ build per-(GEOID, year) numerator labels $\rightarrow$ join the true Summary-of-Business liability and NASS planted acres $\rightarrow$ aggregate the flashdry predictors to the cutoff $\rightarrow$ left-join predictors $\bowtie$ labels on (GEOID, year) $\rightarrow$ finalize the loss-ratio, binary, and coverage targets. It writes \texttt{benchmark.parquet}, \texttt{splits.json}, and \texttt{manifest.json}. The manifest records a \textbf{SHA-256 build fingerprint} over the canonicalized configuration plus the hashes of every input file (and of the fetched NASS acreage, since NASS is a live source), so identical inputs reproduce a byte-identical fingerprint --- the dataset's reproducibility contract.
+
+\subsection{Evaluation splits}
+Three official splits are released in \texttt{splits.json}:
+\begin{itemize}
+\item \textbf{Temporal} --- test on the held-out years \textbf{2012, 2017, 2022, 2023} (the 2012 extreme drought and the recent 2022/2023 seasons); train on the \emph{remaining} crop-years up to 2015 (i.e.\ 2000--2015 with 2012 removed). The held-out years are excluded from the training set, so no test year --- including the 2012 extreme, which is $\leq 2015$ --- leaks into training. This is the primary, operationally realistic split.
+\item \textbf{Leave-one-state-out (spatial)} --- hold out each state in turn to measure spatial transfer.
+\item \textbf{Leave-one-year-out} --- per-year generalization.
+\end{itemize}
+
+\section{Technical validation}
+\label{sec:validation}
+
+We provide a tiered baseline leaderboard (\texttt{terraflow drought evaluate} $\rightarrow$ \texttt{evaluate\_report.json}, \texttt{leaderboard.csv}) to characterize the task, not to propose a state-of-the-art method. Three tiers: \textbf{naive} (train-mean and per-county historical-mean), \textbf{severity-only} (a model on the USDM aggregates alone), and \textbf{climate ML} (Ridge / RandomForest / GradientBoosting on the within-season anomaly features). All estimators are seeded (\texttt{random\_state}~$= 0$, \texttt{n\_jobs}~$= 1$) so the leaderboard is deterministic. Regression is scored by $R^2$, RMSE, and Spearman~$\rho$ (the rank metric is the robust headline given the heavy-tailed ratio); classification by ROC-AUC, average precision (PR-AUC), and Brier score.
+
+\begin{table}[t]
+\caption{Corn, temporal split (train $=$ non-test crop-years $\leq 2015$; test $=$ 2012/2017/2022/2023). Headline metrics from the real-data build.}
+\begin{tabular}{lll}
+\tophline
+Task & Model & Headline \\
+\middlehline
+Classification & GradientBoost [climate]  & ROC-AUC \textbf{0.95}, PR-AUC \textbf{0.66} \\
+Classification & LogReg [severity]        & ROC-AUC 0.93, PR-AUC 0.62 \\
+Classification & RandomForest [climate]   & ROC-AUC 0.56 (extrapolation collapse) \\
+Spatial LOSO   & GradientBoost [climate]  & mean ROC-AUC \textbf{0.91} \\
+\bottomhline
+\end{tabular}
+\belowtable{}
+\label{tab:leaderboard}
+\end{table}
+
+Three findings characterize the benchmark:
+\begin{enumerate}
+\item \textbf{Within-season signal predicts realized insured drought loss well} --- best temporal ROC-AUC $\approx 0.95$, spatial leave-one-state-out $\approx 0.91$ --- establishing that the task is learnable from mid-season data.
+\item \textbf{USDM severity is a strong baseline that within-season climate models match or beat while arriving earlier in the season.} Severity alone reaches ROC-AUC $\approx 0.93$; climate anomalies to the July cutoff reach $\approx 0.95$ with a several-week lead time. Severity and impact are correlated but not identical --- the benchmark measures the impact quantity directly.
+\item \textbf{Model choice matters sharply under temporal extrapolation.} On held-out extreme years a random forest collapses to near-chance (ROC-AUC $\approx 0.56$) while gradient-boosting and linear models remain strong ($0.80$--$0.95$). Because the positive class is rare (6\,\%), PR-AUC is the honest headline and naive baselines are correspondingly weak.
+\end{enumerate}
+
+The \textbf{soybean} benchmark (built identically via the crop-parameterized config) covers 13\,895 county-years at 4.8\,\% positive, with best temporal ROC-AUC $\approx 0.93$ and spatial LOSO $\approx 0.90$. Caveat: the flashdry NDVI layer is corn-masked, so for soybean \texttt{NDVI\_anom\_z} acts as a regional vegetation-stress proxy rather than a crop-specific signal; the weather anomalies and USDM severity are crop-agnostic.
+
+\section{Limitations}
+\label{sec:limitations}
+\begin{itemize}
+\item \textbf{Insured-acre coverage.} RMA records insured acres only; the \texttt{insured\_acre\_fraction} column (median $\approx 0.70$) exposes this per county-year so users can filter or weight rather than mistake uninsured acreage for zero loss.
+\item \textbf{Denominator.} The loss ratio uses the true Summary-of-Business insured liability; 4 of 13\,895 corn rows marginally exceed 1, and rank metrics and the binary target are robust to them.
+\item \textbf{Attribution.} The label counts indemnity attributed to the literal ``Drought'' cause of loss; a heat-inclusive variant (\texttt{["Drought", "Heat", "Hot Wind"]}) is available by configuration.
+\item \textbf{Scope.} v0 is corn + soybean over the six-state Corn Belt. CONUS coverage, additional predictors (e.g.\ GRACE terrestrial water storage), deep sequence models, and a crop-masked NDVI layer for non-corn crops are planned follow-ups.
+\end{itemize}
+
+\conclusions  %% Section
+\label{sec:conclusions}
+We release the first prediction-ready, impact-labeled drought benchmark, targeting realized insured drought loss from public RMA records and pairing it with an early-warning within-season predictor stack, official splits, a reproducible build pipeline, and a baseline leaderboard. Baselines show the task is learnable (temporal ROC-AUC $\approx 0.95$), that drought severity is a strong but beatable and later signal, and that robustness to temporal extrapolation is a discriminating axis for methods. By packaging an economic-impact target that the field has not previously benchmarked, the dataset opens a concrete evaluation surface for drought early-warning and agricultural risk modeling.
+
+\codedataavailability{The benchmark table, official splits, build manifest, and baseline leaderboard are archived on Zenodo at https://doi.org/10.5281/zenodo.21208651 (concept DOI, resolving to the latest version) under CC-BY-4.0. The assembly and evaluation pipeline is the open-source (MIT) \texttt{terraflow.drought} sub-package of TerraFlow (https://github.com/gmarupilla/AgroTerraFlow); the exact release used to build this dataset is tagged and archived alongside the data. Upstream inputs are public: USDA RMA Cause of Loss and Summary-of-Business files, USDA-NASS QuickStats, and the flashdry predictor corpus (derived from MODIS NDVI, ERA5-Land, Daymet, and the US Drought Monitor).}
+
+\authorcontribution{GM designed and implemented the \texttt{terraflow.drought} pipeline, assembled the benchmark, and drafted the manuscript. CB contributed to validation and manuscript review. All authors approved the final manuscript.}
+
+\competinginterests{The authors declare that they have no competing interests.}
+
+\begin{acknowledgements}
+We thank the USDA Risk Management Agency, USDA National Agricultural Statistics Service, and the US Drought Monitor for maintaining the open data products this benchmark builds upon.
+\end{acknowledgements}
+
+\bibliographystyle{copernicus}
+\bibliography{refs}
+
+\end{document}
