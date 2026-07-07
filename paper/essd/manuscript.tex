@@ -72,9 +72,9 @@ Labels derive from the USDA RMA \emph{Cause of Loss} Summary-of-Business files (
 \end{itemize}
 The primary regression target is the \textbf{drought loss ratio}
 \[
-\texttt{drought\_loss\_ratio} = \frac{\texttt{drought\_indemnity}}{\texttt{total\_insured\_liability}},
+\texttt{drought\_loss\_ratio} = \frac{\texttt{drought\_indemnity}}{\texttt{total\_liability}},
 \]
-where \texttt{total\_insured\_liability} is taken from the RMA \emph{Summary-of-Business coverage} files --- the true liability across \emph{all} policies. Using this denominator (rather than the loss-experience liability of only loss-incurring policies, which is present in the Cause of Loss file) removes the artifact whereby the ratio can exceed 1: after this correction only 4 of 13\,895 corn rows marginally exceed 1, and both the rank metrics and the binary target are robust to them. The binary target is \texttt{significant\_drought\_loss} $= (\texttt{drought\_loss\_ratio} \geq \tau)$, with default threshold $\tau = 0.10$.
+where the denominator \texttt{total\_liability} is taken from the RMA \emph{Summary-of-Business coverage} files --- the true total insured liability across \emph{all} policies (the pipeline falls back to the Cause-of-Loss loss-experience liability \texttt{col\_liability} only when the coverage file is absent). Using this denominator (rather than the loss-experience liability of only loss-incurring policies, which is present in the Cause of Loss file) removes the artifact whereby the ratio can exceed 1: after this correction only 4 of 13\,895 corn rows marginally exceed 1, and both the rank metrics and the binary target are robust to them. The binary target is \texttt{significant\_drought\_loss} $= (\texttt{drought\_loss\_ratio} \geq \tau)$, with default threshold $\tau = 0.10$.
 
 County-years that appear in the predictor panel but have \emph{no} Cause of Loss record are genuine zero-loss negatives (\texttt{drought\_loss\_ratio} $= 0$, not significant) and are retained and filled, rather than dropped --- an omission that would otherwise inflate the positive rate. The resulting positive rate is \textbf{6.0\,\% for corn} and \textbf{4.8\,\% for soybean}; the positive class is rare, which is why we treat PR-AUC (average precision) as the honest classification headline.
 
@@ -91,7 +91,7 @@ Because RMA covers \emph{insured} acres only, the benchmark ships coverage colum
 \subsection{Evaluation splits}
 Three official splits are released in \texttt{splits.json}:
 \begin{itemize}
-\item \textbf{Temporal} --- train on crop-years $\leq 2015$; test on held-out years \textbf{2012, 2017, 2022, 2023} (including the 2012 extreme drought and the recent 2022/2023 seasons). This is the primary, operationally realistic split.
+\item \textbf{Temporal} --- test on the held-out years \textbf{2012, 2017, 2022, 2023} (the 2012 extreme drought and the recent 2022/2023 seasons); train on the \emph{remaining} crop-years up to 2015 (i.e.\ 2000--2015 with 2012 removed). The held-out years are excluded from the training set, so no test year --- including the 2012 extreme, which is $\leq 2015$ --- leaks into training. This is the primary, operationally realistic split.
 \item \textbf{Leave-one-state-out (spatial)} --- hold out each state in turn to measure spatial transfer.
 \item \textbf{Leave-one-year-out} --- per-year generalization.
 \end{itemize}
@@ -102,7 +102,7 @@ Three official splits are released in \texttt{splits.json}:
 We provide a tiered baseline leaderboard (\texttt{terraflow drought evaluate} $\rightarrow$ \texttt{evaluate\_report.json}, \texttt{leaderboard.csv}) to characterize the task, not to propose a state-of-the-art method. Three tiers: \textbf{naive} (train-mean and per-county historical-mean), \textbf{severity-only} (a model on the USDM aggregates alone), and \textbf{climate ML} (Ridge / RandomForest / GradientBoosting on the within-season anomaly features). All estimators are seeded (\texttt{random\_state}~$= 0$, \texttt{n\_jobs}~$= 1$) so the leaderboard is deterministic. Regression is scored by $R^2$, RMSE, and Spearman~$\rho$ (the rank metric is the robust headline given the heavy-tailed ratio); classification by ROC-AUC, average precision (PR-AUC), and Brier score.
 
 \begin{table}[t]
-\caption{Corn, temporal split (train $\leq 2015$, test $=$ 2012/2017/2022/2023). Headline metrics from the v0.2 reference build.}
+\caption{Corn, temporal split (train $=$ non-test crop-years $\leq 2015$; test $=$ 2012/2017/2022/2023). Headline metrics from the real-data build.}
 \begin{tabular}{lll}
 \tophline
 Task & Model & Headline \\

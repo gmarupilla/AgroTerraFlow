@@ -94,10 +94,11 @@ Labels derive from the USDA RMA **Cause of Loss** Summary-of-Business files (pub
 
 The primary regression target is the **drought loss ratio**
 
-`drought_loss_ratio = drought_indemnity / total_insured_liability`,
+`drought_loss_ratio = drought_indemnity / total_liability`,
 
-where `total_insured_liability` is taken from the RMA **Summary-of-Business coverage** files — the true
-liability across *all* policies. Using this denominator (rather than the loss-experience liability of
+where the denominator `total_liability` is taken from the RMA **Summary-of-Business coverage** files —
+the true total insured liability across *all* policies (the pipeline falls back to the Cause-of-Loss
+loss-experience liability `col_liability` only when the coverage file is absent). Using this denominator (rather than the loss-experience liability of
 only loss-incurring policies, which is present in the Cause of Loss file) removes the artifact whereby
 the ratio can exceed 1: after this correction only 4 of 13,895 corn rows marginally exceed 1, and both
 the rank metrics and the binary target are robust to them. The binary target is
@@ -147,9 +148,11 @@ reproduce a byte-identical fingerprint — the dataset's reproducibility contrac
 
 Three official splits are released in `splits.json`:
 
-- **Temporal** — train on crop-years ≤ 2015; test on held-out years **2012, 2017, 2022, 2023**
-  (including the 2012 extreme drought and the recent 2022/2023 seasons). This is the primary,
-  operationally realistic split (forecast the future from the past).
+- **Temporal** — test on the held-out years **2012, 2017, 2022, 2023** (the 2012 extreme drought and
+  the recent 2022/2023 seasons); train on the *remaining* crop-years up to 2015 (i.e. 2000–2015 with
+  2012 removed). The held-out years are excluded from training, so no test year — including the 2012
+  extreme, which is ≤ 2015 — leaks into the train set. This is the primary, operationally realistic
+  split (forecast the future from the past).
 - **Leave-one-state-out (spatial)** — hold out each state in turn to measure spatial transfer.
 - **Leave-one-year-out** — per-year generalization.
 
@@ -164,7 +167,7 @@ deterministic. Regression is scored by R², RMSE, and Spearman ρ (the rank metr
 headline given the heavy-tailed ratio); classification by ROC-AUC, average precision (PR-AUC), and
 Brier score.
 
-**Corn, temporal split** (train ≤ 2015, test = 2012/2017/2022/2023):
+**Corn, temporal split** (train = non-test crop-years ≤ 2015; test = 2012/2017/2022/2023):
 
 | Task | Model | Headline |
 |---|---|---|
