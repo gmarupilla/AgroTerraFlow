@@ -11,14 +11,14 @@ Following Gebru et al., *Datasheets for Datasets* (2021).
 
 ## Composition
 
-- **Instances.** One row per (county `GEOID`, corn crop-year). v0 = corn, 6-state Corn Belt
-  (IL/IN/IA/MN/MO/NE), 2000–2023. **13,895 rows, 587 counties.**
+- **Instances.** One row per (county `GEOID`, crop, crop-year). v0 covers **corn** and **soybean**,
+  6-state Corn Belt (IL/IN/IA/MN/MO/NE), 2000–2023. **13,895 rows, 587 counties per crop.**
 - **Features.** 30 deseasonalized flashdry climate anomalies (`*_anom`) + `NDVI_anom_z` + USDM
   severity (`dm_gte_d2`, `dm_class`), each aggregated {mean, min, max, last} up to `cutoff_doy`
   (default ≈ Jul 31 — early-warning), plus `n_obs` and `n_stress_weeks`.
 - **Labels.** `drought_loss_ratio` (regression; drought indemnity / true insured liability),
-  `significant_drought_loss` (binary, positive rate **6.0%**), `drought_share` (bounded auxiliary),
-  and raw `drought_indemnity` / `total_indemnity` / `total_liability`.
+  `significant_drought_loss` (binary, positive rate **6.0% corn / 4.8% soybean**), `drought_share`
+  (bounded auxiliary), and raw `drought_indemnity` / `total_indemnity` / `total_liability`.
 - **Coverage.** `insured_acres`, `total_premium`, `planted_acres`, and `insured_acre_fraction`
   (insured / planted acres; median ≈ 0.70) expose RMA's insured-only coverage bias.
 - **Splits** (`splits.json`). Temporal (train ≤ 2015, test = 2012/2017/2022/2023), leave-one-state-out
@@ -44,10 +44,14 @@ leaderboard (`leaderboard.csv`) covers naive, severity-only, and Ridge/RF/GBM cl
 - **Denominator.** `drought_loss_ratio` uses the **true total insured liability** (RMA
   Summary-of-Business), so the loss-experience >1 artifact is essentially removed (4 of 13,895
   rows marginally exceed 1). Rank metrics and the binary target remain robust.
-- **Scope.** v0 is corn + Corn Belt; soybean, CONUS, and additional predictors (e.g. GRACE) are future work.
+- **Soybean NDVI.** The flashdry NDVI layer is corn-masked, so for soybean `NDVI_anom_z` is a
+  regional vegetation-stress proxy (weather anomalies and USDM severity are crop-agnostic); a
+  soybean-masked NDVI layer is a planned follow-up.
+- **Scope.** v0 is corn + soybean over the Corn Belt; CONUS and additional predictors (e.g. GRACE) are future work.
 
 ## Distribution & license
 
 - Benchmark table + splits + manifest + leaderboard are released on Zenodo:
-  **DOI [10.5281/zenodo.21208651](https://doi.org/10.5281/zenodo.21208651)** (concept DOI — always latest version). Code: MIT (`terraflow`). Upstream data are public/open; cite the flashdry
-  corpus and the upstream products.
+  **DOI [10.5281/zenodo.21208651](https://doi.org/10.5281/zenodo.21208651)** (concept DOI — always
+  resolves to the latest version). Code: MIT (`terraflow`). Upstream data are public/open; cite the
+  flashdry corpus and the upstream products.
