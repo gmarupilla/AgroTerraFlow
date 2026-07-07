@@ -1,17 +1,18 @@
 {
-  "//": "Metadata for the MANUAL Zenodo dataset deposit of the drought-impact benchmark. This is NOT the flashdry GitHub-release integration; upload the bundled artifacts (benchmark.parquet, splits.json, manifest.json, leaderboard.csv, evaluate_report.json, DATASHEET.md) as a new Zenodo record and paste these fields.",
+  "//": "Metadata for the MANUAL Zenodo dataset deposit of the drought-impact benchmark. Upload the bundled artifacts (corn/ + soybean/ each with benchmark.parquet, splits.json, manifest.json, leaderboard.csv, evaluate_report.json, plus DATASHEET.md) as a NEW VERSION of the existing record and paste these fields.",
+  "//doi": "This is the CONCEPT DOI (shown under 'Cite all versions of this record') — always cite this in the ESSD manuscript. Confirmed 2026-07-06: concept DOI = 10.5281/zenodo.21208651; the v0.3 version-specific DOI is 10.5281/zenodo.21211975 (do NOT cite version DOIs). Publishing a new version mints a new version DOI automatically while the concept DOI stays the same.",
   "doi": "10.5281/zenodo.21208651",
-  "version": "v0.3",
-  "title": "Drought-Impact Prediction Benchmark (v0): county-level insured drought loss for the US Corn Belt",
+  "version": "v0.4",
+  "title": "Drought-Impact Prediction Benchmark (v0): county-level insured drought loss for corn and soybean in the US Corn Belt",
   "upload_type": "dataset",
-  "description": "A prediction-ready, impact-labeled drought benchmark: predict realized insured drought loss (USDA RMA Cause of Loss) from within-season climate/vegetation anomalies. v0 covers corn across the 6-state US Corn Belt (IL/IN/IA/MN/MO/NE), 2000-2023 (13,895 county-years, 587 counties, 18.5% positive). Distinct from drought-severity (USDM) and crop-yield benchmarks. Includes official temporal / leave-one-state-out spatial / leave-one-year-out splits and a baseline leaderboard. Built and reproducible with the open-source terraflow.drought pipeline.",
+  "description": "A prediction-ready, impact-labeled drought benchmark: predict realized insured drought loss (USDA RMA Cause of Loss) from within-season climate/vegetation anomalies. v0 covers corn and soybean across the 6-state US Corn Belt (IL/IN/IA/MN/MO/NE), 2000-2023 (13,895 county-years and 587 counties per crop; positive rate 6.0% for corn, 4.8% for soybean). The drought-loss ratio uses the TRUE total insured liability from the RMA Summary-of-Business coverage files (removing the loss-experience >1 artifact). Distinct from drought-severity (USDM) and crop-yield benchmarks. Includes official temporal / leave-one-state-out spatial / leave-one-year-out splits and a baseline leaderboard (best temporal ROC-AUC 0.95 for corn and 0.93 for soybean; spatial leave-one-state-out 0.91 for corn and 0.90 for soybean). Built and reproducible with the open-source terraflow.drought pipeline; each build carries a deterministic SHA-256 fingerprint in manifest.json.",
   "creators": [
-    {"name": "Marupilla, Gnaneswara", "orcid": "0000-0002-6030-8707"},
+    {"name": "Marupilla, Gnaneswara", "orcid": "0000-0002-6030-8707", "affiliation": "Independent Researcher"},
     {"name": "Bayina, Chandhini", "orcid": "0009-0002-1359-1762", "affiliation": "University of Central Missouri"}
   ],
   "keywords": [
     "drought", "agriculture", "crop insurance", "impact prediction", "benchmark",
-    "remote sensing", "climate", "Corn Belt", "machine learning", "reproducibility"
+    "remote sensing", "climate", "Corn Belt", "corn", "soybean", "machine learning", "reproducibility"
   ],
   "license": "cc-by-4.0",
   "related_identifiers": [
@@ -19,5 +20,5 @@
     {"relation": "isSupplementTo", "identifier": "https://github.com/gmarupilla/AgroTerraFlow", "resource_type": "software"},
     {"relation": "references", "identifier": "https://www.rma.usda.gov/tools-reports/summary-of-business/cause-loss", "resource_type": "dataset"}
   ],
-  "notes": "Predictors derive from the flashdry corpus (MODIS/ERA5-Land/Daymet/USDM/USDA-NASS); labels from public USDA RMA Cause of Loss. See DATASHEET.md for full provenance and limitations."
+  "notes": "Predictors derive from the flashdry corpus (MODIS/ERA5-Land/Daymet/USDM/USDA-NASS); labels from public USDA RMA Cause of Loss and Summary-of-Business coverage files. See DATASHEET.md for full provenance and limitations."
 }
