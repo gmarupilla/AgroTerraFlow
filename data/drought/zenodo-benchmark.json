@@ -1,6 +1,6 @@
 {
   "//": "Metadata for the MANUAL Zenodo dataset deposit of the drought-impact benchmark. Upload the bundled artifacts (corn/ + soybean/ each with benchmark.parquet, splits.json, manifest.json, leaderboard.csv, evaluate_report.json, plus DATASHEET.md) as a NEW VERSION of the existing record and paste these fields.",
-  "//doi": "This is the CONCEPT DOI (shown under 'Cite all versions of this record') — always cite this in the ESSD manuscript. Confirmed 2026-07-06: concept DOI = 10.5281/zenodo.21208651; the v0.3 version-specific DOI is 10.5281/zenodo.21211975 (do NOT cite version DOIs). Publishing a new version mints a new version DOI automatically while the concept DOI stays the same.",
+  "//doi": "This 'doi' field is the CONCEPT DOI (shown under 'Cite all versions of this record'), which always resolves to the latest version. Confirmed 2026-07-06: concept DOI = 10.5281/zenodo.21208651; the v0.3 version-specific DOI is 10.5281/zenodo.21211975. Publishing a new version mints a new version DOI while the concept DOI stays constant. For a fixed release, cite the VERSION-SPECIFIC DOI of v0.4 in the ESSD manuscript (exact reproducibility per Zenodo's versioning guidance); the concept DOI is used here in the living datasheet so it tracks the latest release.",
   "doi": "10.5281/zenodo.21208651",
   "version": "v0.4",
   "title": "Drought-Impact Prediction Benchmark (v0): county-level insured drought loss for corn and soybean in the US Corn Belt",
