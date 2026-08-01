@@ -32,7 +32,7 @@ evaluation shows that within-season climate signal predicts realized insured dro
 temporal ROC-AUC ≈ 0.95, spatial ROC-AUC ≈ 0.91), that US Drought Monitor severity is a strong but
 beatable baseline that arrives later in the season, and that model choice matters sharply under
 temporal extrapolation to extreme years. The dataset is archived on Zenodo
-(https://doi.org/10.5281/zenodo.21208651, CC-BY-4.0).
+(v0.4, https://doi.org/10.5281/zenodo.21232229, CC-BY-4.0).
 
 ## 1. Introduction
 
@@ -197,7 +197,9 @@ proxy rather than a crop-specific signal; the weather anomalies and USDM severit
 ## 4. Data availability
 
 The benchmark table, official splits, build manifest, and baseline leaderboard are archived on Zenodo:
-**https://doi.org/10.5281/zenodo.21208651** (concept DOI — resolves to the latest version), released
+**https://doi.org/10.5281/zenodo.21232229** (version DOI of the v0.4 release described in this paper;
+cite this identifier for exact reproducibility). The concept DOI
+https://doi.org/10.5281/zenodo.21208651 always resolves to the latest version. Both are released
 under **CC-BY-4.0**. The upstream inputs are public: USDA RMA Cause of Loss and Summary-of-Business
 files, USDA-NASS QuickStats, and the flashdry predictor corpus (which itself derives from MODIS NDVI,
 ERA5-Land, Daymet, and the US Drought Monitor — cite each upstream product). `data/drought/README.md`
