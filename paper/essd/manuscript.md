@@ -210,7 +210,8 @@ provenance, licenses, and known limitations.
 
 The pipeline is the open-source (MIT) `terraflow.drought` sub-package of TerraFlow. The exact release
 used to build this dataset is tagged on GitHub (https://github.com/gmarupilla/AgroTerraFlow) and
-archived alongside the data. Reproduction is a three-command sequence:
+archived as TerraFlow v0.6.0 at https://doi.org/10.5281/zenodo.21735915. Reproduction is a
+three-command sequence:
 
 ```bash
 terraflow drought fetch    --rma-dir data/drought/rma --sob-dir data/drought/sob --year-min 2000 --year-max 2023
