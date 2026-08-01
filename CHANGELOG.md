@@ -7,6 +7,8 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-07-31
+
 ### Added
 - **Drought benchmark: soybean support.** The `terraflow.drought` pipeline is crop-parameterized;
   a soybean benchmark is available via `examples/drought_soybean_6state.yml` (RMA/SOB/NASS all key
