@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: "If you use TerraFlow in your research, please cite it as below."
 type: software
 title: "TerraFlow: A Reproducible Framework for Climate-Impact Assessment of Agricultural Suitability"
-version: 0.5.0
-date-released: "2026-06-30"
+version: 0.6.0
+date-released: "2026-07-31"
 doi: 10.5281/zenodo.21070362
 license: MIT
 repository-code: "https://github.com/gmarupilla/AgroTerraFlow"
@@ -22,8 +22,12 @@ abstract: >
   climate-induced crop hazards (growing-degree days, frost days, heat
   stress days, precipitation percentiles, simplified Thornthwaite SPEI)
   under historical and projected future climate (CMIP6 NetCDF
-  ingestion with SSP scenarios). The same workflow methodology extends
-  to habitat suitability, land-use planning, and conservation siting.
+  ingestion with SSP scenarios). v0.6.0 adds terraflow.drought, an
+  impact-labeled drought-loss prediction benchmark that links public
+  USDA Risk Management Agency insured-loss records to within-season
+  climate and vegetation anomalies for the US Corn Belt. The same
+  workflow methodology extends to habitat suitability, land-use
+  planning, and conservation siting.
 keywords:
   - geospatial
   - agriculture
@@ -54,7 +58,7 @@ references:
       - family-names: Bayina
         given-names: Chandhini
   - type: dataset
-    title: "Drought-Impact Prediction Benchmark (v0): county-level insured drought loss for the US Corn Belt"
+    title: "Drought-Impact Prediction Benchmark (v0): county-level insured drought loss for corn and soybean in the US Corn Belt"
     doi: 10.5281/zenodo.21208651
     year: 2026
     authors:
