@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="TerraFlow">
+  <!--
+    TerraFlow favicon — optimised for 16 × 16 and 32 × 32.
+    Simplified vs. the full icon: fewer contour lines, heavier strokes,
+    no gradients (renders crisply at small sizes).
+  -->
+  <rect width="32" height="32" rx="7" fill="#1b4332"/>
+
+  <!-- Filled land mass -->
+  <path d="M -2 26  Q 8 22  16 24  Q 24 26  34 22  L 34 34  L -2 34 Z"
+        fill="#2d6a4f"/>
+
+  <!-- Contour 1 – lower -->
+  <path d="M -2 22  Q 8 17  16 19  Q 24 21  34 17"
+        fill="none" stroke="#40916c" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Contour 2 – middle -->
+  <path d="M -2 15  Q 8 10  16 12  Q 24 14  34 10"
+        fill="none" stroke="#52b788" stroke-width="1.8" stroke-linecap="round"/>
+
+  <!-- Contour 3 – upper -->
+  <path d="M 2 8   Q 10 4   16 6   Q 24 8   32 4"
+        fill="none" stroke="#74c69d" stroke-width="1.2" stroke-linecap="round"
+        opacity="0.75"/>
+
+  <!-- Map location pin (teardrop) — two mirror cubic beziers -->
+  <path d="M 16 4
+           C 21 4, 21 15, 16 16
+           C 11 15, 11 4, 16 4 Z"
+        fill="white" opacity="0.94"/>
+  <!-- Inner hole -->
+  <circle cx="16" cy="9" r="1.8" fill="#1b4332"/>
+</svg>
